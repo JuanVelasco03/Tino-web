@@ -266,12 +266,12 @@ El modo oscuro se aplica con `@media (prefers-color-scheme: dark)` bajo `:root:n
 ### Hierarchy
 
 Cifras (siempre `font-mono` y `tabular-nums`):
-- **cifra-xl** (500, 56/60, −0.03em): la cifra protagonista de una pantalla, como el patrimonio en el resumen.
+- **cifra-xl** (500, 56/60, −0.03em): la cifra protagonista de una pantalla, como el monto de la captura móvil.
 - **cifra-campo** (500, 44/52, −0.02em): solo el campo de monto (C4).
-- **cifra-l** (500, 32/36, −0.02em): el patrimonio neto al cierre de la lista de cuentas (escritorio).
-- **cifra-m** (500, 20/28): saldo en la tarjeta o fila de cuenta y total de grupo en escritorio.
+- **cifra-l** (500, 32/36, −0.02em): el patrimonio neto al cierre de la lista de cuentas (escritorio); en el resumen, las tres cifras del mes (escritorio), el resultado (móvil) y el patrimonio de hoy.
+- **cifra-m** (500, 20/28): saldo en la tarjeta o fila de cuenta, total de grupo en escritorio e ingresos y gastos del resumen en móvil.
 - **cifra-s** (500, 15/22): montos de filas y totales de sección.
-- **cifra-xs** (400, 12/16): fechas, equivalencias en COP, TRM, «Usado 32 %».
+- **cifra-xs** (400, 12/16): fechas, equivalencias en COP, TRM, «Usado 32 %», porcentajes y variaciones del resumen y las etiquetas de la gráfica.
 
 Texto:
 - **titulo-1** (600, 28/34, −0.01em): título de página.
@@ -322,7 +322,7 @@ Tino es completamente plano. Ningún componente lleva sombra, y las escalas de s
 - **División** (1 px, `linea`): entre filas de una lista.
 - **Raya** (1 px, `raya`): bajo un encabezado de sección, bajo el campo de monto y en el borde del panel.
 - **Doble raya** (3 px doble, `raya`; utilidad `doble-raya`): cierre de un total, como el patrimonio neto.
-- **Punteada** (1 px discontinua, `terciario`; utilidad `punteada`): lo pendiente o sin clasificar. Provisional.
+- **Punteada** (1 px discontinua, `terciario`; utilidad `punteada`): lo pendiente o sin clasificar. Provisional. Encima de una fila (la de «Sin categoría») se escribe `border-t border-t-terciario [border-top-style:dashed]`, para no volver discontinua la división inferior.
 
 ### Named Rules
 **The No-Shadow Rule.** Sin sombras en ningún componente, en ningún estado. Si algo necesita destacarse, se usa una línea, un tono de superficie o espacio.
@@ -333,7 +333,7 @@ Tino es completamente plano. Ningún componente lleva sombra, y las escalas de s
 
 Formas rectas y sobrias, con radios casi imperceptibles y un máximo de 6 px:
 - **Fila** (0 px): filas, tablas y teclado.
-- **Muestra** (2 px): muestras de color y barras (cupo).
+- **Muestra** (2 px): muestras de color y barras (cupo, gasto por categoría).
 - **Campo** (4 px): campos, botones, chips y la entrada activa del menú.
 - **Hoja** (6 px): hojas y paneles.
 
@@ -395,8 +395,36 @@ En escritorio, rejilla de cuatro columnas `52px | flexible | hasta 176px | 128px
 - **Aviso:** tras guardar o eliminar, el `AvisoRegistro` va arriba de la lista («Guardado: …» / «Eliminado: …», sin «Deshacer») con la oferta de regla si aplica.
 - **Vacío:** en el mes actual, «Aún no registras movimientos este mes.»; en otro, «No hay movimientos en {mes}.» · «Registra uno o cambia de mes.».
 
+- **Filtro «Gastos sin clasificar»** (`?sinClasificar=1`, solo desde el resumen): arriba «Gastos sin clasificar · N» en `rotulo` con «Ver todos» (`EnlaceTexto`) a la derecha; solo esos gastos, con las mismas filas, que conservan el filtro en su enlace y al cerrar la edición. Al clasificar uno, sale de la lista. Vacío: «Sin clasificar · {mes}», «No quedan gastos sin clasificar en {mes}.» y «Ver todos» (sin `+`). Cambiar de mes quita el filtro.
+
 ### Navegación de meses (`NavegacionMes`)
-`‹` y `›` como objetivos de 44 px con chevrones de 18 px en `secundario` (pasan a `texto` al pasar el cursor), y entre ellos el mes («Noviembre 2026») en cuerpo 600. A la derecha, «Este mes» (`EnlaceTexto`) solo fuera del mes actual. Cada mes es una URL (`?mes=YYYY-MM`), sin límite hacia adelante. Las flechas se nombran con el destino: «Mes anterior: Octubre 2026».
+`‹` y `›` como objetivos de 44 px con chevrones de 18 px en `secundario` (pasan a `texto` al pasar el cursor), y entre ellos el mes («Noviembre 2026») en cuerpo 600. A la derecha, «Este mes» (`EnlaceTexto`) solo fuera del mes actual. Cada mes es una URL (`?mes=YYYY-MM`). Las flechas se nombran con el destino: «Mes anterior: Octubre 2026».
+- **Límites** (`hayAnterior`, `haySiguiente`): una flecha oculta deja su hueco de 44 px, para que el mes no salte. `/movimientos` no tiene límites (la captura admite fechas futuras); en `/resumen` los da la API (`limitesMes`: sin `‹` en el mes de inicio o antes, sin `›` en el actual).
+- **Variante título** (`variante="titulo"`): el mes es el `h1` (titulo-1). Escritorio: `‹ Mes ›` y «Este mes» a continuación. Móvil: el mes a la izquierda, `‹ ›` a la derecha y «Este mes» debajo.
+
+### Resumen del mes (`/resumen`)
+Pantalla de solo lectura: toda cifra, variación y porcentaje llega de la API y aquí solo se formatea; la web no suma, no resta ni calcula porcentajes. Porcentajes en décimas, con `formatearPorcentaje` (aritmética entera, «—» sin base). Secciones separadas por 48 px en escritorio y 32 px en móvil.
+- **Cabecera:** «Resumen del mes» en `rotulo` secundario, la navegación en variante título y, a la derecha (debajo en móvil), «1 – 31 oct · 142 movimientos · comparado con septiembre» en `etiqueta` secundaria, con la cantidad en mono.
+- **Cifras del mes (`CifrasMes`):** escritorio, tres columnas bajo una raya separadas por divisiones verticales: rótulo, cifra-l y debajo dos renglones en `etiqueta` / cifra-xs («Septiembre 4.200.000», «Variación +62.500 · +1,5 %»). Ingresos con `+` en verde, gastos con `−` en terracota (base en cifra-l, `-texto` en cifra-m), resultado con su signo en tinta; un cero va sin signo y en tinta. Variaciones con signo, en tinta. Móvil: ingresos y gastos en filas de cifra-m con «+1,5 % vs sep» en cifra-xs; el resultado en cifra-l entre raya y doble raya.
+- **Gasto por categoría (`GastoCategorias`):** escritorio, tabla `160px | flexible | 120px | 72px | 120px | 110px` (Categoría, barra, mes, %, anterior, Var.) con rótulos sobre una división. La barra mide 6 px, radio `muestra`, en `texto`, y su largo es el `porcentaje` de la API sobre el mayor de la lista (`anchoBarra`), nunca montos. «Sin categoría» va al final, sobre una punteada, con el nombre subrayado en punteada y la barra como contorno punteado `terciario`; aparece solo si tiene monto este mes o el anterior. Cierra «Total gastos» en 600 sobre doble raya, con «100 %» rotulado sin sumar filas («—» si no hubo gastos). Móvil: lista con nombre, monto y % y debajo una barra de 4 px; el total va en la cabecera de la sección. Sin filas: «No hubo gastos en {mes}.».
+- **Indicador de sin clasificar:** solo con gastos sin clasificar. Escritorio, a la derecha del rótulo: «3,3 % sin categoría · Clasificar 1», el % en mono con subrayado punteado y «Clasificar» en latón 600. Móvil, al pie (44 px): «3,3 % sin categoría, en 1 gasto · Clasificar». Lleva a `/movimientos?mes=…&sinClasificar=1`.
+- **Patrimonio neto (`PatrimonioNeto`):** «Patrimonio neto · 12 meses» con «dic 2025 – hoy» a la derecha (escritorio), el de hoy en cifra-l y «+6.708.692 desde dic 2025» (cifra en mono y tinta). Con un solo punto, sin variación ni rango. Ocupa 2/3 en escritorio.
+- **Cambio en {mes} (`CambioDelMes`):** el puente del patrimonio, 1/3 en escritorio y bajo la gráfica en móvil: «Patrimonio al 30 sep» (rótulo secundario), «Resultado del mes» y «Otros cambios» con signo, y el cierre «Patrimonio al 31 oct» (o «Patrimonio a hoy» en el mes actual) en 600 sobre doble raya. Todo en tinta, cifra-s.
+
+### Gráfica del patrimonio (`GraficaPatrimonio`)
+SVG propio, sin librería. La escala se calcula en `src/domain/resumen/grafica.ts` con `bigint`; solo las coordenadas en píxeles salen como `number`. `viewBox` fijo por formato (escritorio 690 × 240, móvil 358 × 180) estirado al ancho, para que el texto conserve su tamaño en cada uno.
+- **Casillas:** 12 fijas (11 cierres de mes y hoy); con menos puntos, ocupan las últimas, así que hoy queda siempre a la derecha. La escala de tiempo no se estira.
+- **Trazo:** tres líneas de rejilla en `linea` con paso redondo (1, 2 o 5 × 10^k) y su etiqueta compacta a la derecha («25 M», «950 mil», `formatearCompacto`); base en `raya`; línea de 1,5 px en `texto`; puntos huecos (relleno `fondo`) y el de hoy relleno en `texto`. Etiquetas en cifra-xs secundaria; «hoy» en tinta. Rango cero: la rejilla se abre alrededor del valor.
+- **Accesible:** `role="img"` con «Patrimonio neto: de {primero} en {mes} a {hoy} hoy».
+- **Punto de partida (día uno):** hoy en la primera casilla como punto relleno con aro `fondo`, una línea punteada `terciario` hacia la derecha y debajo «hoy» en tinta y los 11 meses siguientes en `terciario`. Más bajo (escritorio 480 × 140, móvil 358 × 100).
+
+### Día uno del resumen (`DiaUno`)
+Cuando el usuario aún no tiene movimientos (`tieneMovimientos: false`); un mes vacío cualquiera muestra ceros, no esto. Sin navegación de meses: el mes es un `h1` simple.
+- **Mensaje:** «Hoy es tu primer día.» en titulo-2 y la explicación en cuerpo secundario (larga en escritorio, corta en móvil; «tus 3 cuentas» / «tu cuenta»). En escritorio, a la derecha, «Registrar el primer gasto» (primario, abre la captura) y «Agregar otra cuenta» (enlace con aspecto de botón secundario a `/cuentas?cuenta=nueva`), sobre una división.
+- **Cifras:** las tres en «0» `terciario` (cifra-l en escritorio con «Sin ingresos registrados» · «Sin gastos registrados» · «Ingresos menos gastos»; filas en móvil).
+- **Abajo, en dos columnas:** «Gasto por categoría» con cuatro renglones vacíos de 44 px (el último en doble raya de `linea`) y «Cuando registres gastos aparecen aquí…»; «Patrimonio neto» con «Punto de partida · 11 nov», la cifra en cifra-l, la gráfica de punto de partida y «La línea arranca hoy. Cada cierre de mes agrega un punto.».
+- **Móvil:** mensaje corto, cifras apiladas, patrimonio y «Registrar el primer gasto» a todo el ancho al final; sin categorías ni «Agregar otra cuenta».
+- **Sin cuentas:** «Empieza por crear una cuenta: el resumen se arma con lo que registres en ella.» con «+ Nueva cuenta» (`EnlaceTexto`); sin patrimonio ni «Registrar el primer gasto» (la captura pide cuenta).
 
 ### Estado vacío (C7)
 «La página en blanco»: el encabezado de sección con un «0» tenue, tres renglones vacíos de 44 px y debajo el título (cuerpo 600), el detalle y la acción con un `+` (un `EnlaceTexto`; si la acción no navega, como abrir la captura, un botón con el mismo aspecto). Si el destino aún no existe, la acción va en `terciario` y deshabilitada («Próximamente»), con la misma caja de 44 px para que no salte.
@@ -449,6 +477,7 @@ Un campo que solo existe con cierta opción (el cupo de una tarjeta) no aparece 
 
 ### Navegación (C14)
 - **Escritorio:** columna de 232 px. Arriba la marca «TINO» (titulo-2, 700, tracking amplio), luego «Registrar» como único botón en tinta (con la marca de tecla «N» en mono cifra-xs, borde `secundario`, radio de muestra) y después las entradas de 40 px con icono de 20 px. Inactiva: `secundario`, pasa a `texto` al pasar el cursor. Activa: fondo `hundido`, peso 600, radio de campo. Al pie, cambiar tema y salir. «Registrar» y la tecla N abren la captura sobre la página actual, sin cambiar la URL.
+- **Portada:** `/` lleva a `/resumen`, la primera entrada del menú y de la barra (también tras iniciar sesión).
 - **Móvil:** barra inferior de cinco pestañas con icono y rótulo de 11 px. «Registrar» va al centro en un cuadro de 40 px en tinta y abre la captura a pantalla completa; «Más» abre una hoja con el resto.
 - **Deshabilitado:** los destinos sin construir se muestran en `secundario` con `aria-disabled` y el título «Próximamente».
 

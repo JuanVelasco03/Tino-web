@@ -14,6 +14,7 @@ import { EstadoVacio } from "@/components/estado-vacio";
 import { IconoCuenta } from "@/components/iconos";
 import { OpcionUnica } from "@/components/opcion-unica";
 import { PanelLateral, type ControlPanel } from "@/components/panel-lateral";
+import { VistaDiaUno } from "@/components/resumen/dia-uno";
 import { desdeMonto, formatearEntradaPesos } from "@/domain/dinero/entrada";
 import type { TipoMovimiento } from "@/domain/movimiento/cuerpo";
 import { errorPartes, restante, type ValorParte } from "@/domain/movimiento/partes";
@@ -271,6 +272,19 @@ export function MuestraBloqueEliminar() {
       alConfirmar={() => setAbierto(false)}
       alCancelar={() => setAbierto(false)}
       pendiente={false}
+    />
+  );
+}
+
+/** Día uno del resumen: con 3 cuentas, con una y sin cuentas. Aquí no hay captura que abrir. */
+export function MuestraDiaUno({ cuentasActivas }: { cuentasActivas: number }) {
+  return (
+    <VistaDiaUno
+      cuentasActivas={cuentasActivas}
+      inicio={cuentasActivas === 0 ? null : "2026-11-11"}
+      fechaHoy="2026-11-11"
+      patrimonioHoy={975_372n}
+      alRegistrar={() => {}}
     />
   );
 }

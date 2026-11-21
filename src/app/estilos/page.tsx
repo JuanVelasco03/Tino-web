@@ -16,6 +16,10 @@ import {
   ROTULO_TIPO_CUENTA,
   type DestinoNavegacion,
 } from "@/components/iconos";
+import { CambioDelMes } from "@/components/resumen/cambio-del-mes";
+import { CifrasMes } from "@/components/resumen/cifras-mes";
+import { GastoCategorias } from "@/components/resumen/gasto-categorias";
+import { GraficaPatrimonio, PatrimonioNeto } from "@/components/resumen/grafica-patrimonio";
 import { TarjetaCuenta } from "@/components/tarjeta-cuenta";
 import type { TipoCuenta } from "@/domain/cuenta/naturaleza";
 import { formatearEquivalencia } from "@/domain/dinero/formato";
@@ -24,6 +28,7 @@ import {
   MuestraAvisoRegistro,
   MuestraBloqueEliminar,
   MuestraChipsInteractivos,
+  MuestraDiaUno,
   MuestraEditorPartes,
   MuestraEstadoVacioBoton,
   MuestraFichasCuenta,
@@ -97,6 +102,147 @@ const RADIOS = [
   [4, "rounded-campo", "Campos, botones, chips"],
   [6, "rounded-hoja", "Hojas: tarjeta de cuenta, panel inferior"],
 ] as const;
+
+/* Resumen del mes: ejemplo de docs/api/resumen.md (noviembre 2026) y una serie de 12 meses. */
+const RESUMEN = {
+  ingresos: { actual: 0n, anterior: 2_000_000n, variacion: -2_000_000n, variacionPorcentaje: -1000 },
+  gastos: { actual: 300_000n, anterior: 420_000n, variacion: -120_000n, variacionPorcentaje: -286 },
+  resultado: { actual: -300_000n, anterior: 1_580_000n, variacion: -1_880_000n, variacionPorcentaje: -1190 },
+  categorias: [
+    { categoria: { id: "comida", nombre: "Comida" }, monto: 260_000n, anterior: 300_000n, variacion: -40_000n, porcentaje: 867 },
+    { categoria: { id: "mercado", nombre: "Mercado" }, monto: 30_000n, anterior: 0n, variacion: 30_000n, porcentaje: 100 },
+    { categoria: { id: "transporte", nombre: "Transporte" }, monto: 0n, anterior: 20_000n, variacion: -20_000n, porcentaje: 0 },
+  ],
+  sinCategoria: { monto: 10_000n, anterior: 100_000n, variacion: -90_000n, porcentaje: 33, cantidad: 1 },
+  serie: [
+    { fecha: "2026-10-31", patrimonio: 2_580_000n },
+    { fecha: "2026-11-21", patrimonio: 2_280_000n },
+  ],
+  cambio: {
+    fechaAnterior: "2026-10-31",
+    fechaCierre: "2026-11-30",
+    patrimonioAnterior: 2_580_000n,
+    resultado: -300_000n,
+    otrosCambios: 0n,
+    patrimonioCierre: 2_280_000n,
+  },
+};
+
+const SERIE_DOCE = (
+  [
+    ["2025-12-31", 27_412_380n],
+    ["2026-01-31", 27_958_110n],
+    ["2026-02-28", 28_301_645n],
+    ["2026-03-31", 28_077_920n],
+    ["2026-04-30", 29_115_430n],
+    ["2026-05-31", 29_884_210n],
+    ["2026-06-30", 30_402_775n],
+    ["2026-07-31", 31_268_940n],
+    ["2026-08-31", 31_050_315n],
+    ["2026-09-30", 32_106_940n],
+    ["2026-10-31", 33_784_215n],
+    ["2026-11-21", 34_121_072n],
+  ] as const
+).map(([fecha, patrimonio]) => ({ fecha, patrimonio }));
+
+/** Componentes del resumen: a todo el ancho, porque la tabla de categorías lo necesita. */
+function ComponentesResumen() {
+  return (
+    <>
+      <div>
+        <Etiqueta>Navegación de meses · título, con límites (sin ‹ en el primer mes, sin › en el actual)</Etiqueta>
+        <div className="flex flex-col gap-4">
+          <NavegacionMes mes="2026-11" actual="2026-11" ruta="/estilos" haySiguiente={false} variante="titulo" />
+          <NavegacionMes mes="2026-10" actual="2026-11" ruta="/estilos" hayAnterior={false} variante="titulo" />
+          <NavegacionMes mes="2026-10" actual="2026-11" ruta="/estilos" hayAnterior={false} />
+        </div>
+      </div>
+
+      <div>
+        <Etiqueta>Cifras del mes · ingresos, gastos y resultado frente al anterior</Etiqueta>
+        <CifrasMes ingresos={RESUMEN.ingresos} gastos={RESUMEN.gastos} resultado={RESUMEN.resultado} mesAnterior="2026-10" />
+      </div>
+
+      <div>
+        <Etiqueta>Gasto por categoría · barras, sin categoría, total e indicador</Etiqueta>
+        <GastoCategorias
+          categorias={RESUMEN.categorias}
+          sinCategoria={RESUMEN.sinCategoria}
+          gastos={RESUMEN.gastos}
+          mes="2026-11"
+          mesAnterior="2026-10"
+        />
+      </div>
+
+      <div>
+        <Etiqueta>Gasto por categoría · mes sin gastos</Etiqueta>
+        <GastoCategorias
+          categorias={[]}
+          sinCategoria={{ monto: 0n, anterior: 0n, variacion: 0n, porcentaje: null, cantidad: 0 }}
+          gastos={{ actual: 0n, anterior: 0n, variacion: 0n, variacionPorcentaje: null }}
+          mes="2026-08"
+          mesAnterior="2026-07"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-12 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div>
+          <Etiqueta>Patrimonio neto · 2 puntos en las dos últimas casillas</Etiqueta>
+          <PatrimonioNeto patrimonio={{ hoy: 2_280_000n, serie: RESUMEN.serie, variacionSerie: -300_000n }} />
+        </div>
+        <div>
+          <Etiqueta>Cambio del mes · mes actual</Etiqueta>
+          <CambioDelMes cambio={RESUMEN.cambio} mes="2026-11" esActual />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-12 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div>
+          <Etiqueta>Patrimonio neto · 12 meses</Etiqueta>
+          <PatrimonioNeto patrimonio={{ hoy: 34_121_072n, serie: SERIE_DOCE, variacionSerie: 6_708_692n }} />
+        </div>
+        <div>
+          <Etiqueta>Cambio del mes · mes cerrado</Etiqueta>
+          <CambioDelMes
+            cambio={{
+              fechaAnterior: "2026-09-30",
+              fechaCierre: "2026-10-31",
+              patrimonioAnterior: 32_106_940n,
+              resultado: 1_250_500n,
+              otrosCambios: 426_775n,
+              patrimonioCierre: 33_784_215n,
+            }}
+            mes="2026-10"
+            esActual={false}
+          />
+        </div>
+      </div>
+
+      <div>
+        <Etiqueta>Gráfica · un solo punto (serie plana) y punto de partida (día uno)</Etiqueta>
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
+          <GraficaPatrimonio serie={[{ fecha: "2026-11-21", patrimonio: 975_372n }]} />
+          <GraficaPatrimonio puntoDePartida={{ fechaHoy: "2026-11-11" }} />
+        </div>
+      </div>
+
+      <div>
+        <Etiqueta>Día uno · con 3 cuentas</Etiqueta>
+        <MuestraDiaUno cuentasActivas={3} />
+      </div>
+
+      <div>
+        <Etiqueta>Día uno · con una cuenta</Etiqueta>
+        <MuestraDiaUno cuentasActivas={1} />
+      </div>
+
+      <div>
+        <Etiqueta>Día uno · sin cuentas</Etiqueta>
+        <MuestraDiaUno cuentasActivas={0} />
+      </div>
+    </>
+  );
+}
 
 const DESTINOS = Object.keys(ROTULO_DESTINO) as DestinoNavegacion[];
 const TIPOS_CUENTA = Object.keys(ROTULO_TIPO_CUENTA) as TipoCuenta[];
@@ -308,7 +454,7 @@ function Componentes({ modo }: { modo: "light" | "dark" }) {
       </div>
 
       <div>
-        <Etiqueta>Navegación de meses · actual y otro mes (con «Este mes»)</Etiqueta>
+        <Etiqueta>Navegación de meses · actual y otro mes (con «Este mes»); con límites en «06 · Resumen del mes»</Etiqueta>
         <div className="flex flex-col gap-2">
           <NavegacionMes mes="2026-11" actual="2026-11" ruta="/estilos" />
           <NavegacionMes mes="2026-10" actual="2026-11" ruta="/estilos" />
@@ -508,6 +654,16 @@ export default function Estilos() {
           {(["light", "dark"] as const).map((modo) => (
             <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
               <Componentes modo={modo} />
+            </Panel>
+          ))}
+        </div>
+      </Seccion>
+
+      <Seccion numero="06" titulo="Resumen del mes" nota="A todo el ancho: el formato cambia en 768 px">
+        <div className="grid grid-cols-1 gap-6">
+          {(["light", "dark"] as const).map((modo) => (
+            <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
+              <ComponentesResumen />
             </Panel>
           ))}
         </div>

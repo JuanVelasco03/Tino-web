@@ -3,6 +3,7 @@ import { LibroMovimientos } from "@/components/movimientos/libro-movimientos";
 import { NavegacionMes } from "@/components/movimientos/navegacion-mes";
 import type { AccionesEdicion } from "@/components/movimientos/usar-edicion";
 import { esMes, mesEnZona } from "@/domain/fecha/formato";
+import { esSinClasificar } from "@/domain/movimiento/sin-clasificar";
 import { cargar as cargarCaptura } from "@/services/captura";
 import { listarDelMes } from "@/services/movimientos";
 import { obtenerPerfil } from "@/services/perfil";
@@ -30,11 +31,14 @@ function texto(valor: string | string[] | undefined): string | undefined {
  * Movimientos de un mes. `?mes=YYYY-MM` elige el mes (sin él, el actual en
  * la zona del usuario); `?movimiento=<id>` abre su edición. Un mes mal
  * formado vuelve a `/movimientos`; un id que no está en el mes, a `?mes=`.
+ * `?sinClasificar=1` (desde el resumen) deja solo los gastos sin clasificar;
+ * otro valor se ignora.
  */
 export default async function PaginaMovimientos({ searchParams }: PageProps<"/movimientos">) {
   const parametros = await searchParams;
   const mesPedido = texto(parametros.mes);
   const idPedido = texto(parametros.movimiento);
+  const sinClasificar = texto(parametros.sinClasificar) === "1";
   if (mesPedido !== undefined && !esMes(mesPedido)) redirect("/movimientos");
 
   const [{ mes, movimientos }, perfil] = await Promise.all([
@@ -45,12 +49,14 @@ export default async function PaginaMovimientos({ searchParams }: PageProps<"/mo
   // Sin `?mes` manda la API; con él, el actual se calcula en la zona del perfil (REGLAS §6).
   const actual = mesPedido === undefined ? mes : mesEnZona(perfil?.zonaHoraria ?? ZONA_POR_DEFECTO, new Date());
 
+  // La edición se busca en todo el mes: recién clasificado, el movimiento sale del filtro pero sigue abierto.
   let edicion = null;
   if (idPedido !== undefined) {
     const movimiento = movimientos.find((m) => m.id === idPedido);
-    if (!movimiento) redirect(`/movimientos?mes=${mes}`);
+    if (!movimiento) redirect(`/movimientos?mes=${mes}${sinClasificar ? "&sinClasificar=1" : ""}`);
     edicion = { movimiento, datos: await cargarCaptura() };
   }
+  const listados = sinClasificar ? movimientos.filter(esSinClasificar) : movimientos;
 
   return (
     <div className="flex flex-col gap-6 md:gap-8">
@@ -58,7 +64,14 @@ export default async function PaginaMovimientos({ searchParams }: PageProps<"/mo
         <h1 className="text-titulo-1">Movimientos</h1>
         <NavegacionMes mes={mes} actual={actual} />
       </header>
-      <LibroMovimientos mes={mes} esActual={mes === actual} movimientos={movimientos} edicion={edicion} acciones={ACCIONES} />
+      <LibroMovimientos
+        mes={mes}
+        esActual={mes === actual}
+        movimientos={listados}
+        sinClasificar={sinClasificar}
+        edicion={edicion}
+        acciones={ACCIONES}
+      />
     </div>
   );
 }

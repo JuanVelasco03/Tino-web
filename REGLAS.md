@@ -182,10 +182,9 @@ src/
 ## 7. Alcance
 
 **Construir ahora:** perfil, cuentas, categorías, movimientos, captura
-rápida, cálculo de saldos, resumen del mes.
+rápida, cálculo de saldos, resumen del mes, recurrentes.
 
-**Diseñado pero no construir todavía:** deudas y préstamos, recurrentes,
-avisos, inversiones, tarjeta de crédito con ciclo, otros informes (más
+**Diseñado pero no construir todavía:** deudas y préstamos, avisos, inversiones, tarjeta de crédito con ciclo, otros informes (más
 allá del resumen del mes), app de celular (cliente de la API, en línea).
 
 **Fuera de esta versión, no diseñar:** presupuestos por categoría,

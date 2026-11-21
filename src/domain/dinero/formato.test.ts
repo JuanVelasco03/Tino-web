@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatearDinero, formatearEquivalencia, formatearTasa } from "./formato";
+import { formatearCompacto, formatearDinero, formatearEquivalencia, formatearTasa } from "./formato";
 
 // Signo menos tipográfico U+2212, nunca el guion.
 const M = "−";
@@ -59,5 +59,27 @@ describe("tasa y equivalencia", () => {
 
   it("muestra la equivalencia en COP con la tasa", () => {
     expect(formatearEquivalencia(31_775_000n, 410_000n)).toBe("≈ 31.775.000 COP · TRM 4.100,00");
+  });
+});
+
+describe("formatearCompacto — ejes de gráfica", () => {
+  it.each<[bigint, string]>([
+    [28_000_000n, "28 M"],
+    [2_400_000n, "2,4 M"],
+    [2_250_000n, "2,25 M"],
+    [1_234_000_000n, "1.234 M"],
+    [950_000n, "950 mil"],
+    [1_500n, "1,5 mil"],
+    [1_000n, "1 mil"],
+    [999n, "999"],
+    [0n, "0"],
+    [-28_000_000n, `${M}28 M`],
+    [-950_000n, `${M}950 mil`],
+  ])("%s → %s", (monto, esperado) => {
+    expect(formatearCompacto(monto)).toBe(esperado);
+  });
+
+  it("nunca emite el guion como signo", () => {
+    expect(formatearCompacto(-5_000n)).not.toContain("-");
   });
 });

@@ -10,6 +10,7 @@ import { AvisoRegistro, type DatosAviso } from "../captura/aviso-registro";
 import { conceptoDe } from "../captura/panel-captura";
 import { useContextoCaptura } from "../captura/proveedor-captura";
 import { cuentaDe, datosDeOferta } from "../captura/usar-captura";
+import { EnlaceTexto } from "../enlace-texto";
 import { EstadoVacio } from "../estado-vacio";
 import { FilaMovimiento, SubRenglones, type ParteFila } from "../fila-movimiento";
 import { EdicionMovimiento } from "./edicion-movimiento";
@@ -20,8 +21,10 @@ type Props = {
   mes: string;
   /** ¿Es el mes actual? Cambia el texto del estado vacío. */
   esActual: boolean;
-  /** En el orden de la API: fecha desc, el último registrado primero. */
+  /** En el orden de la API: fecha desc, el último registrado primero. Con el filtro, ya filtrados. */
   movimientos: Movimiento[];
+  /** `?sinClasificar=1`: solo los gastos sin clasificar, con su rótulo, su vacío y «Ver todos». */
+  sinClasificar?: boolean;
   /** `?movimiento=<id>`: el movimiento y lo que su formulario necesita, cargados con la página. */
   edicion: { movimiento: Movimiento; datos: DatosCaptura } | null;
   acciones: AccionesEdicion;
@@ -66,12 +69,16 @@ const COLUMNAS = "grid-cols-[52px_minmax(0,1fr)_minmax(0,176px)_128px]";
  * Móvil: C2. Cada fila es un enlace a su edición (`?movimiento=<id>`); un
  * movimiento dividido muestra sus partes como sub-renglones. Tras registrar,
  * guardar o eliminar, el aviso va arriba de la lista y la fila se resalta.
+ * Con el filtro de gastos sin clasificar, los enlaces lo conservan y al
+ * clasificar uno la fila sale de la lista.
  */
-export function LibroMovimientos({ mes, esActual, movimientos, edicion, acciones }: Props) {
+export function LibroMovimientos({ mes, esActual, movimientos, sinClasificar = false, edicion, acciones }: Props) {
   const { abrir, resaltadoId: registrado } = useContextoCaptura();
   const aviso = useAvisoEdicion(acciones);
   const nombreMes = formatearMes(mes).split(" ")[0].toLowerCase();
-  const enlace = (m: Movimiento) => `/movimientos?mes=${mes}&movimiento=${m.id}`;
+  const filtro = sinClasificar ? "&sinClasificar=1" : "";
+  const verTodos = `/movimientos?mes=${mes}`;
+  const enlace = (m: Movimiento) => `/movimientos?mes=${mes}${filtro}&movimiento=${m.id}`;
   const resaltada = (m: Movimiento) => m.id === registrado || m.id === aviso.resaltadoId;
 
   const datosAviso = datosAvisoEdicion(aviso.aviso);
@@ -81,7 +88,22 @@ export function LibroMovimientos({ mes, esActual, movimientos, edicion, acciones
     <>
       <AvisoRegistro aviso={datosAviso} oferta={datosOferta} />
 
-      {movimientos.length === 0 ? (
+      {sinClasificar && movimientos.length > 0 && (
+        <div className="flex items-center justify-between gap-3 max-md:border-b max-md:border-raya">
+          {/* En escritorio la raya la pone la fila de rótulos de la tabla. */}
+          <h2 className="text-rotulo uppercase">Gastos sin clasificar · {movimientos.length}</h2>
+          <EnlaceTexto href={verTodos}>Ver todos</EnlaceTexto>
+        </div>
+      )}
+
+      {sinClasificar && movimientos.length === 0 ? (
+        <EstadoVacio
+          rotulo={`Sin clasificar · ${nombreMes}`}
+          titulo={`No quedan gastos sin clasificar en ${nombreMes}.`}
+          detalle="Todos tienen categoría o están divididos."
+          accion={{ etiqueta: "Ver todos", href: verTodos, sinMas: true }}
+        />
+      ) : movimientos.length === 0 ? (
         <EstadoVacio
           rotulo={`Movimientos · ${nombreMes}`}
           titulo={esActual ? "Aún no registras movimientos este mes." : `No hay movimientos en ${nombreMes}.`}
@@ -166,6 +188,7 @@ export function LibroMovimientos({ mes, esActual, movimientos, edicion, acciones
           movimiento={edicion.movimiento}
           datos={edicion.datos}
           mes={mes}
+          sinClasificar={sinClasificar}
           acciones={acciones}
           alTerminar={aviso.mostrar}
         />

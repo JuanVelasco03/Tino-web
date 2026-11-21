@@ -1,6 +1,6 @@
 # SPEC 07 — Resumen del mes
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 03, SPEC 04, SPEC 05, SPEC 06, Tino-API SPEC 06
 > **Fecha:** 2026-11-21
 > **Objetivo:** Que el usuario vea en `/resumen` los ingresos, gastos y resultado de un mes frente al anterior, su gasto por categoría y la evolución de su patrimonio, con todas las cifras calculadas por la API.

@@ -3,7 +3,7 @@ import { ROTULO_DESTINO, type DestinoNavegacion } from "../iconos";
 /**
  * Destinos del menú de la aplicación. Las secciones futuras se ven y están
  * deshabilitadas («Próximamente»): el menú no cambia de forma con cada spec.
- * Hoy navegan «Movimientos» y «Cuentas»; «Registrar» abre la captura.
+ * Hoy navegan «Resumen», «Movimientos» y «Cuentas»; «Registrar» abre la captura.
  */
 export type EntradaMenu = {
   destino: DestinoNavegacion;
@@ -21,7 +21,7 @@ export const TITULO_PROXIMAMENTE = "Próximamente";
 
 /** Las ocho secciones de la barra lateral, en el orden del diseño. */
 export const ENTRADAS: readonly EntradaMenu[] = [
-  entrada("resumen"),
+  entrada("resumen", "/resumen"),
   entrada("movimientos", "/movimientos"),
   entrada("cuentas", "/cuentas"),
   entrada("deudas", null, "Deudas y préstamos"),

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** Aún no hay Resumen: la portada de la aplicación es Cuentas. */
+/** La portada de la aplicación es el Resumen: primera entrada del menú y de la barra. */
 export default function Inicio() {
-  redirect("/cuentas");
+  redirect("/resumen");
 }

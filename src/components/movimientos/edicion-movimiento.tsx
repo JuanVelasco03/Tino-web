@@ -13,6 +13,8 @@ type Props = {
   datos: DatosCaptura;
   /** `"YYYY-MM"` del mes listado: cerrar vuelve a `?mes=`. */
   mes: string;
+  /** Abierta desde el filtro de gastos sin clasificar: cerrar vuelve a él. */
+  sinClasificar?: boolean;
   acciones: AccionesEdicion;
   alTerminar: (resultado: ResultadoEdicion) => void;
 };
@@ -22,7 +24,7 @@ type Props = {
  * formulario de la captura en modo edición. Escritorio: panel de 480 px.
  * Móvil: la hoja a pantalla completa con teclado propio.
  */
-export function EdicionMovimiento({ movimiento, datos, mes, acciones, alTerminar }: Props) {
+export function EdicionMovimiento({ movimiento, datos, mes, sinClasificar = false, acciones, alTerminar }: Props) {
   const router = useRouter();
   const escritorio = useEscritorio();
   const edicion = useEdicion({
@@ -31,7 +33,7 @@ export function EdicionMovimiento({ movimiento, datos, mes, acciones, alTerminar
     mes,
     acciones,
     alTerminar,
-    alCerrar: () => router.replace(`/movimientos?mes=${mes}`, { scroll: false }),
+    alCerrar: () => router.replace(`/movimientos?mes=${mes}${sinClasificar ? "&sinClasificar=1" : ""}`, { scroll: false }),
   });
   return escritorio ? <PanelCaptura c={edicion} /> : <HojaCaptura c={edicion} />;
 }

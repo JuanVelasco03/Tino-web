@@ -5,6 +5,9 @@ import {
   formatearFecha,
   formatearFechaSinAnio,
   formatearMes,
+  formatearMesCorto,
+  formatearNombreMes,
+  formatearRango,
   mesDeFecha,
   mesEnZona,
   sumarDias,
@@ -152,4 +155,41 @@ describe("esMes", () => {
       expect(esMes(texto)).toBe(esperado);
     },
   );
+});
+
+describe("formatearRango", () => {
+  it.each<[string, string, string]>([
+    ["2026-10-01", "2026-10-31", "1 – 31 oct"],
+    ["2026-11-01", "2026-11-30", "1 – 30 nov"],
+    ["2028-02-01", "2028-02-29", "1 – 29 feb"], // bisiesto
+    ["2027-02-01", "2027-02-28", "1 – 28 feb"],
+    ["2026-09-28", "2026-10-03", "28 sep – 3 oct"],
+    ["2025-12-28", "2026-01-03", "28 dic 2025 – 3 ene 2026"],
+  ])("%s, %s → %s", (desde, hasta, esperado) => {
+    expect(formatearRango(desde, hasta)).toBe(esperado);
+  });
+});
+
+describe("formatearNombreMes", () => {
+  it.each<[string, string]>([
+    ["2026-09", "septiembre"],
+    ["2026-01", "enero"],
+    ["2026-12", "diciembre"],
+  ])("%s → %s", (mes, esperado) => {
+    expect(formatearNombreMes(mes)).toBe(esperado);
+  });
+
+  it.each(["2026-13", "hola", ""])("lanza error con mes mal formado: %j", (mes) => {
+    expect(() => formatearNombreMes(mes)).toThrow();
+  });
+});
+
+describe("formatearMesCorto", () => {
+  it.each<[string, string]>([
+    ["2025-12", "dic 2025"],
+    ["2026-10", "oct 2026"],
+    ["2026-01", "ene 2026"],
+  ])("%s → %s", (mes, esperado) => {
+    expect(formatearMesCorto(mes)).toBe(esperado);
+  });
 });

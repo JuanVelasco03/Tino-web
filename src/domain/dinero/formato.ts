@@ -62,3 +62,30 @@ export function formatearTasa(tasa: bigint): string {
 export function formatearEquivalencia(equivalenteCOP: bigint, tasa: bigint): string {
   return `≈ ${formatearDinero({ monto: equivalenteCOP, moneda: "COP" })} · TRM ${formatearTasa(tasa)}`;
 }
+
+/** Parte fraccionaria exacta sin ceros a la derecha: `500_000n` de `1_000_000n` → `",5"`. */
+function fraccion(resto: bigint, unidad: bigint): string {
+  if (resto === 0n) return "";
+  const digitos = unidad.toString().length - 1;
+  return `,${resto.toString().padStart(digitos, "0").replace(/0+$/, "")}`;
+}
+
+/**
+ * Cifra compacta para ejes de gráfica, sin moneda: `28_000_000n` → `"28 M"`,
+ * `2_400_000n` → `"2,4 M"`, `950_000n` → `"950 mil"`, `0n` → `"0"`,
+ * negativo con U+2212. Exacta: nunca redondea (los ejes usan pasos redondos).
+ */
+export function formatearCompacto(monto: bigint): string {
+  const signo = monto < 0n ? SIGNO_MENOS : "";
+  const absoluto = monto < 0n ? -monto : monto;
+  for (const [unidad, sufijo] of [
+    [1_000_000n, "M"],
+    [1_000n, "mil"],
+  ] as const) {
+    if (absoluto >= unidad) {
+      const enteros = agruparMiles((absoluto / unidad).toString());
+      return `${signo}${enteros}${fraccion(absoluto % unidad, unidad)} ${sufijo}`;
+    }
+  }
+  return `${signo}${absoluto.toString()}`;
+}

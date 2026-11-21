@@ -13,8 +13,8 @@ const TIPOS: readonly TipoMovimiento[] = ["gasto", "ingreso", "transferencia"];
 export const MENSAJE_SIN_CONEXION = "No pudimos conectar. Intenta de nuevo.";
 const MENSAJE_ENTRADA = "No pudimos procesar los datos. Intenta de nuevo.";
 
-/** Lo que registrar, editar y eliminar cambian: la lista del mes y los saldos (N-20). */
-export const RUTAS_AFECTADAS = ["/movimientos", "/cuentas"] as const;
+/** Lo que registrar, editar y eliminar cambian: la lista del mes, los saldos (N-20) y el resumen. */
+export const RUTAS_AFECTADAS = ["/movimientos", "/cuentas", "/resumen"] as const;
 
 export type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoCaptura };
 

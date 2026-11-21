@@ -126,3 +126,27 @@ export function mesEnZona(zona: string, ahora: Date): string {
   if (!anio || !mes) throw new Error(`No se pudo calcular el mes en la zona "${zona}".`);
   return `${anio}-${mes}`;
 }
+
+/**
+ * Rango de días de un mes: `"2026-10-01"`, `"2026-10-31"` → `"1 – 31 oct"`.
+ * Si cruza de mes: `"28 sep – 3 oct"`; de año: `"28 dic 2025 – 3 ene 2026"`.
+ */
+export function formatearRango(desde: string, hasta: string): string {
+  const inicio = partir(desde);
+  const fin = partir(hasta);
+  if (inicio.anio !== fin.anio) return `${formatearFecha(desde)} – ${formatearFecha(hasta)}`;
+  if (inicio.mes !== fin.mes) return `${inicio.dia} ${inicio.mes} – ${fin.dia} ${fin.mes}`;
+  return `${inicio.dia} – ${fin.dia} ${fin.mes}`;
+}
+
+/** `"2026-09"` → `"septiembre"`, para usar dentro de una frase. */
+export function formatearNombreMes(mes: string): string {
+  const partes = partirMes(mes);
+  return MESES_LARGOS[partes.mes - 1].toLowerCase();
+}
+
+/** `"2025-12"` → `"dic 2025"`. */
+export function formatearMesCorto(mes: string): string {
+  const partes = partirMes(mes);
+  return `${MESES[partes.mes - 1]} ${String(partes.anio).padStart(4, "0")}`;
+}

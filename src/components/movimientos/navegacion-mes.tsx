@@ -10,32 +10,65 @@ type Props = {
   actual: string;
   /** Ruta base (`/movimientos`); cada mes va en `?mes=YYYY-MM`. */
   ruta?: string;
+  /** `‹` visible. Oculta, la flecha conserva su hueco de 44 px. */
+  hayAnterior?: boolean;
+  /** `›` visible. Oculta, la flecha conserva su hueco de 44 px. */
+  haySiguiente?: boolean;
+  /**
+   * `"linea"` (por defecto): el mes en cuerpo 600, «Este mes» a la derecha.
+   * `"titulo"`: el mes es el `h1` de la página. Escritorio `‹ Mes ›  Este mes`;
+   * móvil, el mes a la izquierda, `‹ ›` a la derecha y «Este mes» debajo.
+   */
+  variante?: "linea" | "titulo";
 };
 
 const FLECHA = "flex size-11 shrink-0 items-center justify-center text-secundario hover:text-texto";
 
+function Flecha({ direccion, destino, ruta, visible }: { direccion: "anterior" | "siguiente"; destino: string; ruta: string; visible: boolean }) {
+  if (!visible) return <span aria-hidden className="size-11 shrink-0" />;
+  const Icono = direccion === "anterior" ? ChevronLeft : ChevronRight;
+  const rotulo = direccion === "anterior" ? "Mes anterior" : "Mes siguiente";
+  return (
+    <Link href={`${ruta}?mes=${destino}`} aria-label={`${rotulo}: ${formatearMes(destino)}`} className={FLECHA}>
+      <Icono size={18} strokeWidth={1.5} aria-hidden />
+    </Link>
+  );
+}
+
 /**
  * Navegación de meses: `‹` y `›` (44 px) junto al nombre del mes y «Este mes»
- * fuera del actual. Sin límite hacia adelante: la captura admite fechas
- * futuras. Cada mes es una URL (`?mes=`), así que se puede recargar o compartir.
+ * fuera del actual. Cada mes es una URL (`?mes=`), así que se puede recargar o
+ * compartir. Los límites (`hayAnterior`, `haySiguiente`) los decide quien la
+ * usa: en `/movimientos` no hay (la captura admite fechas futuras); en
+ * `/resumen`, los da la API.
  */
-export function NavegacionMes({ mes, actual, ruta = "/movimientos" }: Props) {
-  const anterior = sumarMeses(mes, -1);
-  const siguiente = sumarMeses(mes, 1);
+export function NavegacionMes({ mes, actual, ruta = "/movimientos", hayAnterior = true, haySiguiente = true, variante = "linea" }: Props) {
+  const anterior = <Flecha direccion="anterior" destino={sumarMeses(mes, -1)} ruta={ruta} visible={hayAnterior} />;
+  const siguiente = <Flecha direccion="siguiente" destino={sumarMeses(mes, 1)} ruta={ruta} visible={haySiguiente} />;
+  const esteMes = mes !== actual && <EnlaceTexto href={ruta}>Este mes</EnlaceTexto>;
+
+  if (variante === "titulo") {
+    return (
+      <nav aria-label="Mes" className="flex flex-col md:flex-row md:items-center md:gap-3">
+        <div className="flex min-h-11 items-center max-md:-mr-3 md:-ml-3">
+          {anterior}
+          {/* En móvil el mes pasa delante y empuja las flechas a la derecha. */}
+          <h1 className="text-titulo-1 max-md:order-first max-md:flex-1">{formatearMes(mes)}</h1>
+          {siguiente}
+        </div>
+        {esteMes && <div>{esteMes}</div>}
+      </nav>
+    );
+  }
+
   return (
     <nav aria-label="Mes" className="flex min-h-11 items-center justify-between gap-3">
       <div className="-ml-3 flex items-center">
-        <Link href={`${ruta}?mes=${anterior}`} aria-label={`Mes anterior: ${formatearMes(anterior)}`} className={FLECHA}>
-          <ChevronLeft size={18} strokeWidth={1.5} aria-hidden />
-        </Link>
-        <span className="text-cuerpo font-semibold">
-          {formatearMes(mes)}
-        </span>
-        <Link href={`${ruta}?mes=${siguiente}`} aria-label={`Mes siguiente: ${formatearMes(siguiente)}`} className={FLECHA}>
-          <ChevronRight size={18} strokeWidth={1.5} aria-hidden />
-        </Link>
+        {anterior}
+        <span className="text-cuerpo font-semibold">{formatearMes(mes)}</span>
+        {siguiente}
       </div>
-      {mes !== actual && <EnlaceTexto href={ruta}>Este mes</EnlaceTexto>}
+      {esteMes}
     </nav>
   );
 }
