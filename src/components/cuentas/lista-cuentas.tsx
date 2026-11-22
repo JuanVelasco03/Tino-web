@@ -7,6 +7,7 @@ import { ArrowDownUp, Check, Plus } from "lucide-react";
 import { moverA, ordenCambio } from "@/domain/cuenta/orden";
 import { formatearFecha, formatearFechaSinAnio } from "@/domain/fecha/formato";
 import type { CambioOrden, Cuenta, ListaCuentas as Lista, Naturaleza, ResultadoOrden } from "@/services/cuentas";
+import { rutaNuevo } from "../deudas/rutas";
 import { EstadoVacio } from "../estado-vacio";
 import { EnlaceTexto } from "../enlace-texto";
 import { MensajeError } from "../mensaje-error";
@@ -25,6 +26,9 @@ type Orden = Record<Naturaleza, string[]>;
 const NATURALEZAS: readonly Naturaleza[] = ["activo", "pasivo"];
 
 const RUTA_NUEVA = "/cuentas?cuenta=nueva";
+
+/** Alta en Deudas con «Alguien me prestó» (N-93). */
+const RUTA_NUEVA_DEUDA = rutaNuevo("deuda_contraida");
 
 const AVISO_ORDEN_INVALIDO = "Tu lista cambió. La recargamos; vuelve a ordenar.";
 
@@ -210,12 +214,19 @@ export function ListaCuentas({ lista, guardarOrden }: Props) {
       )}
 
       {sinCuentas ? (
-        <EstadoVacio
-          rotulo="Cuentas"
-          titulo="Aún no tienes cuentas."
-          detalle="Crea tu primera cuenta para ver tu patrimonio."
-          accion={{ etiqueta: "Nueva cuenta", href: RUTA_NUEVA, scroll: false }}
-        />
+        <div className="flex flex-col">
+          <EstadoVacio
+            rotulo="Cuentas"
+            titulo="Aún no tienes cuentas."
+            detalle="Crea tu primera cuenta para ver tu patrimonio."
+            accion={{ etiqueta: "Nueva cuenta", href: RUTA_NUEVA, scroll: false }}
+          />
+          {/* N-93: una deuda con alguien no es una cuenta; se anota en Deudas. */}
+          <EnlaceTexto href={RUTA_NUEVA_DEUDA} className="self-start">
+            <Plus size={16} strokeWidth={1.5} aria-hidden />
+            Agregar una deuda con alguien
+          </EnlaceTexto>
+        </div>
       ) : (
         <>
           <div className="flex flex-col gap-6 md:gap-8">

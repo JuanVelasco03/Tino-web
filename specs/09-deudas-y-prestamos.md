@@ -1,6 +1,6 @@
 # SPEC 09 — Deudas y préstamos
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 03, SPEC 04, SPEC 05, SPEC 06, SPEC 08, Tino-API SPEC 08
 > **Fecha:** 2026-11-21
 > **Objetivo:** Que el usuario lleve en `/deudas` lo que le deben y lo que debe a cada persona (consolidado, lista, detalle con historial, alta, desembolso, abono con capital e interés aparte, edición y condonación con deshacer), con todo calculado por la API.

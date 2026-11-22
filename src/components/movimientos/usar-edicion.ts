@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ofertaDeRegla, type Oferta } from "@/domain/categorizacion/oferta";
 import { mesDeFecha } from "@/domain/fecha/formato";
 import { cuerpoDesdeValores, montoValido, type Categoria } from "@/domain/movimiento/cuerpo";
-import { cuentaArchivada, hayCambios, valoresDesdeMovimiento } from "@/domain/movimiento/edicion";
+import { cuentaArchivada, cuentaDePrestamo, hayCambios, valoresDesdeMovimiento } from "@/domain/movimiento/edicion";
 import type { DatosCaptura, ResultadoSugerencias } from "@/services/captura";
 import type {
   Movimiento,
@@ -25,6 +25,9 @@ export type AccionesEdicion = {
   ajustarRegla: (id: string, categoriaId: string) => Promise<ResultadoSimple>;
 };
 
+/** Un préstamo como lo necesita la edición: su cuenta, su nombre y su sentido. */
+export type PrestamoDeEdicion = { id: string; nombre: string; tipo: "prestamo_otorgado" | "deuda_contraida" };
+
 /** Lo que pasó al cerrar la edición, para el aviso del libro. */
 export type ResultadoEdicion =
   | {
@@ -42,6 +45,11 @@ type Opciones = {
   datos: DatosCaptura;
   /** `"YYYY-MM"` del mes listado. */
   mes: string;
+  /**
+   * Los préstamos (`GET /prestamos`): sus cuentas no están entre las activas,
+   * pero no están archivadas. La del movimiento queda fija y el tipo, bloqueado.
+   */
+  prestamos?: readonly PrestamoDeEdicion[];
   acciones: AccionesEdicion;
   /** Guardado o eliminado: el libro muestra el aviso mientras la hoja se retira. */
   alTerminar: (resultado: ResultadoEdicion) => void;
@@ -55,7 +63,7 @@ type Opciones = {
  * con el cuerpo completo; cerrar con cambios pregunta antes de descartar; con
  * una cuenta archivada queda en solo lectura (N-36).
  */
-export function useEdicion({ movimiento, datos, mes, acciones, alTerminar, alCerrar }: Opciones) {
+export function useEdicion({ movimiento, datos, mes, prestamos = [], acciones, alTerminar, alCerrar }: Opciones) {
   const [iniciales] = useState(() => valoresDesdeMovimiento(movimiento));
   const f = useFormulario({ sugerir: acciones.sugerir, iniciales, categoriasPorTipo: datos.captura.categorias });
   const { valores } = f;
@@ -67,7 +75,8 @@ export function useEdicion({ movimiento, datos, mes, acciones, alTerminar, alCer
   const [errorBorrado, setErrorBorrado] = useState<string | null>(null);
   const enCurso = useRef(false);
 
-  const soloLectura = cuentaArchivada(movimiento, datos.cuentas);
+  const soloLectura = cuentaArchivada(movimiento, datos.cuentas, prestamos);
+  const [cuentaFija] = useState(() => cuentaDePrestamo(movimiento, prestamos));
   const cambios = hayCambios(iniciales, valores);
   const ocupado = enviando || eliminando;
 
@@ -139,7 +148,11 @@ export function useEdicion({ movimiento, datos, mes, acciones, alTerminar, alCer
 
   return {
     ...f,
+    /** Un movimiento de préstamo no cambia de tipo (`MOVIMIENTO_DE_PRESTAMO`). */
+    cambiarTipo: cuentaFija ? () => {} : f.cambiarTipo,
     modo: "edicion" as const,
+    /** La cuenta del préstamo: se muestra fija en su rol, sin fichas para cambiarla. */
+    cuentaFija,
     movimiento,
     cerrar: alCerrar,
     solicitarCierre,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ValoresCaptura } from "./cuerpo";
-import { cuentaArchivada, hayCambios, valoresDesdeMovimiento, type Movimiento } from "./edicion";
+import { cuentaArchivada, cuentaDePrestamo, hayCambios, valoresDesdeMovimiento, type Movimiento } from "./edicion";
 
 const NEQUI = { id: "c-nequi", nombre: "Nequi" };
 const VISA = { id: "c-visa", nombre: "Visa Oro" };
@@ -116,5 +116,50 @@ describe("cuentaArchivada", () => {
     expect(cuentaArchivada({ cuentaOrigen: NEQUI, cuentaDestino: VISA }, activas)).toBeNull();
     expect(cuentaArchivada({ cuentaOrigen: NEQUI, cuentaDestino: BANCO }, activas)).toEqual(BANCO);
     expect(cuentaArchivada({ cuentaOrigen: BANCO, cuentaDestino: VISA }, [NEQUI])).toEqual(BANCO);
+  });
+});
+
+describe("cuentaArchivada con préstamos", () => {
+  const CAMILA = { id: "p-camila", nombre: "Camila Ortiz", tipo: "prestamo_otorgado" as const };
+
+  it("la cuenta del préstamo no cuenta como archivada", () => {
+    expect(cuentaArchivada({ cuentaOrigen: NEQUI, cuentaDestino: CAMILA }, [NEQUI], [CAMILA])).toBeNull();
+  });
+
+  it("sin la lista de préstamos, sí (comportamiento anterior)", () => {
+    expect(cuentaArchivada({ cuentaOrigen: NEQUI, cuentaDestino: CAMILA }, [NEQUI])).toEqual(CAMILA);
+  });
+
+  it("la cuenta propia archivada se sigue detectando", () => {
+    expect(cuentaArchivada({ cuentaOrigen: BANCO, cuentaDestino: CAMILA }, [NEQUI], [CAMILA])).toEqual(BANCO);
+  });
+});
+
+describe("cuentaDePrestamo", () => {
+  const CAMILA = { id: "p-camila", nombre: "Camila Ortiz", tipo: "prestamo_otorgado" as const };
+  const MAMA = { id: "p-mama", nombre: "Mamá", tipo: "deuda_contraida" as const };
+  const PRESTAMOS = [CAMILA, MAMA];
+
+  it("desembolso otorgado: la cuenta del préstamo es el destino", () => {
+    expect(cuentaDePrestamo({ tipo: "transferencia", cuentaOrigen: NEQUI, cuentaDestino: CAMILA }, PRESTAMOS)).toEqual({
+      ...CAMILA,
+      rol: "destino",
+    });
+  });
+
+  it("desembolso contraído: la cuenta del préstamo es el origen", () => {
+    expect(cuentaDePrestamo({ tipo: "transferencia", cuentaOrigen: MAMA, cuentaDestino: BANCO }, PRESTAMOS)).toEqual({
+      ...MAMA,
+      rol: "cuenta",
+    });
+  });
+
+  it("condonación: gasto con origen en el préstamo", () => {
+    expect(cuentaDePrestamo({ tipo: "gasto", cuentaOrigen: CAMILA, cuentaDestino: null }, PRESTAMOS)?.rol).toBe("cuenta");
+  });
+
+  it("un interés (cuentas propias) o un gasto normal → null", () => {
+    expect(cuentaDePrestamo({ tipo: "ingreso", cuentaOrigen: null, cuentaDestino: NEQUI }, PRESTAMOS)).toBeNull();
+    expect(cuentaDePrestamo(GASTO, PRESTAMOS)).toBeNull();
   });
 });

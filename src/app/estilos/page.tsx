@@ -24,6 +24,7 @@ import { TarjetaCuenta } from "@/components/tarjeta-cuenta";
 import type { TipoCuenta } from "@/domain/cuenta/naturaleza";
 import { formatearEquivalencia } from "@/domain/dinero/formato";
 import { AlternarTema } from "./alternar-tema";
+import { MuestraDeudas } from "./muestras-deudas";
 import {
   MuestraAvisoRegistro,
   MuestraBloqueEliminar,
@@ -675,6 +676,16 @@ export default function Estilos() {
           {(["light", "dark"] as const).map((modo) => (
             <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
               <MuestraRecurrentes sufijo={modo} />
+            </Panel>
+          ))}
+        </div>
+      </Seccion>
+
+      <Seccion numero="08" titulo="Deudas y préstamos" nota="Maestro-detalle: el formato cambia en 768 px">
+        <div className="grid grid-cols-1 gap-6">
+          {(["light", "dark"] as const).map((modo) => (
+            <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
+              <MuestraDeudas sufijo={modo} />
             </Panel>
           ))}
         </div>

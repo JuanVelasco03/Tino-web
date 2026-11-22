@@ -123,6 +123,7 @@ function Celda({
   vacio = false,
   etiqueta,
   primera = false,
+  fija = false,
   alPulsar,
 }: {
   rotulo: string;
@@ -130,12 +131,15 @@ function Celda({
   vacio?: boolean;
   etiqueta?: string;
   primera?: boolean;
+  /** La cuenta de un préstamo en su edición: se ve, no se cambia. */
+  fija?: boolean;
   alPulsar: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={alPulsar}
+      disabled={fija}
       className={`flex h-14 min-w-0 flex-col items-start justify-center pl-4 text-left ${primera ? "" : "border-l border-linea"}`}
     >
       <span className="text-rotulo uppercase text-secundario">{rotulo}</span>
@@ -166,6 +170,7 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
   const registro = c.modo === "registro" ? c : null;
   const edicion = c.modo === "edicion" ? c : null;
   const soloLectura = edicion?.soloLectura ?? null;
+  const cuentaFija = edicion?.cuentaFija ?? null;
 
   useEffect(() => {
     const el = dialogo.current;
@@ -327,7 +332,7 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
           <button type="button" aria-label="Cerrar" onClick={solicitarCierre} className="flex size-11 shrink-0 items-center justify-center">
             <X size={20} strokeWidth={1.5} aria-hidden />
           </button>
-          <fieldset disabled={soloLectura !== null} className="m-0 flex min-w-0 border-0 p-0">
+          <fieldset disabled={soloLectura !== null || cuentaFija !== null} className="m-0 flex min-w-0 border-0 p-0">
             <SelectorTipo variante="pestanas" valor={valores.tipo} alCambiar={c.cambiarTipo} />
           </fieldset>
           {gastosHoy > 0n && (
@@ -407,12 +412,14 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
                       rotulo="Desde"
                       valor={c.nombreCuenta(valores.cuentaId) ?? "Elegir"}
                       vacio={!valores.cuentaId}
+                      fija={cuentaFija?.rol === "cuenta"}
                       alPulsar={() => setHoja("cuenta")}
                     />
                     <Celda
                       rotulo="Hacia"
                       valor={c.nombreCuenta(valores.destinoId) ?? "Elegir"}
                       vacio={!valores.destinoId}
+                      fija={cuentaFija?.rol === "destino"}
                       alPulsar={() => setHoja("destino")}
                     />
                   </>
@@ -430,6 +437,7 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
                       rotulo="Cuenta"
                       valor={c.nombreCuenta(valores.cuentaId) ?? "Elegir"}
                       vacio={!valores.cuentaId}
+                      fija={cuentaFija?.rol === "cuenta"}
                       alPulsar={() => setHoja("cuenta")}
                     />
                   </>

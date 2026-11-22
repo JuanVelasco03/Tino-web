@@ -6,6 +6,7 @@ import { esMes, mesEnZona } from "@/domain/fecha/formato";
 import { esSinClasificar } from "@/domain/movimiento/sin-clasificar";
 import { cargar as cargarCaptura } from "@/services/captura";
 import { listarDelMes } from "@/services/movimientos";
+import { obtenerPrestamos } from "@/services/prestamos";
 import { obtenerPerfil } from "@/services/perfil";
 import { ajustarRegla, crearRegla, sugerir } from "../captura/acciones";
 import { eliminarMovimiento, guardarMovimiento } from "./acciones";
@@ -54,7 +55,9 @@ export default async function PaginaMovimientos({ searchParams }: PageProps<"/mo
   if (idPedido !== undefined) {
     const movimiento = movimientos.find((m) => m.id === idPedido);
     if (!movimiento) redirect(`/movimientos?mes=${mes}${sinClasificar ? "&sinClasificar=1" : ""}`);
-    edicion = { movimiento, datos: await cargarCaptura() };
+    // Los préstamos solo se piden al abrir una edición: su cuenta no está entre las activas.
+    const [datos, { prestamos }] = await Promise.all([cargarCaptura(), obtenerPrestamos()]);
+    edicion = { movimiento, datos, prestamos };
   }
   const listados = sinClasificar ? movimientos.filter(esSinClasificar) : movimientos;
 

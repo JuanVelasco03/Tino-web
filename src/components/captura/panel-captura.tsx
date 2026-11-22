@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { formatearDinero } from "@/domain/dinero/formato";
+import type { CuentaDePrestamo } from "@/domain/movimiento/edicion";
 import { importeEnPatrimonio } from "@/domain/movimiento/vista-previa";
 import type { Cuenta } from "@/services/captura";
 import type { TipoMovimiento } from "@/services/movimientos";
@@ -11,6 +12,7 @@ import { Boton } from "../boton";
 import { CampoMonto } from "../campo-monto";
 import { ChipCategoria } from "../chip-categoria";
 import { EnlaceTexto } from "../enlace-texto";
+import { IconoCuenta, ROTULO_TIPO_CUENTA } from "../iconos";
 import { MensajeError } from "../mensaje-error";
 import type { EstadoEdicion } from "../movimientos/usar-edicion";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
@@ -120,6 +122,24 @@ export function ConfirmarDescarte({ alDescartar, alSeguir }: { alDescartar: () =
           Seguir editando
         </Boton>
       </div>
+    </div>
+  );
+}
+
+/**
+ * La cuenta de un préstamo en la edición de un movimiento de préstamo: fija,
+ * con el aspecto de una ficha elegida pero sin poder cambiarse.
+ */
+export function FichaCuentaFija({ cuenta }: { cuenta: CuentaDePrestamo }) {
+  return (
+    <div className="grid min-h-12 grid-cols-[20px_minmax(0,1fr)] items-center gap-2 rounded-campo border border-texto bg-superficie px-3 py-2">
+      <span className="flex text-secundario">
+        <IconoCuenta tipo={cuenta.tipo} />
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="truncate text-cuerpo font-semibold">{cuenta.nombre}</span>
+        <span className="truncate text-etiqueta font-normal text-secundario">{ROTULO_TIPO_CUENTA[cuenta.tipo]}</span>
+      </span>
     </div>
   );
 }
@@ -238,6 +258,17 @@ function Categorias({ c }: { c: EstadoFormulario }) {
 }
 
 function GrupoFichas({ c, rol, etiqueta }: { c: EstadoFormulario; rol: RolCuenta; etiqueta: string }) {
+  const fija = c.modo === "edicion" && c.cuentaFija?.rol === rol ? c.cuentaFija : null;
+  if (fija) {
+    return (
+      <div className="flex flex-col gap-2">
+        <span className="text-etiqueta text-secundario">{etiqueta}</span>
+        <div className="grid grid-cols-2 gap-2">
+          <FichaCuentaFija cuenta={fija} />
+        </div>
+      </div>
+    );
+  }
   const elegida = rol === "cuenta" ? c.valores.cuentaId : c.valores.destinoId;
   const error = rol === "cuenta" ? c.errores.cuenta : c.errores.destino;
   const elegir = (cuenta: Cuenta) => c.cambiar(rol === "cuenta" ? "cuentaId" : "destinoId", cuenta.id);
@@ -388,7 +419,10 @@ export function PanelCaptura({ c }: { c: EstadoFormulario }) {
           <SinCuentas alIr={c.cerrar} />
         ) : (
           <fieldset disabled={soloLectura !== null} className="m-0 flex min-w-0 flex-col gap-6 border-0 p-0">
-            <SelectorTipo valor={valores.tipo} alCambiar={c.cambiarTipo} />
+            {/* Un movimiento de préstamo no cambia de tipo. */}
+            <fieldset disabled={edicion?.cuentaFija != null} className="m-0 min-w-0 border-0 p-0">
+              <SelectorTipo valor={valores.tipo} alCambiar={c.cambiarTipo} />
+            </fieldset>
             {c.errores.tipo && <MensajeError mensaje={c.errores.tipo} />}
 
             <CampoMonto

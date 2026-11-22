@@ -15,10 +15,11 @@ const MENSAJE_ENTRADA = "No pudimos procesar los datos. Intenta de nuevo.";
 
 /**
  * Lo que registrar, editar y eliminar cambian: la lista del mes, los saldos
- * (N-20), el resumen y los recurrentes (borrar o editar un confirmado cambia
- * la bandeja y el estimado).
+ * (N-20), el resumen, los recurrentes (borrar o editar un confirmado cambia
+ * la bandeja y el estimado) y las deudas (editar o borrar un movimiento de
+ * préstamo cambia su capital).
  */
-export const RUTAS_AFECTADAS = ["/movimientos", "/cuentas", "/resumen", "/recurrentes"] as const;
+export const RUTAS_AFECTADAS = ["/movimientos", "/cuentas", "/resumen", "/recurrentes", "/deudas"] as const;
 
 export type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoCaptura };
 

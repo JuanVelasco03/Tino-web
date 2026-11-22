@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Familjen Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#8A5F1F}
+a:hover{color:#1A1A17}
+input::placeholder{color:var(--t3,#9A958B);opacity:1}
+</style>
+</helmet>
+<div style="{{ vars }}">
+
+<sc-if value="{{ esc }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Inversiones escritorio" style="width:1440px;min-height:1024px;display:grid;grid-template-columns:232px minmax(0,1fr);background:var(--bg,#FAF8F3);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;border:1px solid var(--ln,#E4DFD4);box-sizing:border-box">
+<aside style="border-right:1px solid var(--ln,#E4DFD4);padding:28px 16px;display:flex;flex-direction:column;gap:28px">
+<div style="padding:0 8px;font-size:20px;font-weight:700;letter-spacing:0.16em">TINO</div>
+<button style="height:44px;display:flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:4px;background:var(--tx,#1A1A17);color:var(--bg,#FAF8F3);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer"><span style="display:flex">{{ ic.plus }}</span>Registrar</button>
+<nav style="display:flex;flex-direction:column;gap:2px">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+<div style="height:40px;display:flex;align-items:center;gap:12px;padding:0 8px;border-radius:4px;background:{{ n.bg }};color:{{ n.color }};font-size:15px;font-weight:{{ n.weight }};cursor:pointer"><span style="display:flex">{{ n.icon }}</span><span style="flex:1">{{ n.label }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--br,#8A5F1F)">{{ n.badge }}</span></div>
+</sc-for>
+</nav>
+<div style="margin-top:auto;padding:0 8px;display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--t2,#6B6760)"><span>TRM de referencia</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--tx,#1A1A17)">4.120 COP</span><span>11 nov 2026</span></div>
+</aside>
+
+<main style="padding:28px 56px 64px;display:flex;flex-direction:column;gap:36px;min-width:0">
+<header style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px">
+<div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:28px;line-height:34px;font-weight:600;letter-spacing:-0.01em">Inversiones</h1><span style="font-size:13px;color:var(--t2,#6B6760)">eToro · cuenta en USD · activo</span></div>
+<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2,#6B6760)"><span style="display:flex">{{ ic.tasa }}</span><span>TRM aplicada <span style="font-family:'IBM Plex Mono',monospace;color:var(--tx,#1A1A17)">4.120,00</span> · 11 nov 2026 · Banco de la República</span></div>
+</header>
+
+<div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.2fr);border-top:1px solid var(--lf,#1A1A17)">
+<div style="padding:18px 28px 0 0;display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Valor de mercado</span><span style="font-family:'IBM Plex Mono',monospace;font-size:40px;line-height:44px;font-weight:500;letter-spacing:-0.03em">US$ {{ totUsd }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--t2,#6B6760)">≈ {{ totCop }} COP</span></div>
+<div style="padding:18px 28px 0;border-left:1px solid var(--ln,#E4DFD4);display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)">Costo de las posiciones</span><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;line-height:44px;font-weight:500">US$ {{ costUsd }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--t2,#6B6760)">≈ {{ costCop }} COP</span></div>
+<div style="padding:18px 0 0 28px;border-left:1px solid var(--ln,#E4DFD4);display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)">Rendimiento</span><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;line-height:44px;font-weight:500;color:{{ rendColor }}">{{ rendUsd }} <span style="font-size:17px">· {{ rendPct }}</span></span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--t2,#6B6760)">≈ {{ rendCop }} COP</span></div>
+</div>
+
+<div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 96px 104px 104px 150px 130px 76px 140px;gap:12px;padding-bottom:8px;border-bottom:1px solid var(--lf,#1A1A17);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)"><span>Activo</span><span style="text-align:right">Cantidad</span><span style="text-align:right">Costo prom.</span><span style="text-align:right">Precio</span><span style="text-align:right">Valor · USD</span><span style="text-align:right">Rend. · USD</span><span style="text-align:right">%</span><span>Cotización</span></div>
+<sc-for list="{{ pos }}" as="r" hint-placeholder-count="5">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 96px 104px 104px 150px 130px 76px 140px;gap:12px;align-items:start;padding:11px 0;border-bottom:1px solid var(--ln,#E4DFD4);background:{{ r.bg }}">
+<div style="min-width:0"><div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600">{{ r.sym }}</div><div style="font-size:13px;color:var(--t2,#6B6760);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div></div>
+<span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:14px">{{ r.qty }}</span>
+<span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--t2,#6B6760)">{{ r.cost }}</span>
+<span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:14px;border-bottom:{{ r.priceUnder }};justify-self:end">{{ r.price }}</span>
+<div style="text-align:right"><div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500">{{ r.val }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">≈ {{ r.valCop }}</div></div>
+<div style="text-align:right"><div style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:{{ r.color }}">{{ r.rend }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">≈ {{ r.rendCop }}</div></div>
+<span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;color:{{ r.color }}">{{ r.pct }}</span>
+<div style="display:flex;flex-direction:column;gap:2px"><span style="display:flex;align-items:baseline;gap:6px;font-size:13px;color:var(--t2,#6B6760)">{{ r.src }}<span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--br,#8A5F1F)">{{ r.tag }}</span></span><sc-if value="{{ r.manual }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openMan }}" style="align-self:flex-start;height:24px;padding:0;background:none;border:none;font-family:'Familjen Grotesk',sans-serif;font-size:13px;font-weight:600;color:var(--br,#8A5F1F);cursor:pointer">Actualizar precio</button></sc-if></div>
+</div>
+<sc-if value="{{ r.editing }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 260px 260px;gap:32px;align-items:end;padding:16px 16px 18px;background:var(--sf,#FFFFFF);border-bottom:1px solid var(--lf,#1A1A17)">
+<div style="display:flex;flex-direction:column;gap:6px;align-self:start"><span style="font-size:15px;font-weight:600">Cotización manual de {{ r.sym }}</span><span style="font-size:13px;line-height:20px;color:var(--t2,#6B6760);text-wrap:pretty">El proveedor de precios no cubre este portafolio de eToro. El valor queda fijo hasta que lo actualices; toma el precio del extracto o de la app de eToro.</span></div>
+<label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:var(--t2,#6B6760)">Precio por unidad</span><span style="display:flex;align-items:baseline;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--lf,#1A1A17)"><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--t2,#6B6760)">US$</span><input value="{{ manVal }}" onChange="{{ onMan }}" inputmode="decimal" style="flex:1;min-width:0;border:none;outline:none;background:none;padding:0;font-family:'IBM Plex Mono',monospace;font-size:28px;line-height:36px;font-weight:500;color:var(--tx,#1A1A17)"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ manPreview }}</span></label>
+<div style="display:flex;flex-direction:column;gap:10px"><span style="font-size:13px;color:var(--t2,#6B6760)">Fecha de la cotización: <span style="color:var(--tx,#1A1A17)">hoy, 11 nov</span></span><div style="display:flex;gap:8px"><button onClick="{{ saveMan }}" style="flex:1;height:44px;border:none;border-radius:4px;background:var(--tx,#1A1A17);color:var(--bg,#FAF8F3);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer">Guardar precio</button><button onClick="{{ closeMan }}" style="height:44px;padding:0 14px;border:1px solid var(--ln,#E4DFD4);border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:15px;cursor:pointer">Cancelar</button></div></div>
+</div>
+</sc-if>
+</sc-for>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 96px 104px 104px 150px 130px 76px 140px;gap:12px;align-items:start;padding:11px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><div><div style="font-size:15px">Efectivo disponible</div><div style="font-size:13px;color:var(--t2,#6B6760)">Saldo sin invertir</div></div><span></span><span></span><span></span><div style="text-align:right"><div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500">{{ cashUsd }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">≈ {{ cashCop }}</div></div><span></span><span></span><span style="font-size:13px;color:var(--t2,#6B6760)">Saldo eToro · 11 nov</span></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 96px 104px 104px 150px 130px 76px 140px;gap:12px;align-items:start;padding:12px 0 9px;border-bottom:3px double var(--lf,#1A1A17)"><span style="font-size:15px;font-weight:600">Total cuenta eToro</span><span></span><span></span><span></span><div style="text-align:right"><div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600">{{ totUsd }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">≈ {{ totCop }}</div></div><div style="text-align:right"><div style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:{{ rendColor }}">{{ rendUsdShort }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">≈ {{ rendCopShort }}</div></div><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:{{ rendColor }}">{{ rendPct }}</span><span></span></div>
+<p style="margin:12px 0 0;font-size:13px;line-height:20px;color:var(--t2,#6B6760);max-width:760px;text-wrap:pretty">Todos los equivalentes en COP usan la TRM de hoy. El rendimiento en COP no incluye lo que cambió el dólar desde cada compra. Las acciones y los ETF tienen precio de cierre del 10 nov y el BTC, del 11 nov a las 09:30.</p>
+</div>
+</main>
+</div>
+</sc-if>
+
+<sc-if value="{{ mov }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Inversiones móvil" style="width:390px;min-height:844px;position:relative;background:var(--bg,#FAF8F3);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;border:1px solid var(--ln,#E4DFD4);box-sizing:border-box;display:flex;flex-direction:column">
+<div style="height:48px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 6px;font-size:15px;font-weight:600"><span>9:41</span><span style="font-size:12px">5G</span></div>
+<div style="padding:12px 16px 0;display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:28px;line-height:34px;font-weight:600;letter-spacing:-0.01em">Inversiones</h1><span style="font-size:13px;color:var(--t2,#6B6760)">eToro · cuenta en USD</span></div>
+<div style="padding:20px 16px 0;display:flex;flex-direction:column;gap:4px">
+<div style="border-top:1px solid var(--lf,#1A1A17);padding-top:12px;display:flex;flex-direction:column;gap:2px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Valor de mercado</span><span style="font-family:'IBM Plex Mono',monospace;font-size:36px;line-height:42px;font-weight:500;letter-spacing:-0.03em">US$ {{ totUsd }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--t2,#6B6760)">≈ {{ totCop }} COP</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;margin-top:10px;border-top:1px solid var(--ln,#E4DFD4);border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:15px">Rendimiento</span><span style="text-align:right"><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:{{ rendColor }}">{{ rendUsd }} · {{ rendPct }}</span><br><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">≈ {{ rendCop }} COP</span></span></div>
+<span style="display:flex;align-items:center;gap:6px;padding-top:8px;font-size:12px;color:var(--t2,#6B6760)"><span style="display:flex">{{ ic.tasa }}</span>TRM <span style="font-family:'IBM Plex Mono',monospace;color:var(--tx,#1A1A17)">4.120,00</span> · 11 nov 2026 · BanRep</span>
+</div>
+<div style="padding:24px 16px 120px">
+<div style="display:flex;justify-content:space-between;padding-bottom:6px;border-bottom:1px solid var(--lf,#1A1A17);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)"><span>Posición</span><span>Valor · rend.</span></div>
+<sc-for list="{{ pos }}" as="r" hint-placeholder-count="5">
+<div onClick="{{ r.tap }}" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;padding:11px 0;border-bottom:1px solid var(--ln,#E4DFD4);cursor:pointer">
+<div style="min-width:0;display:flex;flex-direction:column;gap:2px"><span style="display:flex;align-items:baseline;gap:6px"><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600">{{ r.sym }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--br,#8A5F1F)">{{ r.tag }}</span></span><span style="font-size:12px;color:var(--t2,#6B6760);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ r.qtyM }} × <span style="border-bottom:{{ r.priceUnder }}">{{ r.price }}</span> · costo {{ r.cost }}</span><span style="font-size:12px;color:var(--t2,#6B6760)">{{ r.src }}</span></div>
+<div style="text-align:right;display:flex;flex-direction:column;gap:2px"><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500">{{ r.val }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">≈ {{ r.valCop }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:{{ r.color }}">{{ r.rend }} · {{ r.pct }}</span></div>
+</div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:15px">Efectivo disponible</span><span style="text-align:right"><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500">{{ cashUsd }}</span><br><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">≈ {{ cashCop }}</span></span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 9px;border-bottom:3px double var(--lf,#1A1A17)"><span style="font-size:15px;font-weight:600">Total</span><span style="text-align:right"><span style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600">US$ {{ totUsd }}</span><br><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">≈ {{ totCop }} COP</span></span></div>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:84px;box-sizing:border-box;padding-bottom:28px;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--ln,#E4DFD4);background:var(--bg,#FAF8F3)">
+<sc-for list="{{ tabbar }}" as="t" hint-placeholder-count="5">
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:{{ t.color }};font-size:11px;font-weight:{{ t.weight }}"><span style="display:flex;align-items:center;justify-content:center;width:{{ t.box }}px;height:{{ t.box }}px;border-radius:4px;background:{{ t.bg }};color:{{ t.icColor }}">{{ t.icon }}</span><span>{{ t.label }}</span></div>
+</sc-for>
+</div>
+<sc-if value="{{ manOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closeMan }}" style="position:absolute;inset:0;background:var(--bg,#FAF8F3);opacity:0.6"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:var(--sf,#FFFFFF);border-top:1px solid var(--lf,#1A1A17);border-radius:6px 6px 0 0;padding:4px 16px 34px;display:flex;flex-direction:column;gap:14px">
+<div style="height:52px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:17px;font-weight:600">Precio manual · RENEW</span><button onClick="{{ closeMan }}" style="height:44px;padding:0 4px;background:none;border:none;font-family:'Familjen Grotesk',sans-serif;font-size:15px;color:var(--t2,#6B6760)">Cancelar</button></div>
+<span style="font-size:13px;line-height:20px;color:var(--t2,#6B6760)">El proveedor de precios no cubre este portafolio de eToro. El valor queda fijo hasta que lo actualices.</span>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-top:1px solid var(--ln,#E4DFD4);border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:13px;color:var(--t2,#6B6760)">Precio anterior · 7 nov</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px">US$ {{ manPrev }}</span></div>
+<label style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:var(--t2,#6B6760)">Precio por unidad hoy</span><span style="display:flex;align-items:baseline;gap:8px;padding-bottom:6px;border-bottom:1px solid var(--lf,#1A1A17)"><span style="font-family:'IBM Plex Mono',monospace;font-size:17px;color:var(--t2,#6B6760)">US$</span><input value="{{ manVal }}" onChange="{{ onMan }}" inputmode="decimal" style="flex:1;min-width:0;border:none;outline:none;background:none;padding:0;font-family:'IBM Plex Mono',monospace;font-size:36px;line-height:44px;font-weight:500;color:var(--tx,#1A1A17)"></span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ manPreview }}</span></label>
+<button onClick="{{ saveMan }}" style="height:56px;border:none;border-radius:4px;background:var(--tx,#1A1A17);color:var(--bg,#FAF8F3);font-family:'Familjen Grotesk',sans-serif;font-size:17px;font-weight:600">Guardar precio</button>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1024},&quot;modo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;claro&quot;,&quot;oscuro&quot;],&quot;default&quot;:&quot;claro&quot;,&quot;tsType&quot;:&quot;'claro'|'oscuro'&quot;},&quot;formato&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;escritorio&quot;,&quot;movil&quot;],&quot;default&quot;:&quot;escritorio&quot;,&quot;tsType&quot;:&quot;'escritorio'|'movil'&quot;},&quot;estado&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;normal&quot;,&quot;manual&quot;],&quot;default&quot;:&quot;normal&quot;,&quot;tsType&quot;:&quot;'normal'|'manual'&quot;}}">
+const SVG = (d, s = 20) => React.createElement('svg', { width: s, height: s, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: d } });
+const P = {
+  resumen: '<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>',
+  movimientos: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
+  cuentas: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  deudas: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  avisos: '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>',
+  recurrentes: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+  metas: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  inversion: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>', mas: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>'
+};
+const ICONS = { plus: SVG(P.plus, 18), tasa: SVG('<path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/>', 16) };
+const MODES = {
+  claro: { '--bg':'#FAF8F3','--sf':'#FFFFFF','--sk':'#F2EEE5','--tx':'#1A1A17','--t2':'#6B6760','--t3':'#9A958B','--ln':'#E4DFD4','--lf':'#1A1A17','--br':'#8A5F1F','--in':'#2F7D5A','--out':'#B0452E' },
+  oscuro: { '--bg':'#12141A','--sf':'#181B22','--sk':'#1F232C','--tx':'#E8E4DC','--t2':'#8B8A84','--t3':'#5E5F63','--ln':'#272B34','--lf':'#8B8A84','--br':'#BC8A3E','--in':'#4E9E78','--out':'#D0664B' }
+};
+const TRM = 4120;
+const CASH = 51361;
+const BASE = [
+  { sym:'VOO', name:'Vanguard S&P 500 ETF', qty:'6,2500', q:6.25, cost:49872, price:56240, src:'Cierre 10 nov' },
+  { sym:'QQQ', name:'Invesco QQQ Trust', qty:'3,1000', q:3.1, cost:44115, price:48690, src:'Cierre 10 nov' },
+  { sym:'AAPL', name:'Apple Inc.', qty:'4,0000', q:4, cost:19140, price:22852, src:'Cierre 10 nov' },
+  { sym:'BTC', name:'Bitcoin', qty:'0,012500', q:0.0125, cost:5824000, price:7140000, src:'11 nov · 09:30' },
+  { sym:'RENEW', name:'Smart Portfolio · energías renovables', qty:'1,0000', q:1, cost:40000, price:40542, src:'7 nov · hace 4 días', manual:true }
+];
+const th = s => s.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const usd = c => { const a = Math.abs(Math.round(c)); return th(String(Math.floor(a / 100))) + ',' + String(a % 100).padStart(2, '0'); };
+const cop = c => th(String(Math.abs(Math.round(c * TRM / 100))));
+const sg = n => n > 0 ? '+' : n < 0 ? '−' : '';
+const pct = (a, b) => { const p = Math.round(((a - b) / b * 100 + 1e-9) * 100) / 100; return sg(p) + Math.abs(p).toFixed(2).replace('.', ',') + ' %'; };
+const parseUsd = s => { const t = String(s).replace(/[^\d,]/g, ''); const [i, d = ''] = t.split(','); return parseInt(i || '0', 10) * 100 + parseInt((d + '00').slice(0, 2), 10); };
+
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    const m = (p.estado ?? 'normal') === 'manual';
+    this.state = { pos: BASE, man: m, draft: m ? '411,06' : '' };
+  }
+  renderVals() {
+    const s = this.state;
+    const esc = (this.props.formato ?? 'escritorio') === 'escritorio';
+    const rows = s.pos.map(x => {
+      const v = Math.round(x.q * x.price), c = Math.round(x.q * x.cost), r = v - c;
+      return { x, v, c, r };
+    });
+    const totV = rows.reduce((a, r) => a + r.v, 0) + CASH, totC = rows.reduce((a, r) => a + r.c, 0), totR = totV - CASH - totC;
+    const col = n => n > 0 ? 'var(--in,#2F7D5A)' : n < 0 ? 'var(--out,#B0452E)' : 'var(--t2,#6B6760)';
+    const pos = rows.map(({ x, v, c, r }) => ({
+      sym: x.sym, name: x.name, qty: x.qty, qtyM: x.qty.replace(/,?0+$/, '') || x.qty,
+      cost: usd(x.cost), price: usd(x.price), priceUnder: x.manual ? '1px dashed var(--br,#8A5F1F)' : 'none',
+      val: usd(v), valCop: cop(v), rend: sg(r) + usd(r), rendCop: sg(r) + cop(r), pct: pct(v, c), color: col(r),
+      src: x.src, tag: x.manual ? 'manual' : '', manual: !!x.manual,
+      editing: esc && !!x.manual && s.man, bg: esc && x.manual && s.man ? 'var(--sk,#F2EEE5)' : 'transparent',
+      tap: () => x.manual ? this.setState({ man:true, draft: usd(x.price) }) : null
+    }));
+    const man = s.pos.find(x => x.manual);
+    const dc = parseUsd(s.draft);
+    const navDef = [['resumen','Resumen'],['movimientos','Movimientos'],['cuentas','Cuentas'],['deudas','Deudas y préstamos'],['recurrentes','Recurrentes'],['inversion','Inversiones'],['metas','Metas'],['avisos','Avisos']];
+    return {
+      vars: MODES[this.props.modo ?? 'claro'] || MODES.claro, esc, mov: !esc, ic: ICONS,
+      nav: navDef.map(([k, label]) => ({ label, icon: SVG(P[k]), badge: k === 'avisos' ? '3' : '', bg: k === 'inversion' ? 'var(--sk,#F2EEE5)' : 'transparent', color: k === 'inversion' ? 'var(--tx,#1A1A17)' : 'var(--t2,#6B6760)', weight: k === 'inversion' ? 600 : 400 })),
+      tabbar: [['resumen','Resumen'],['movimientos','Movimientos'],['plus','Registrar'],['cuentas','Cuentas'],['mas','Más']].map(([k, label]) => ({ label, icon: SVG(P[k], k === 'plus' ? 22 : 20), box: k === 'plus' ? 40 : 24, bg: k === 'plus' ? 'var(--tx,#1A1A17)' : 'transparent', icColor: k === 'plus' ? 'var(--bg,#FAF8F3)' : 'inherit', color: k === 'mas' ? 'var(--tx,#1A1A17)' : 'var(--t2,#6B6760)', weight: k === 'mas' ? 600 : 400 })),
+      pos, totUsd: usd(totV), totCop: cop(totV), costUsd: usd(totC), costCop: cop(totC),
+      rendUsd: sg(totR) + 'US$ ' + usd(totR), rendUsdShort: sg(totR) + usd(totR), rendCop: sg(totR) + cop(totR), rendCopShort: sg(totR) + cop(totR), rendPct: pct(totC + totR, totC), rendColor: col(totR),
+      cashUsd: usd(CASH), cashCop: cop(CASH),
+      manOpen: !esc && s.man, openMan: () => this.setState({ man:true, draft: usd(man.price) }), closeMan: () => this.setState({ man:false }),
+      manVal: s.draft, onMan: e => this.setState({ draft: e.target.value.replace(/[^\d.,]/g, '') }), manPrev: usd(BASE[4].price),
+      manPreview: dc ? `Valor de la posición: US$ ${usd(Math.round(man.q * dc))} ≈ ${cop(Math.round(man.q * dc))} COP` : '',
+      saveMan: () => { if (!dc) return; this.setState({ pos: s.pos.map(x => x.manual ? { ...x, price: dc, src:'11 nov · hoy' } : x), man:false }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

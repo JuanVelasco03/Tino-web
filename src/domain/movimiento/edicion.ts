@@ -64,10 +64,46 @@ export function hayCambios(original: ValoresCaptura, actual: ValoresCaptura): bo
   return comparable(original) !== comparable(actual);
 }
 
-/** La primera cuenta del movimiento que no está entre las activas, o `null` (N-36: solo lectura). */
-export function cuentaArchivada(m: Pick<Movimiento, "cuentaOrigen" | "cuentaDestino">, activas: readonly { id: string }[]): Ref | null {
+/** Un préstamo visto como cuenta: `GET /prestamos` no los lista en `GET /cuentas` (las activas). */
+type PrestamoComoCuenta = { id: string; nombre: string; tipo: "prestamo_otorgado" | "deuda_contraida" };
+
+/**
+ * La primera cuenta del movimiento que no está entre las activas, o `null`
+ * (N-36: solo lectura). Una cuenta de préstamo tampoco está entre las activas,
+ * pero no está archivada: se ignora.
+ */
+export function cuentaArchivada(
+  m: Pick<Movimiento, "cuentaOrigen" | "cuentaDestino">,
+  activas: readonly { id: string }[],
+  prestamos: readonly { id: string }[] = [],
+): Ref | null {
   for (const cuenta of [m.cuentaOrigen, m.cuentaDestino]) {
-    if (cuenta && !activas.some((a) => a.id === cuenta.id)) return cuenta;
+    if (!cuenta || prestamos.some((p) => p.id === cuenta.id)) continue;
+    if (!activas.some((a) => a.id === cuenta.id)) return cuenta;
+  }
+  return null;
+}
+
+/** La cuenta del préstamo en un movimiento de préstamo, con el rol del formulario que ocupa. */
+export type CuentaDePrestamo = PrestamoComoCuenta & { rol: "cuenta" | "destino" };
+
+/**
+ * Si el movimiento es de un préstamo (desembolso, capital de un abono o
+ * condonación), su cuenta de préstamo: queda fija y el tipo, bloqueado (la
+ * API rechaza el cambio con `MOVIMIENTO_DE_PRESTAMO`). En el formulario, el
+ * destino de una transferencia es `destino`; todo lo demás, `cuenta`.
+ */
+export function cuentaDePrestamo(
+  m: Pick<Movimiento, "tipo" | "cuentaOrigen" | "cuentaDestino">,
+  prestamos: readonly PrestamoComoCuenta[],
+): CuentaDePrestamo | null {
+  const lados = [
+    { cuenta: m.cuentaOrigen, rol: "cuenta" as const },
+    { cuenta: m.cuentaDestino, rol: m.tipo === "transferencia" ? ("destino" as const) : ("cuenta" as const) },
+  ];
+  for (const { cuenta, rol } of lados) {
+    const prestamo = cuenta && prestamos.find((p) => p.id === cuenta.id);
+    if (prestamo) return { id: prestamo.id, nombre: prestamo.nombre, tipo: prestamo.tipo, rol };
   }
   return null;
 }

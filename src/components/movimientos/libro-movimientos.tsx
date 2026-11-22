@@ -14,7 +14,7 @@ import { EnlaceTexto } from "../enlace-texto";
 import { EstadoVacio } from "../estado-vacio";
 import { FilaMovimiento, SubRenglones, type ParteFila } from "../fila-movimiento";
 import { EdicionMovimiento } from "./edicion-movimiento";
-import { useAvisoEdicion, type AccionesEdicion, type ResultadoEdicion } from "./usar-edicion";
+import { useAvisoEdicion, type AccionesEdicion, type PrestamoDeEdicion, type ResultadoEdicion } from "./usar-edicion";
 
 type Props = {
   /** `"YYYY-MM"` del mes listado. */
@@ -26,7 +26,7 @@ type Props = {
   /** `?sinClasificar=1`: solo los gastos sin clasificar, con su rótulo, su vacío y «Ver todos». */
   sinClasificar?: boolean;
   /** `?movimiento=<id>`: el movimiento y lo que su formulario necesita, cargados con la página. */
-  edicion: { movimiento: Movimiento; datos: DatosCaptura } | null;
+  edicion: { movimiento: Movimiento; datos: DatosCaptura; prestamos?: readonly PrestamoDeEdicion[] } | null;
   acciones: AccionesEdicion;
 };
 
@@ -187,6 +187,7 @@ export function LibroMovimientos({ mes, esActual, movimientos, sinClasificar = f
           key={edicion.movimiento.id}
           movimiento={edicion.movimiento}
           datos={edicion.datos}
+          prestamos={edicion.prestamos}
           mes={mes}
           sinClasificar={sinClasificar}
           acciones={acciones}

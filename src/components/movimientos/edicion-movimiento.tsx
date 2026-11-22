@@ -6,13 +6,15 @@ import type { Movimiento } from "@/services/movimientos";
 import { HojaCaptura } from "../captura/hoja-captura";
 import { PanelCaptura } from "../captura/panel-captura";
 import { useEscritorio } from "../captura/proveedor-captura";
-import { useEdicion, type AccionesEdicion, type ResultadoEdicion } from "./usar-edicion";
+import { useEdicion, type AccionesEdicion, type PrestamoDeEdicion, type ResultadoEdicion } from "./usar-edicion";
 
 type Props = {
   movimiento: Movimiento;
   datos: DatosCaptura;
   /** `"YYYY-MM"` del mes listado: cerrar vuelve a `?mes=`. */
   mes: string;
+  /** Los préstamos: la cuenta de uno queda fija y el tipo, bloqueado. */
+  prestamos?: readonly PrestamoDeEdicion[];
   /** Abierta desde el filtro de gastos sin clasificar: cerrar vuelve a él. */
   sinClasificar?: boolean;
   acciones: AccionesEdicion;
@@ -24,13 +26,14 @@ type Props = {
  * formulario de la captura en modo edición. Escritorio: panel de 480 px.
  * Móvil: la hoja a pantalla completa con teclado propio.
  */
-export function EdicionMovimiento({ movimiento, datos, mes, sinClasificar = false, acciones, alTerminar }: Props) {
+export function EdicionMovimiento({ movimiento, datos, mes, prestamos, sinClasificar = false, acciones, alTerminar }: Props) {
   const router = useRouter();
   const escritorio = useEscritorio();
   const edicion = useEdicion({
     movimiento,
     datos,
     mes,
+    prestamos,
     acciones,
     alTerminar,
     alCerrar: () => router.replace(`/movimientos?mes=${mes}${sinClasificar ? "&sinClasificar=1" : ""}`, { scroll: false }),
