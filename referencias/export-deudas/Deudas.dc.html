@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Familjen Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#8A5F1F}
+a:hover{color:#1A1A17}
+input::placeholder{color:var(--t3,#9A958B);opacity:1}
+</style>
+</helmet>
+<div style="{{ vars }}">
+
+<sc-if value="{{ esc }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Deudas escritorio" style="width:1440px;min-height:1024px;display:grid;grid-template-columns:232px minmax(0,1fr);background:var(--bg,#FAF8F3);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;border:1px solid var(--ln,#E4DFD4);box-sizing:border-box">
+<aside style="border-right:1px solid var(--ln,#E4DFD4);padding:28px 16px;display:flex;flex-direction:column;gap:28px">
+<div style="padding:0 8px;font-size:20px;font-weight:700;letter-spacing:0.16em">TINO</div>
+<button style="height:44px;display:flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:4px;background:var(--tx,#1A1A17);color:var(--bg,#FAF8F3);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer"><span style="display:flex">{{ ic.plus }}</span>Registrar</button>
+<nav style="display:flex;flex-direction:column;gap:2px">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+<div style="height:40px;display:flex;align-items:center;gap:12px;padding:0 8px;border-radius:4px;background:{{ n.bg }};color:{{ n.color }};font-size:15px;font-weight:{{ n.weight }};cursor:pointer"><span style="display:flex">{{ n.icon }}</span><span style="flex:1">{{ n.label }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--br,#8A5F1F)">{{ n.badge }}</span></div>
+</sc-for>
+</nav>
+<div style="margin-top:auto;padding:0 8px;display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--t2,#6B6760)"><span>TRM de referencia</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--tx,#1A1A17)">4.120 COP</span><span>11 nov 2026</span></div>
+</aside>
+
+<main style="padding:28px 56px 64px;display:flex;flex-direction:column;gap:36px;min-width:0">
+<header style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px">
+<h1 style="margin:0;font-size:28px;line-height:34px;font-weight:600;letter-spacing:-0.01em">Deudas y préstamos</h1>
+<button style="height:44px;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid var(--ln,#E4DFD4);border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:500;cursor:pointer"><span style="display:flex">{{ ic.plus }}</span>Nuevo préstamo o deuda</button>
+</header>
+
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--lf,#1A1A17)">
+<div style="padding:18px 28px 0 0;display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Te deben</span><span style="font-family:'IBM Plex Mono',monospace;font-size:32px;line-height:36px;font-weight:500">{{ teDeben }}</span><span style="font-size:13px;color:var(--t2,#6B6760)">{{ teDebenSub }}</span></div>
+<div style="padding:18px 28px 0;border-left:1px solid var(--ln,#E4DFD4);display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Debes</span><span style="font-family:'IBM Plex Mono',monospace;font-size:32px;line-height:36px;font-weight:500;color:var(--out,#B0452E)">{{ debes }}</span><span style="font-size:13px;color:var(--t2,#6B6760)">A 1 persona · sin intereses</span></div>
+<div style="padding:18px 0 0 28px;border-left:1px solid var(--ln,#E4DFD4);display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Posición neta</span><span style="font-family:'IBM Plex Mono',monospace;font-size:32px;line-height:36px;font-weight:500;padding-bottom:6px;border-bottom:3px double var(--lf,#1A1A17);align-self:flex-start">{{ neta }}</span><span style="font-size:13px;color:var(--t2,#6B6760)">{{ netaSub }}</span></div>
+</div>
+
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+<div style="height:44px;display:flex;align-items:center;gap:10px;padding:0 4px 0 12px;border:1px solid var(--ln,#E4DFD4);border-radius:4px;background:var(--sf,#FFFFFF);font-size:14px"><span style="display:flex;color:var(--t2,#6B6760)">{{ ic.check }}</span><span style="flex:1">{{ toastText }}</span><button onClick="{{ undo }}" style="height:40px;padding:0 10px;background:none;border:none;font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:600;color:var(--br,#8A5F1F);cursor:pointer">Deshacer</button></div>
+</sc-if>
+
+<div style="display:grid;grid-template-columns:400px minmax(0,1fr);gap:56px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:28px">
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+<div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px;border-bottom:1px solid var(--lf,#1A1A17)"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:{{ g.color }}">{{ g.title }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:{{ g.totColor }}">{{ g.total }}</span></div>
+<sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="1">
+<div onClick="{{ r.pick }}" style="display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 8px;margin:0 -8px;border-bottom:1px solid var(--ln,#E4DFD4);border-radius:4px;background:{{ r.bg }};cursor:pointer">
+<span style="display:flex;color:var(--t2,#6B6760);padding-top:2px">{{ r.icon }}</span>
+<div style="min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600;color:{{ r.nameColor }}">{{ r.name }}</span><span style="font-size:13px;color:var(--t2,#6B6760)">{{ r.sub }}</span><sc-if value="{{ r.late }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--br,#8A5F1F)"><span style="display:flex">{{ ic.reloj }}</span>{{ r.lateText }}</span></sc-if></div>
+<div style="text-align:right"><div style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:500;color:{{ r.amtColor }}">{{ r.amt }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ r.cap }}</div></div>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-bottom:12px;border-bottom:1px solid var(--lf,#1A1A17)">
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:var(--t2,#6B6760)">{{ p.tipo }}</span><span style="font-size:24px;line-height:30px;font-weight:600">{{ p.name }}</span></div>
+<div style="text-align:right;display:flex;flex-direction:column;gap:2px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)">{{ p.saldoLabel }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:32px;line-height:36px;font-weight:500;color:{{ p.amtColor }}">{{ p.saldo }}</span></div>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px">
+<div>
+<sc-for list="{{ p.resumen }}" as="x" hint-placeholder-count="3">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:{{ x.line }}"><span style="font-size:15px;font-weight:{{ x.weight }}">{{ x.l }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:{{ x.weight }}">{{ x.v }}</span></div>
+</sc-for>
+</div>
+<div>
+<sc-for list="{{ p.cond }}" as="x" hint-placeholder-count="3">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:13px;color:var(--t2,#6B6760)">{{ x.l }}</span><span style="font-size:15px;text-align:right;font-family:{{ x.font }}">{{ x.v }}</span></div>
+</sc-for>
+<sc-if value="{{ p.late }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:8px;align-items:flex-start;padding-top:12px;font-size:13px;line-height:20px;color:var(--t2,#6B6760)"><span style="display:flex;color:var(--br,#8A5F1F);padding-top:1px">{{ ic.reloj }}</span><span><span style="color:var(--br,#8A5F1F);font-weight:600">{{ p.lateText }}.</span> {{ p.lateHelp }}</span></div></sc-if>
+</div>
+</div>
+
+<div>
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 130px 110px 140px;gap:12px;padding-bottom:8px;border-bottom:1px solid var(--lf,#1A1A17);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)"><span>Fecha</span><span>Historial</span><span style="text-align:right">Capital</span><span style="text-align:right">Interés</span><span style="text-align:right">Saldo capital</span></div>
+<sc-for list="{{ p.hist }}" as="h" hint-placeholder-count="3">
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 130px 110px 140px;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ h.fecha }}</span><span style="font-size:15px">{{ h.mov }}</span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px">{{ h.cap }}</span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;color:{{ h.intColor }}">{{ h.int }}</span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500">{{ h.saldo }}</span></div>
+</sc-for>
+</div>
+
+<sc-if value="{{ showActions }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:12px;align-items:center">
+<button style="height:44px;padding:0 18px;border:none;border-radius:4px;background:var(--tx,#1A1A17);color:var(--bg,#FAF8F3);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer">Registrar abono</button>
+<button style="height:44px;padding:0 16px;border:1px solid var(--ln,#E4DFD4);border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:500;cursor:pointer">{{ p.second }}</button>
+<span style="flex:1"></span>
+<sc-if value="{{ p.canCondonar }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openCond }}" style="height:44px;padding:0 4px;background:none;border:none;font-family:'Familjen Grotesk',sans-serif;font-size:15px;color:var(--t2,#6B6760);cursor:pointer;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--ln,#E4DFD4)">Condonar lo pendiente…</button></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ condOpen }}" hint-placeholder-val="{{ false }}">
+<div style="border-top:1px solid var(--lf,#1A1A17);padding-top:20px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<span style="font-size:20px;font-weight:600">Condonar a {{ p.short }}</span>
+<p style="margin:0;font-size:15px;line-height:24px;color:var(--t2,#6B6760);text-wrap:pretty">Lo que {{ p.short }} te debe deja de ser un activo y se registra como un gasto tuyo con fecha de hoy. El préstamo se cierra y su historial se conserva.</p>
+<div style="display:flex;flex-direction:column;border-top:1px solid var(--ln,#E4DFD4)">
+<sc-for list="{{ condOpts }}" as="o" hint-placeholder-count="2">
+<button onClick="{{ o.pick }}" style="min-height:52px;display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:12px;align-items:center;padding:0;background:none;border:none;border-bottom:1px solid var(--ln,#E4DFD4);color:var(--tx,#1A1A17);text-align:left;font-family:'Familjen Grotesk',sans-serif;cursor:pointer"><span style="width:18px;height:18px;border-radius:50%;border:1px solid {{ o.ring }};display:flex;align-items:center;justify-content:center;box-sizing:border-box"><span style="width:8px;height:8px;border-radius:50%;background:{{ o.dot }}"></span></span><span style="font-size:15px">{{ o.label }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px">{{ o.v }}</span></button>
+</sc-for>
+</div>
+<sc-if value="{{ condParte }}" hint-placeholder-val="{{ false }}">
+<label style="display:flex;align-items:baseline;gap:8px;padding:4px 0 8px;border-bottom:1px solid var(--lf,#1A1A17)"><input value="{{ condVal }}" onChange="{{ onCondVal }}" inputmode="numeric" placeholder="Valor a condonar" style="flex:1;min-width:0;background:none;border:none;outline:none;padding:0;font-family:'IBM Plex Mono',monospace;font-size:28px;line-height:36px;font-weight:500;color:var(--tx,#1A1A17)"><span style="font-size:13px;color:var(--t2,#6B6760)">COP</span></label>
+</sc-if>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:13px;color:var(--t2,#6B6760)">Categoría del gasto</span>
+<sc-for list="{{ condCats }}" as="c" hint-placeholder-count="2">
+<button onClick="{{ c.pick }}" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 12px;border:1px solid {{ c.border }};border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:14px;font-weight:{{ c.weight }};cursor:pointer"><span style="display:flex">{{ c.mark }}</span>{{ c.label }}</button>
+</sc-for>
+</div>
+<span style="font-size:13px;line-height:20px;color:var(--t2,#6B6760)">{{ condInt }}</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:0">
+<span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--lf,#1A1A17)">Qué cambia</span>
+<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:13px;color:var(--t2,#6B6760)">Gasto de hoy · {{ condCat }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--out,#B0452E)">{{ condGasto }}</span></div>
+<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:13px;color:var(--t2,#6B6760)">{{ p.short }} te deberá</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px">{{ condQueda }}</span></div>
+<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:13px;color:var(--t2,#6B6760)">Patrimonio neto</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px">{{ condPat }}</span></div>
+<div style="display:flex;gap:8px;padding-top:20px"><button onClick="{{ doCond }}" style="flex:1;height:48px;border:none;border-radius:4px;background:{{ condBg }};color:{{ condColor }};font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer">Condonar <span style="font-family:'IBM Plex Mono',monospace;font-weight:500">{{ condAmt }}</span></button><button onClick="{{ closeCond }}" style="height:48px;padding:0 16px;border:1px solid var(--ln,#E4DFD4);border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:15px;cursor:pointer">Cancelar</button></div>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+</main>
+</div>
+</sc-if>
+
+<sc-if value="{{ mov }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Deudas móvil" style="width:390px;min-height:844px;position:relative;background:var(--bg,#FAF8F3);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;border:1px solid var(--ln,#E4DFD4);box-sizing:border-box;display:flex;flex-direction:column">
+<div style="height:48px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 6px;font-size:15px;font-weight:600"><span>9:41</span><span style="font-size:12px">5G</span></div>
+
+<sc-if value="{{ mLista }}" hint-placeholder-val="{{ true }}">
+<div style="padding:12px 16px 0"><h1 style="margin:0;font-size:28px;line-height:34px;font-weight:600;letter-spacing:-0.01em">Deudas y préstamos</h1></div>
+<div style="padding:20px 16px 0">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-top:1px solid var(--lf,#1A1A17);border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:15px">Te deben</span><span style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:500">{{ teDeben }}</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:15px">Debes</span><span style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:500;color:var(--out,#B0452E)">{{ debes }}</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 8px;border-bottom:3px double var(--lf,#1A1A17)"><span style="font-size:15px;font-weight:600">Posición neta</span><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:500">{{ neta }}</span></div>
+<span style="display:block;padding-top:8px;font-size:13px;color:var(--t2,#6B6760)">{{ netaSub }}</span>
+</div>
+<div style="padding:24px 16px 120px;display:flex;flex-direction:column;gap:24px">
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+<div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px;border-bottom:1px solid var(--lf,#1A1A17)"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:{{ g.color }}">{{ g.title }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:{{ g.totColor }}">{{ g.total }}</span></div>
+<sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="1">
+<div onClick="{{ r.pickM }}" style="display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--ln,#E4DFD4);cursor:pointer">
+<span style="display:flex;color:var(--t2,#6B6760);padding-top:2px">{{ r.icon }}</span>
+<div style="min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600;color:{{ r.nameColor }}">{{ r.name }}</span><span style="font-size:13px;color:var(--t2,#6B6760)">{{ r.sub }}</span><sc-if value="{{ r.late }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--br,#8A5F1F)"><span style="display:flex">{{ ic.reloj }}</span>{{ r.lateText }}</span></sc-if></div>
+<div style="text-align:right"><div style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:500;color:{{ r.amtColor }}">{{ r.amt }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ r.cap }}</div></div>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ mDetalle }}" hint-placeholder-val="{{ false }}">
+<div style="height:44px;display:flex;align-items:center;padding:0 4px"><button onClick="{{ backM }}" style="height:44px;display:flex;align-items:center;gap:2px;padding:0;background:none;border:none;font-family:'Familjen Grotesk',sans-serif;font-size:15px;color:var(--br,#8A5F1F);font-weight:600;cursor:pointer"><span style="display:flex">{{ ic.chevL }}</span>Deudas</button></div>
+<div style="padding:4px 16px 0;display:flex;flex-direction:column;gap:4px">
+<span style="font-size:13px;color:var(--t2,#6B6760)">{{ p.tipo }}</span>
+<h1 style="margin:0;font-size:24px;line-height:30px;font-weight:600">{{ p.name }}</h1>
+<div style="display:flex;flex-direction:column;gap:2px;padding-top:12px;border-top:1px solid var(--lf,#1A1A17);margin-top:10px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)">{{ p.saldoLabel }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:40px;line-height:44px;font-weight:500;letter-spacing:-0.02em;color:{{ p.amtColor }}">{{ p.saldo }}</span></div>
+<sc-if value="{{ p.late }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:8px;align-items:flex-start;padding-top:12px;font-size:13px;line-height:20px;color:var(--t2,#6B6760)"><span style="display:flex;color:var(--br,#8A5F1F);padding-top:1px">{{ ic.reloj }}</span><span><span style="color:var(--br,#8A5F1F);font-weight:600">{{ p.lateText }}.</span> {{ p.lateHelp }}</span></div></sc-if>
+</div>
+<div style="padding:20px 16px 0">
+<sc-for list="{{ p.resumen }}" as="x" hint-placeholder-count="3">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:{{ x.line }}"><span style="font-size:15px;font-weight:{{ x.weight }}">{{ x.l }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:{{ x.weight }}">{{ x.v }}</span></div>
+</sc-for>
+<sc-for list="{{ p.cond }}" as="x" hint-placeholder-count="3">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:13px;color:var(--t2,#6B6760)">{{ x.l }}</span><span style="font-size:14px;text-align:right;font-family:{{ x.font }}">{{ x.v }}</span></div>
+</sc-for>
+</div>
+<div style="padding:28px 16px 0">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 84px 84px;gap:10px;padding-bottom:6px;border-bottom:1px solid var(--lf,#1A1A17);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)"><span>Historial</span><span style="text-align:right">Capital</span><span style="text-align:right">Saldo</span></div>
+<sc-for list="{{ p.hist }}" as="h" hint-placeholder-count="3">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 84px 84px;gap:10px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><div style="min-width:0"><div style="font-size:15px;line-height:20px">{{ h.mov }}</div><div style="font-size:12px;line-height:16px;color:var(--t2,#6B6760)"><span style="font-family:'IBM Plex Mono',monospace">{{ h.fecha }}</span>{{ h.intM }}</div></div><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:14px">{{ h.cap }}</span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500">{{ h.saldo }}</span></div>
+</sc-for>
+</div>
+<div style="padding:24px 16px 40px;display:flex;flex-direction:column;gap:8px">
+<button style="height:52px;border:none;border-radius:4px;background:var(--tx,#1A1A17);color:var(--bg,#FAF8F3);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600">Registrar abono</button>
+<button style="height:48px;border:1px solid var(--ln,#E4DFD4);border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:15px">{{ p.second }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ mLista }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:0;right:0;bottom:0;height:84px;box-sizing:border-box;padding-bottom:28px;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--ln,#E4DFD4);background:var(--bg,#FAF8F3)">
+<sc-for list="{{ tabbar }}" as="t" hint-placeholder-count="5">
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:{{ t.color }};font-size:11px;font-weight:{{ t.weight }}"><span style="display:flex;align-items:center;justify-content:center;width:{{ t.box }}px;height:{{ t.box }}px;border-radius:4px;background:{{ t.bg }};color:{{ t.icColor }}">{{ t.icon }}</span><span>{{ t.label }}</span></div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1024},&quot;modo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;claro&quot;,&quot;oscuro&quot;],&quot;default&quot;:&quot;claro&quot;,&quot;tsType&quot;:&quot;'claro'|'oscuro'&quot;},&quot;formato&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;escritorio&quot;,&quot;movil&quot;],&quot;default&quot;:&quot;escritorio&quot;,&quot;tsType&quot;:&quot;'escritorio'|'movil'&quot;},&quot;persona&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;camila&quot;,&quot;mama&quot;,&quot;andres&quot;],&quot;default&quot;:&quot;camila&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;vista&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;lista&quot;,&quot;detalle&quot;],&quot;default&quot;:&quot;lista&quot;,&quot;tsType&quot;:&quot;'lista'|'detalle'&quot;},&quot;estado&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;normal&quot;,&quot;condonar&quot;],&quot;default&quot;:&quot;normal&quot;,&quot;tsType&quot;:&quot;'normal'|'condonar'&quot;}}">
+const SVG = (d, s = 20) => React.createElement('svg', { width: s, height: s, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: d } });
+const P = {
+  resumen: '<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>',
+  movimientos: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
+  cuentas: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  deudas: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  avisos: '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>',
+  recurrentes: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+  metas: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  inversion: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+  mas: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
+  otorgado: '<path d="M7 17 17 7"/><path d="M7 7h10v10"/>', contraida: '<path d="M17 7 7 17"/><path d="M17 17H7V7"/>', saldada: '<path d="M20 6 9 17l-5-5"/>'
+};
+const ICONS = { plus: SVG(P.plus, 18), check: SVG(P.saldada, 16), checkS: SVG(P.saldada, 14), chevL: SVG('<path d="m15 18-6-6 6-6"/>', 22), reloj: SVG('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 16) };
+const MODES = {
+  claro: { '--bg':'#FAF8F3','--sf':'#FFFFFF','--sk':'#F2EEE5','--tx':'#1A1A17','--t2':'#6B6760','--t3':'#9A958B','--ln':'#E4DFD4','--lf':'#1A1A17','--br':'#8A5F1F','--in':'#2F7D5A','--out':'#B0452E' },
+  oscuro: { '--bg':'#12141A','--sf':'#181B22','--sk':'#1F232C','--tx':'#E8E4DC','--t2':'#8B8A84','--t3':'#5E5F63','--ln':'#272B34','--lf':'#8B8A84','--br':'#BC8A3E','--in':'#4E9E78','--out':'#D0664B' }
+};
+const PATRIMONIO = 34121072;
+const fmt = n => String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const digits = s => String(s).replace(/\D/g, '');
+const BASE = {
+  camila: { name:'Camila Ortiz', short:'Camila', side:'cobrar', saldo:500000, desde:'14 ago', dias:89, acordado:'15 oct', lateText:'Pasó la fecha acordada hace 27 días', lateHelp:'Acordaron el 15 oct. Si cambió el plan, puedes mover la fecha.', tasa:'1 % mensual sobre saldo', intCobrado:12000, intCausado:6667,
+    hist:[['14 ago','Le prestaste · desde Nequi',600000,0,600000],['02 oct','Abonó · a Nequi',-100000,12000,500000]] },
+  mama: { name:'Mamá', short:'Mamá', side:'pagar', saldo:500000, desde:'3 mar', dias:253, acordado:'30 jun', lateText:'Pasó la fecha acordada hace 4 meses', lateHelp:'Acordaron terminar en junio. Vas abonando: el último fue el 6 nov.', tasa:'Sin intereses',
+    hist:[['03 mar','Te prestó · a Bancolombia',900000,0,900000],['30 abr','Abonaste · desde Bancolombia',-200000,0,700000],['30 jun','Abonaste · desde Bancolombia',-100000,0,600000],['06 nov','Abonaste · desde Nequi',-100000,0,500000]] },
+  andres: { name:'Andrés Gil', short:'Andrés', side:'saldada', saldo:0, desde:'2 sep', cerrado:'Pagó todo el 20 sep', tasa:'Sin intereses',
+    hist:[['02 sep','Le prestaste · desde Efectivo',80000,0,80000],['20 sep','Pagó todo · a Nequi',-80000,0,0]] }
+};
+
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    const e = p.estado ?? 'normal';
+    this.state = { pers: BASE, sel: p.persona ?? 'camila', vista: p.vista ?? 'lista', cond: e === 'condonar', condMode:'todo', condVal:'', condCat:'Otros', toast:null, prev:null };
+  }
+  renderVals() {
+    const s = this.state;
+    const esc = (this.props.formato ?? 'escritorio') === 'escritorio';
+    const ps = s.pers;
+    const keys = Object.keys(ps);
+    const cob = keys.filter(k => ps[k].side === 'cobrar'), pag = keys.filter(k => ps[k].side === 'pagar'), sal = keys.filter(k => ps[k].side === 'saldada');
+    const sum = ks => ks.reduce((a, k) => a + ps[k].saldo, 0);
+    const tD = sum(cob), tP = sum(pag), neta = tD - tP;
+    const mkRow = k => {
+      const x = ps[k], isP = x.side === 'pagar', isS = x.side === 'saldada';
+      return {
+        name: x.name, icon: SVG(P[isS ? 'saldada' : isP ? 'contraida' : 'otorgado']),
+        sub: isS ? x.cerrado : `Desde el ${x.desde} · ${x.dias} días`,
+        late: !isS && !!x.lateText, lateText: x.lateText ? `Fecha acordada: ${x.acordado}` : '',
+        amt: isS ? '0' : (isP ? '−' : '') + fmt(x.saldo), amtColor: isS ? 'var(--t2,#6B6760)' : isP ? 'var(--out,#B0452E)' : 'var(--tx,#1A1A17)',
+        cap: isS ? 'saldada' : isP ? 'le debes' : 'te debe', nameColor: isS ? 'var(--t2,#6B6760)' : 'var(--tx,#1A1A17)',
+        bg: esc && s.sel === k ? 'var(--sk,#F2EEE5)' : 'transparent',
+        pick: () => this.setState({ sel:k, cond:false }), pickM: () => this.setState({ sel:k, vista:'detalle', cond:false })
+      };
+    };
+    const groups = [
+      { title:'Te deben', total: fmt(tD), totColor:'var(--tx,#1A1A17)', color:'var(--tx,#1A1A17)', rows: cob.map(mkRow) },
+      { title:'Debes', total: '−' + fmt(tP), totColor:'var(--out,#B0452E)', color:'var(--tx,#1A1A17)', rows: pag.map(mkRow) },
+      { title:'Saldadas', total:'', totColor:'var(--t2,#6B6760)', color:'var(--t2,#6B6760)', rows: sal.map(mkRow) }
+    ].filter(g => g.rows.length);
+    const x = ps[s.sel] || ps.camila;
+    const isP = x.side === 'pagar', isS = x.side === 'saldada';
+    const ent = x.hist.filter(h => h[2] > 0).reduce((a, h) => a + h[2], 0);
+    const abo = x.hist.filter(h => h[2] < 0).reduce((a, h) => a + h[2], 0);
+    const intC = x.hist.reduce((a, h) => a + h[3], 0);
+    const resumen = [
+      { l: isP ? 'Te prestó' : 'Le prestaste', v: fmt(ent), weight:400, line:'1px solid var(--ln,#E4DFD4)' },
+      { l: x.condonado ? 'Abonos y condonación' : 'Abonos a capital', v: abo ? '−' + fmt(abo) : '0', weight:400, line:'1px solid var(--ln,#E4DFD4)' },
+      { l: 'Capital pendiente', v: fmt(x.saldo), weight:600, line:'3px double var(--lf,#1A1A17)' }
+    ];
+    const cond = [{ l:'Intereses', v: x.tasa, font:'inherit' }];
+    if (x.intCobrado != null) { cond.push({ l:'Intereses cobrados', v: fmt(intC), font:"'IBM Plex Mono',monospace" }); if (!isS) cond.push({ l:'Causados sin cobrar', v: fmt(x.intCausado), font:"'IBM Plex Mono',monospace" }); }
+    cond.push({ l:'Fecha acordada', v: x.acordado || '—', font:'inherit' });
+    const hist = x.hist.map(h => ({ fecha:h[0], mov:h[1], cap: (h[2] < 0 ? '−' : '') + fmt(h[2]), int: h[3] ? '+' + fmt(h[3]) : '—', intColor: h[3] ? 'var(--in,#2F7D5A)' : 'var(--t3,#9A958B)', intM: h[3] ? ` · interés +${fmt(h[3])}` : '', saldo: fmt(h[4]) }));
+    const p = {
+      name: x.name, short: x.short, tipo: isS ? 'Saldada' : isP ? 'Deuda contraída · le debes' : 'Préstamo otorgado · te debe',
+      saldoLabel: isS ? 'Saldo' : isP ? 'Le debes' : 'Te debe',
+      saldo: isS ? '0' : (isP ? '−' : '') + fmt(x.saldo), amtColor: isS ? 'var(--t2,#6B6760)' : isP ? 'var(--out,#B0452E)' : 'var(--tx,#1A1A17)',
+      late: !isS && !!x.lateText, lateText: x.lateText || '', lateHelp: x.lateHelp || '',
+      resumen, cond, hist, canCondonar: x.side === 'cobrar' && x.saldo > 0,
+      second: isP ? 'Cambiar fecha acordada' : isS ? 'Ver movimientos' : 'Cambiar fecha acordada'
+    };
+    const condN = s.condMode === 'todo' ? x.saldo : Math.min(parseInt(s.condVal || '0', 10), x.saldo);
+    const navDef = [['resumen','Resumen'],['movimientos','Movimientos'],['cuentas','Cuentas'],['deudas','Deudas y préstamos'],['recurrentes','Recurrentes'],['inversion','Inversiones'],['metas','Metas'],['avisos','Avisos']];
+    return {
+      vars: MODES[this.props.modo ?? 'claro'] || MODES.claro, esc, mov: !esc, ic: ICONS,
+      nav: navDef.map(([k, label]) => ({ label, icon: SVG(P[k]), badge: k === 'avisos' ? '3' : '', bg: k === 'deudas' ? 'var(--sk,#F2EEE5)' : 'transparent', color: k === 'deudas' ? 'var(--tx,#1A1A17)' : 'var(--t2,#6B6760)', weight: k === 'deudas' ? 600 : 400 })),
+      tabbar: [['resumen','Resumen'],['movimientos','Movimientos'],['plus','Registrar'],['cuentas','Cuentas'],['mas','Más']].map(([k, label]) => ({ label, icon: SVG(P[k], k === 'plus' ? 22 : 20), box: k === 'plus' ? 40 : 24, bg: k === 'plus' ? 'var(--tx,#1A1A17)' : 'transparent', icColor: k === 'plus' ? 'var(--bg,#FAF8F3)' : 'inherit', color: k === 'mas' ? 'var(--tx,#1A1A17)' : 'var(--t2,#6B6760)', weight: k === 'mas' ? 600 : 400 })),
+      teDeben: fmt(tD), debes: '−' + fmt(tP), neta: neta < 0 ? '−' + fmt(neta) : fmt(neta),
+      teDebenSub: cob.length ? `${cob.length === 1 ? '1 persona' : cob.length + ' personas'} · +${fmt(cob.reduce((a, k) => a + (ps[k].intCausado || 0), 0))} de intereses sin cobrar` : 'Nadie te debe',
+      netaSub: neta === 0 ? 'Lo que te deben cubre exactamente lo que debes.' : neta > 0 ? 'Te deben más de lo que debes.' : 'Debes más de lo que te deben.',
+      groups, p, mLista: s.vista === 'lista', mDetalle: s.vista === 'detalle', backM: () => this.setState({ vista:'lista' }),
+      showActions: !s.cond && !isS, condOpen: s.cond && p.canCondonar,
+      openCond: () => this.setState({ cond:true }), closeCond: () => this.setState({ cond:false }),
+      condOpts: [['todo','Todo lo pendiente', fmt(x.saldo)], ['parte','Solo una parte', '']].map(([k, label, v]) => ({ label, v, ring: s.condMode === k ? 'var(--tx,#1A1A17)' : 'var(--t3,#9A958B)', dot: s.condMode === k ? 'var(--tx,#1A1A17)' : 'transparent', pick: () => this.setState({ condMode:k }) })),
+      condParte: s.condMode === 'parte', condVal: s.condVal ? fmt(parseInt(s.condVal, 10)) : '', onCondVal: e => this.setState({ condVal: digits(e.target.value).slice(0, 9) }),
+      condCats: ['Otros','Salidas'].map(c => ({ label:c, border: s.condCat === c ? 'var(--tx,#1A1A17)' : 'var(--ln,#E4DFD4)', weight: s.condCat === c ? 600 : 400, mark: s.condCat === c ? ICONS.checkS : null, pick: () => this.setState({ condCat:c }) })),
+      condCat: s.condCat,
+      condInt: x.intCausado ? `Los intereses causados sin cobrar (${fmt(x.intCausado)}) también se dejan de cobrar. No se registran como gasto porque nunca entraron a tu patrimonio.` : '',
+      condGasto: '−' + fmt(condN), condQueda: fmt(x.saldo - condN), condPat: `${fmt(PATRIMONIO)} → ${fmt(PATRIMONIO - condN)}`,
+      condAmt: fmt(condN), condBg: condN ? 'var(--tx,#1A1A17)' : 'var(--ln,#E4DFD4)', condColor: condN ? 'var(--bg,#FAF8F3)' : 'var(--t2,#6B6760)',
+      doCond: () => {
+        if (!condN) return;
+        const nx = { ...x, saldo: x.saldo - condN, condonado:true, hist: [...x.hist, ['11 nov', `Condonaste · gasto en ${s.condCat}`, -condN, 0, x.saldo - condN]] };
+        if (nx.saldo === 0) { nx.side = 'saldada'; nx.cerrado = 'Condonado el 11 nov'; nx.lateText = null; }
+        this.setState({ prev: s.pers, pers: { ...s.pers, [s.sel]: nx }, cond:false, toast: `Condonado. Se registró un gasto de ${fmt(condN)} en ${s.condCat}.` });
+      },
+      toast: !!s.toast, toastText: s.toast || '', undo: () => this.setState({ pers: s.prev || s.pers, toast:null })
+    };
+  }
+}
+</script>
+</body>
+</html>
