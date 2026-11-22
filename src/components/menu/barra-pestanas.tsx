@@ -14,6 +14,10 @@ type Props = {
   salir: () => Promise<void>;
   /** «TRM de referencia» (N-01), leída en el servidor por el layout; nada si `GET /trm` falló. */
   trm?: ReactNode;
+  /** Número de avisos sin leer (N-02), del layout; va junto a «Avisos» en la hoja. Nada con 0. */
+  avisos?: ReactNode;
+  /** Punto de avisos sin leer sobre la pestaña «Más», del layout. Nada con 0. */
+  puntoAvisos?: ReactNode;
 };
 
 /**
@@ -77,7 +81,7 @@ function Pestana({ entrada, ruta, hojaAbierta }: { entrada: EntradaMenu; ruta: s
 }
 
 /** Menú móvil (< md): cinco pestañas fijas abajo y hoja «Más» con el resto. */
-export function BarraPestanas({ salir, trm }: Props) {
+export function BarraPestanas({ salir, trm, avisos, puntoAvisos }: Props) {
   const ruta = usePathname();
   const [abierta, setAbierta] = useState(false);
   const idHoja = useId();
@@ -144,7 +148,10 @@ export function BarraPestanas({ salir, trm }: Props) {
                       <span className="flex text-secundario">
                         <IconoNavegacion destino={entrada.destino} />
                       </span>
-                      <span className="truncate">{entrada.rotulo}</span>
+                      <span className="flex min-w-0 items-baseline justify-between gap-3">
+                        <span className="truncate">{entrada.rotulo}</span>
+                        {entrada.destino === "avisos" && avisos}
+                      </span>
                       <span className="flex text-terciario">
                         <ChevronRight size={16} strokeWidth={1.5} aria-hidden />
                       </span>
@@ -208,8 +215,9 @@ export function BarraPestanas({ salir, trm }: Props) {
           onClick={() => setAbierta((a) => !a)}
           className={`${PESTANA} ${masActiva ? "font-semibold text-texto" : "font-normal text-secundario"}`}
         >
-          <span className="flex size-6 items-center justify-center">
+          <span className="relative flex size-6 items-center justify-center">
             <Ellipsis size={20} strokeWidth={1.5} aria-hidden />
+            {puntoAvisos}
           </span>
           <span>Más</span>
         </button>

@@ -512,8 +512,31 @@ Abierto por URL (`&precio=<activoId>`). Desde `xl`, en línea bajo su fila: fond
 ### Día uno de inversiones (`DiaUnoInversiones`)
 «Aún no tienes una cuenta de inversión.» (cuerpo 600) con la explicación en secundario; esqueleto de tabla («Posición», «Cantidad», «Valor» sobre una raya y tres renglones vacíos de 52 px, el último en doble raya); `LineaTrm` «TRM de hoy …»; «Agregar cuenta de inversión» (primario, a todo el ancho en móvil, 400 px en escritorio).
 
+### Avisos (`/avisos`)
+Primera pantalla cuyo contenido no se guarda: la API deriva los avisos y manda campos, no frases. Título, detalle (largo y corto), monto con su sentido, acción, plazo, grupo y momento se arman en `src/domain/aviso/presentacion.ts`; la antelación, en `src/domain/aviso/antelacion.ts`. Leído, resuelto, montos y capital llegan de la API. Todo texto relativo usa `fechaHoy` y `zonaHoraria` de la respuesta, nunca el reloj del navegador. Cabecera a todo el ancho; debajo, desde `xl` (1280 px), lista y antelación en `minmax(0,1fr) | 420px` con 56 px entre ellas, alineadas arriba; por debajo, solo la lista con «Configurar» y la antelación en `?antelacion=1` con «‹ Avisos» (en `xl` el parámetro se ignora). 32 px entre bloques. Alternar leído, «Marcar todo» y la antelación son optimistas (`useOptimistic`) y vuelven atrás con el `mensaje` de la API en `MensajeError` si fallan; `AVISO_NO_ENCONTRADO`, `OCURRENCIA_CERRADA` y `OCURRENCIA_INVALIDA` refrescan la página.
+
+### Lista de avisos (`ListaAvisos`)
+- **Cabecera:** «Avisos» (titulo-1) y debajo «{3} sin leer» / «Todo leído» en `etiqueta` secundaria; a la derecha «Marcar todo como leído» (`Boton` secundario, deshabilitado con 0 sin leer) y, por debajo de `xl`, el botón de icono «Configurar» (deslizadores de 20 px en 44 px, `secundario`). Móvil: «Avisos» con «Configurar» a la derecha y debajo el conteo con «Marcar todo leído» (botón de texto `marca-texto`, 44 px).
+- **Grupos:** «Hoy», «Ayer», «Esta semana» (2 a 6 días atrás) y «Antes», en `rotulo` sobre una raya; los vacíos no salen y el orden interno es el de la API.
+- **Vacío:** `EstadoVacio` «Avisos · 0», «Sin avisos.» y la explicación, sin acción; la cabecera dice «Todo leído».
+
+### Fila de aviso (`FilaAviso`)
+Toda la fila es un `<button>` que alterna leído, estirado sobre el `<li>` con un pseudo-elemento (como la fila de movimiento como enlace), con la etiqueta accesible «{título}. Marcar como leído» / «… no leído». La acción es un hermano por encima del pseudo-elemento, fuera del botón: nunca botón dentro de botón. Renglón abajo, 12 px de relleno vertical y 12 px entre columnas; fondo `hundido` al pasar sobre el botón; el foco del botón dibuja el contorno de latón en toda la fila.
+- **Escritorio (md+):** `12px | 20px | flexible | auto | auto`. Punto de 8 px en `marca` si no leído (transparente y con su espacio si leído; «No leído» / «Leído» oculto), icono del tipo en secundario (`IconoAviso`), título en cuerpo (no leído 600 en tinta; leído 400 en secundario) con el detalle largo debajo en `etiqueta` secundaria, monto en cifra-s (salida con `−` en `salida-texto`, entrada sin signo en tinta, «≈ » si es estimado; precio sin monto) y el momento en cifra-xs secundaria (mínimo 110 px, a la derecha: «08:00», «mar 10 nov · 08:00», «lun 9 nov»). La acción, bajo el momento.
+- **Móvil:** `10px | flexible | auto`, sin icono: título y monto; detalle corto y momento; la acción debajo, en la columna del título.
+- **Acción:** `etiqueta` 600 en `marca-texto`, 44 px. «Confirmar» y «Ajustar» confirman en la fila («Confirmando…» mientras tanto); «Registrar abono» y «Registrar precio» son enlaces a los paneles por URL de Deudas e Inversiones. Resuelto o deuda: sin acción.
+- **Ajuste en la fila** (recurrente variable): bajo la fila, de la columna del título al final (a todo el ancho en móvil), un `CampoMonto` con el monto del aviso, «Confirmar {35.000}» (primario, con la cifra en mono) y «Cancelar» (secundario; apilados en móvil). Enter confirma, Escape cancela. Vacío o cero: «Escribe un valor en pesos, sin decimales.» y no se envía. Un ajuste a la vez.
+
+### Antelación por tipo (`AntelacionAvisos`)
+Un bloque por tipo, en el orden de la API, con renglón abajo: `Casilla` con el rótulo y la descripción y, con 30 px de sangría (la casilla y su separación), el prefijo en `etiqueta` secundaria («Avisar», «Repetir después», «Después de») y las opciones como `ChipCategoria` «como opción» (la vigente con su marca). Tipo inactivo: prefijo y chips en `terciario` y ninguno marcado; siguen activos (elegir uno enciende el tipo). Error en `MensajeError` bajo el bloque.
+- **Columna (`xl`):** «Antelación por tipo» en `rotulo` y a la derecha «Avisos a las 08:00» (hora en mono tinta), sobre una raya.
+- **Página (`?antelacion=1`):** «‹ Avisos» (`EnlaceTexto`), «Antelación por tipo» en titulo-2 y «Los avisos llegan a las 08:00, hora de Colombia.» (`zonaLegible`) en `etiqueta` secundaria, sobre una raya; el prefijo va en su propia línea, sobre los chips.
+
+### Casilla (`Casilla`)
+Casilla de verificación (no exclusiva, a diferencia de la opción única): un `<input type="checkbox">` real oculto, dibujado como cuadro de 18 px con radio `muestra` (borde `terciario`; marcada, borde y relleno en `texto` con la marca de 14 px en `fondo`). Toda la fila es el control (44 px mínimo): rótulo en cuerpo 600 (secundario si no está marcada) y descripción en `etiqueta` secundaria. Foco: contorno de latón en la fila.
+
 ### Estado vacío (C7)
-«La página en blanco»: el encabezado de sección con un «0» tenue, tres renglones vacíos de 44 px y debajo el título (cuerpo 600), el detalle y la acción con un `+` (un `EnlaceTexto`; si la acción no navega, como abrir la captura, un botón con el mismo aspecto). Si el destino aún no existe, la acción va en `terciario` y deshabilitada («Próximamente»), con la misma caja de 44 px para que no salte.
+«La página en blanco»: el encabezado de sección con un «0» tenue, tres renglones vacíos de 44 px y debajo el título (cuerpo 600), el detalle y la acción con un `+` (un `EnlaceTexto`; si la acción no navega, como abrir la captura, un botón con el mismo aspecto). Si el destino aún no existe, la acción va en `terciario` y deshabilitada («Próximamente»), con la misma caja de 44 px para que no salte. La acción es opcional: sin nada que crear (avisos), solo título y detalle.
 
 ### Enlace de texto (`EnlaceTexto`)
 El hermano de «Botón de texto» cuando la acción navega: latón (`marca-texto`), cuerpo 600, sin caja y 44 px de alto aunque el texto mida 22, para que el objetivo táctil sea completo. Se usa en «← Cuentas», «+ Nueva cuenta», «Ver archivadas» y la acción del estado vacío. Si la acción no navega, es un `Boton variante="texto"`.
@@ -568,9 +591,10 @@ Un campo que solo existe con cierta opción (el cupo de una tarjeta) no aparece 
 - **Portada:** `/` lleva a `/resumen`, la primera entrada del menú y de la barra (también tras iniciar sesión).
 - **Móvil:** barra inferior de cinco pestañas con icono y rótulo de 11 px. «Registrar» va al centro en un cuadro de 40 px en tinta y abre la captura a pantalla completa; «Más» abre una hoja con el resto.
 - **Deshabilitado:** los destinos sin construir se muestran en `secundario` con `aria-disabled` y el título «Próximamente».
+- **Contador de avisos:** el número de sin leer en cifra-xs `marca-texto` a la derecha de «Avisos» (menú lateral y hoja «Más») y un punto de 8 px en `marca` (radio de campo: círculo sin salir de los radios) arriba a la derecha del icono de «Más», con «{3} avisos sin leer» oculto. Con 0, ni número ni punto. El layout lo lee en el servidor (`GET /avisos/conteo`, una vez por petición) dentro de `<Suspense>` y lo pasa como nodo, como la TRM; si falla, no se muestra. Se refresca con la revalidación de cualquier acción.
 
 ### Iconos
-Lucide, 20 px, trazo 1,5, en `currentColor` (el color del texto al que acompañan). Hay uno por destino de navegación y uno por tipo de cuenta, y solo se definen en `src/components/iconos.tsx`. Los iconos auxiliares dentro de controles (`+`, check, flechas) van a 16 o 18 px.
+Lucide, 20 px, trazo 1,5, en `currentColor` (el color del texto al que acompañan). Hay uno por destino de navegación, uno por tipo de cuenta y uno por tipo de aviso (recurrente ⟳, cobro ↗, deuda ↙, precio manual el de Inversiones), y solo se definen en `src/components/iconos.tsx`. Los iconos auxiliares dentro de controles (`+`, check, flechas) van a 16 o 18 px.
 
 ## Do's and Don'ts
 

@@ -10,6 +10,7 @@ import { EstadoVacio } from "@/components/estado-vacio";
 import { FilaMovimiento } from "@/components/fila-movimiento";
 import { NavegacionMes } from "@/components/movimientos/navegacion-mes";
 import {
+  IconoAviso,
   IconoCuenta,
   IconoNavegacion,
   ROTULO_DESTINO,
@@ -21,9 +22,11 @@ import { CifrasMes } from "@/components/resumen/cifras-mes";
 import { GastoCategorias } from "@/components/resumen/gasto-categorias";
 import { GraficaPatrimonio, PatrimonioNeto } from "@/components/resumen/grafica-patrimonio";
 import { TarjetaCuenta } from "@/components/tarjeta-cuenta";
+import type { TipoAviso } from "@/domain/aviso/presentacion";
 import type { TipoCuenta } from "@/domain/cuenta/naturaleza";
 import { formatearEquivalencia } from "@/domain/dinero/formato";
 import { AlternarTema } from "./alternar-tema";
+import { MuestraAvisos } from "./muestras-avisos";
 import { MuestraDeudas } from "./muestras-deudas";
 import { MuestraInversiones } from "./muestras-inversiones";
 import {
@@ -250,6 +253,13 @@ function ComponentesResumen() {
 }
 
 const DESTINOS = Object.keys(ROTULO_DESTINO) as DestinoNavegacion[];
+
+const TIPOS_AVISO: readonly [TipoAviso, string][] = [
+  ["recurrente", "Recurrente"],
+  ["cobro", "Cobro"],
+  ["deuda", "Deuda"],
+  ["precio_manual", "Precio manual"],
+];
 const TIPOS_CUENTA = Object.keys(ROTULO_TIPO_CUENTA) as TipoCuenta[];
 
 function Seccion({ numero, titulo, nota, children }: { numero: string; titulo: string; nota?: string; children: ReactNode }) {
@@ -651,6 +661,17 @@ export default function Estilos() {
             </div>
             <p className="mt-4 text-etiqueta text-secundario">Las filas de movimientos no llevan icono.</p>
           </div>
+          <div>
+            <Rotulo>Tipo de aviso · uno por tipo</Rotulo>
+            <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
+              {TIPOS_AVISO.map(([t, rotulo]) => (
+                <div key={t} className="flex items-center gap-3 border-b border-linea py-3 text-cuerpo">
+                  <span className="flex text-secundario"><IconoAviso tipo={t} /></span>
+                  <span>{rotulo}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </Seccion>
 
@@ -699,6 +720,16 @@ export default function Estilos() {
           {(["light", "dark"] as const).map((modo) => (
             <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
               <MuestraInversiones sufijo={modo} />
+            </Panel>
+          ))}
+        </div>
+      </Seccion>
+
+      <Seccion numero="10" titulo="Avisos" nota="Lista y antelación lado a lado desde 1280 px; filas con detalle corto por debajo de 768 px">
+        <div className="grid grid-cols-1 gap-6">
+          {(["light", "dark"] as const).map((modo) => (
+            <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
+              <MuestraAvisos sufijo={modo} />
             </Panel>
           ))}
         </div>

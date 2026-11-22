@@ -23,8 +23,8 @@ const ENTRADA_INVALIDA = {
   mensaje: "No pudimos procesar los datos. Intenta de nuevo.",
 } as const;
 
-/** Las plantillas y sus ocurrencias solo se ven en /recurrentes. */
-const SOLO_RECURRENTES = ["/recurrentes"] as const;
+/** Las plantillas y sus ocurrencias se ven en /recurrentes y dan los avisos de recurrentes. */
+const SOLO_RECURRENTES = ["/recurrentes", "/avisos"] as const;
 
 /** Confirmar o deshacer una confirmación crea o borra un movimiento: cambia también el libro, los saldos y el resumen. */
 const CON_MOVIMIENTO = RUTAS_AFECTADAS;

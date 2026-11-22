@@ -183,7 +183,7 @@ src/
 
 **Construir ahora:** perfil, cuentas, categorías, movimientos, captura
 rápida, cálculo de saldos, resumen del mes, recurrentes, deudas
-y préstamos, inversiones, avisos (dentro de la app).
+y préstamos, inversiones, avisos (dentro de la app), metas de ahorro.
 
 **Diseñado pero no construir todavía:** tarjeta de crédito con ciclo, otros informes (más
 allá del resumen del mes), app de celular (cliente de la API, en línea).

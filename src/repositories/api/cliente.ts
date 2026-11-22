@@ -5,6 +5,7 @@
  * `Authorization: Bearer`. La API verifica el token y las políticas RLS
  * evalúan al usuario real (RN-12, RN-19). La web no toca tablas.
  */
+import { io } from "next/cache";
 import { urlApi } from "@/lib/env-servidor";
 import { crearClienteServidor } from "../supabase/servidor";
 
@@ -27,8 +28,17 @@ export class ErrorApi extends Error {
 
 export type MetodoEscritura = "POST" | "PUT" | "PATCH" | "DELETE";
 
-/** Token de la sesión actual, o `null` si no hay sesión. La API lo verifica; aquí solo se reenvía. */
+/**
+ * Token de la sesión actual, o `null` si no hay sesión. La API lo verifica; aquí solo se reenvía.
+ *
+ * `io()` saca la lectura de todo prerender (build y prefetch parcial): con
+ * `cacheComponents`, el prefetch resuelve `cookies()` y `getSession` lee
+ * `Date.now()` para revisar el vencimiento del token, que Next rechaza como
+ * valor inestable. Datos financieros por usuario: siempre en la petición. En
+ * una petición real y en server actions resuelve al instante.
+ */
 async function tokenDeSesion(): Promise<string | null> {
+  await io();
   const supabase = await crearClienteServidor();
   const { data } = await supabase.auth.getSession();
   return data.session?.access_token ?? null;

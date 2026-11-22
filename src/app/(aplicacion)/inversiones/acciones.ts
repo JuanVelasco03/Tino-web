@@ -33,9 +33,10 @@ const ENTRADA_INVALIDA = {
 
 /**
  * Toda acción de Inversiones cambia el detalle y la lista, el saldo de la
- * cuenta en Cuentas (valor de mercado) y el patrimonio del resumen.
+ * cuenta en Cuentas (valor de mercado), el patrimonio del resumen y los
+ * avisos de precio manual.
  */
-const RUTAS_INVERSIONES = ["/inversiones", "/cuentas", "/resumen"] as const;
+const RUTAS_INVERSIONES = ["/inversiones", "/cuentas", "/resumen", "/avisos"] as const;
 
 function revalidar() {
   for (const ruta of RUTAS_INVERSIONES) revalidatePath(ruta);

@@ -1,6 +1,6 @@
 # SPEC 11 — Avisos
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 03, SPEC 05, SPEC 08, SPEC 09, SPEC 10, Tino-API SPEC 12
 > **Fecha:** 2026-11-22
 > **Objetivo:** Que el usuario vea en `/avisos` sus avisos de recurrentes, cobros, deudas y precios manuales (agrupados, leídos o no, con su acción) y su antelación por tipo, con el número de sin leer en el menú, armando en la web solo las frases a partir de los campos de la API.

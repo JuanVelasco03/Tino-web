@@ -1,8 +1,7 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
-
-export const CLAVE_TEMA = "tino-tema";
+import { CLAVE_TEMA } from "@/lib/tema";
 
 /**
  * Alterna claro/oscuro. La fuente de verdad es `data-theme` en <html>, que el

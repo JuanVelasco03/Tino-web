@@ -11,8 +11,9 @@ type Props = {
    * o botón deshabilitado («Próximamente») mientras el destino no existe.
    * `scroll: false` conserva la posición (p. ej. al abrir un panel por URL).
    * `sinMas` quita el «+» cuando la acción no crea nada («Ver todos»).
+   * Sin ella, solo el título y el detalle (avisos: no hay nada que crear).
    */
-  accion:
+  accion?:
     | { etiqueta: string; href: string; scroll?: boolean; sinMas?: boolean }
     | { etiqueta: string; alPulsar: () => void }
     | { etiqueta: string; deshabilitada: true };
@@ -39,7 +40,7 @@ export function EstadoVacio({ rotulo, titulo, detalle, accion }: Props) {
       <div className="flex flex-col items-start gap-1 pt-6">
         <p className="text-cuerpo font-semibold">{titulo}</p>
         <p className="text-etiqueta font-normal text-secundario">{detalle}</p>
-        {"href" in accion ? (
+        {accion === undefined ? null : "href" in accion ? (
           <EnlaceTexto href={accion.href} scroll={accion.scroll} className="mt-1">
             {!accion.sinMas && <Plus size={16} strokeWidth={1.5} aria-hidden />}
             {accion.etiqueta}

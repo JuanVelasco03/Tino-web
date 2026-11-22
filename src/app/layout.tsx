@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Familjen_Grotesk, IBM_Plex_Mono } from "next/font/google";
-import { CLAVE_TEMA } from "@/components/boton-tema";
+import { CLAVE_TEMA } from "@/lib/tema";
 import "./globals.css";
 
 const SCRIPT_TEMA = `try{var t=localStorage.getItem("${CLAVE_TEMA}");if(t!=="light"&&t!=="dark"){t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.dataset.theme=t}catch(e){}`;

@@ -14,12 +14,14 @@ type Props = {
   salir: () => Promise<void>;
   /** «TRM de referencia» (N-01), leída en el servidor por el layout; nada si `GET /trm` falló. */
   trm?: ReactNode;
+  /** Número de avisos sin leer (N-02), del layout; va a la derecha de «Avisos». Nada con 0. */
+  avisos?: ReactNode;
 };
 
 const FILA = "flex h-10 items-center gap-3 rounded-campo px-2 text-cuerpo";
 
 /** Menú de escritorio (md+): barra lateral de 232 px. */
-export function MenuLateral({ salir, trm }: Props) {
+export function MenuLateral({ salir, trm, avisos }: Props) {
   const ruta = usePathname();
   const { abrir } = useContextoCaptura();
 
@@ -46,6 +48,7 @@ export function MenuLateral({ salir, trm }: Props) {
                 <IconoNavegacion destino={entrada.destino} />
               </span>
               <span className="flex-1 truncate">{entrada.rotulo}</span>
+              {entrada.destino === "avisos" && avisos}
             </>
           );
 

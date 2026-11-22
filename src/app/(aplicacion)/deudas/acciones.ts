@@ -36,9 +36,10 @@ const ENTRADA_INVALIDA = {
 
 /**
  * Toda acción de Deudas mueve dinero o nombres de cuenta: cambia la lista y el
- * detalle, el libro de movimientos, los saldos y el resumen (N-55).
+ * detalle, el libro de movimientos, los saldos, el resumen (N-55) y los
+ * avisos de cobros y deudas.
  */
-const RUTAS_DEUDAS = ["/deudas", "/movimientos", "/cuentas", "/resumen"] as const;
+const RUTAS_DEUDAS = ["/deudas", "/movimientos", "/cuentas", "/resumen", "/avisos"] as const;
 
 function revalidar() {
   for (const ruta of RUTAS_DEUDAS) revalidatePath(ruta);

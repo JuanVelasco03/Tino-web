@@ -15,11 +15,12 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react";
+import type { TipoAviso } from "@/domain/aviso/presentacion";
 import type { TipoCuenta } from "@/domain/cuenta/naturaleza";
 
 /**
  * Lucide, 20 px, trazo 1,5, en el color del texto que acompañan (currentColor).
- * Uno por destino de navegación y uno por tipo de cuenta.
+ * Uno por destino de navegación, uno por tipo de cuenta y uno por tipo de aviso.
  * Las filas de movimientos NO llevan icono.
  */
 export type DestinoNavegacion =
@@ -82,5 +83,18 @@ export function IconoNavegacion({ destino }: { destino: DestinoNavegacion }) {
 
 export function IconoCuenta({ tipo }: { tipo: TipoCuenta }) {
   const Icono = ICONO_CUENTA[tipo];
+  return <Icono size={20} strokeWidth={1.5} aria-hidden />;
+}
+
+/** Recurrente ⟳ (el de Recurrentes), cobro ↗, deuda ↙ y precio manual el de Inversiones. */
+const ICONO_AVISO: Record<TipoAviso, LucideIcon> = {
+  recurrente: Repeat,
+  cobro: ArrowUpRight,
+  deuda: ArrowDownLeft,
+  precio_manual: TrendingUp,
+};
+
+export function IconoAviso({ tipo }: { tipo: TipoAviso }) {
+  const Icono = ICONO_AVISO[tipo];
   return <Icono size={20} strokeWidth={1.5} aria-hidden />;
 }
