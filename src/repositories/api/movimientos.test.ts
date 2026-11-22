@@ -25,6 +25,7 @@ const DIVIDIDO: MovimientoDto = {
   tipo: "gasto",
   monto: "30000",
   moneda: "COP",
+  montoDestino: null,
   tasa: "1",
   fecha: "2026-11-19",
   descripcion: "Almuerzo y mercado",
@@ -61,6 +62,9 @@ describe("aMovimiento", () => {
       id: DIVIDIDO.id,
       tipo: "gasto",
       monto: 30000n,
+      moneda: "COP",
+      montoDestino: null,
+      tasa: 100n,
       fecha: "2026-11-19",
       descripcion: "Almuerzo y mercado",
       nota: "con Ana",
@@ -83,6 +87,12 @@ describe("aMovimiento", () => {
 
   it("montos por encima de 2^53 no pierden precisión", () => {
     expect(aMovimiento({ ...DIVIDIDO, monto: "9007199254740993" }).monto).toBe(9007199254740993n);
+  });
+
+  it("transferencia entre monedas: montoDestino y la tasa implícita en centésimas", () => {
+    const fondeo = aMovimiento({ ...TRANSFERENCIA, monto: "8240000", montoDestino: "200000", tasa: "4120" });
+    expect(fondeo).toMatchObject({ moneda: "COP", monto: 8_240_000n, montoDestino: 200_000n, tasa: 412_000n });
+    expect(aMovimiento({ ...TRANSFERENCIA, moneda: "USD", tasa: "4166.666667" }).tasa).toBe(416_667n);
   });
 });
 

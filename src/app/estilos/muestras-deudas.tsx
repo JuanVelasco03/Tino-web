@@ -194,7 +194,7 @@ function datosDeudas(sufijo: string): { lista: Prestamos; camila: PrestamoDetall
 }
 
 function cuenta(id: string, nombre: string, tipo: "banco" | "efectivo", saldo: bigint): Cuenta {
-  return { id, nombre, tipo, naturaleza: "activo", detalle: null, saldo, saldoInicial: 0n, tarjeta: null, archivadaEn: null };
+  return { id, nombre, tipo, moneda: "COP", naturaleza: "activo", detalle: null, saldo, saldoInicial: 0n, tarjeta: null, inversion: null, archivadaEn: null };
 }
 
 const CATEGORIAS_GASTO = ["Comida", "Casa", "Transporte", "Salud", "Otros"].map((nombre) => ({

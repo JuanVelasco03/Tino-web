@@ -434,11 +434,13 @@ function cuentaMuestra(id: string, nombre: string, tipo: Tipo, saldo: bigint): C
     id,
     nombre,
     tipo,
+    moneda: "COP",
     naturaleza: tipo === "tarjeta_credito" ? "pasivo" : "activo",
     detalle: null,
     saldo,
     saldoInicial: 0n,
     tarjeta: null,
+    inversion: null,
     archivadaEn: null,
   };
 }

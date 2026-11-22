@@ -44,3 +44,12 @@ export function efectoEnPatrimonio(tipo: TipoCuenta, sentido: Sentido, monto: bi
   const efecto = efectoEnSaldo(tipo, sentido, monto);
   return naturalezaDe(tipo) === "activo" ? efecto : -efecto;
 }
+
+/**
+ * ¿Puede ser la cuenta de un gasto o un ingreso? Una inversión solo admite
+ * transferencias (`CUENTA_DE_INVERSION`): todo selector de cuenta fuera de la
+ * transferencia la excluye.
+ */
+export function admiteGastoIngreso(tipo: TipoCuenta): boolean {
+  return tipo !== "inversion";
+}

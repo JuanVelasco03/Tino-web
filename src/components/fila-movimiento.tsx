@@ -21,6 +21,8 @@ type Props = {
   partes?: ParteFila[];
   /** Dólares: equivalente en COP, que se muestra debajo en secundario. */
   equivalenteCOP?: bigint;
+  /** Transferencia entre monedas: «US$ 2.000,00 · TRM 4.120,00» bajo la cifra (que es el lado COP). */
+  detalleImporte?: string | null;
   /** Toda la columna está en pesos: se omite «COP». */
   omitirCOP?: boolean;
   /** El recién registrado o guardado, mientras dura su aviso: fondo hundido y peso 600. */
@@ -64,6 +66,7 @@ export function FilaMovimiento({
   transferencia,
   partes = [],
   equivalenteCOP,
+  detalleImporte = null,
   omitirCOP = false,
   resaltada = false,
   href,
@@ -117,6 +120,7 @@ export function FilaMovimiento({
             ≈ {formatearDinero({ monto: equivalenteCOP, moneda: "COP" }, { omitirCOP: true })}
           </div>
         )}
+        {detalleImporte && <div className="whitespace-nowrap text-etiqueta text-secundario">{detalleImporte}</div>}
       </div>
       {partes.length > 0 && <SubRenglones partes={partes} omitirCOP={omitirCOP} className="col-span-2 col-start-2 pt-1" />}
     </div>

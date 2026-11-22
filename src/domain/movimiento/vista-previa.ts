@@ -3,7 +3,8 @@
  * Es solo presentación; el saldo vigente lo da `GET /cuentas` (RN-01).
  */
 import { efectoEnSaldo, type Sentido, type TipoCuenta } from "../cuenta/naturaleza";
-import type { TipoMovimiento } from "./cuerpo";
+import { formatearDinero, formatearTasa, type Dinero, type Moneda } from "../dinero/formato";
+import { ladoCop, type TipoMovimiento } from "./cuerpo";
 
 /**
  * Saldo de la cuenta tras el movimiento: `saldo + efectoEnSaldo` (RN-02).
@@ -28,4 +29,25 @@ export function importeEnPatrimonio(tipo: TipoMovimiento, monto: bigint): bigint
     case "transferencia":
       return null;
   }
+}
+
+/**
+ * Importe que muestra la lista y su línea de detalle. Una transferencia entre
+ * monedas se lee por su lado COP, con «US$ 2.000,00 · TRM 4.120,00» debajo
+ * (el lado USD y la tasa congelada del movimiento, RN-04). Las demás, su
+ * monto en su moneda, sin línea.
+ */
+export function importeMostrado(m: {
+  moneda: Moneda;
+  monto: bigint;
+  montoDestino: bigint | null;
+  tasa: bigint;
+}): { dinero: Dinero; linea: string | null } {
+  const cop = ladoCop(m);
+  if (cop === null || m.montoDestino === null) return { dinero: { monto: m.monto, moneda: m.moneda }, linea: null };
+  const dolares = m.moneda === "USD" ? m.monto : m.montoDestino;
+  return {
+    dinero: { monto: cop, moneda: "COP" },
+    linea: `${formatearDinero({ monto: dolares, moneda: "USD" })} · TRM ${formatearTasa(m.tasa)}`,
+  };
 }

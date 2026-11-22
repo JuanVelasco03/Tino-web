@@ -1,6 +1,6 @@
 # SPEC 10 — Inversiones
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 03, SPEC 04, SPEC 05, SPEC 06, SPEC 07, SPEC 08, SPEC 09, Tino-API SPEC 09, Tino-API SPEC 10, Tino-API SPEC 11
 > **Fecha:** 2026-11-22
 > **Objetivo:** Que el usuario lleve en `/inversiones` sus cuentas de inversión en USD o COP (valor de mercado, posiciones, precio manual, compras, ventas y posiciones iniciales), las fondee desde la captura con dos montos y las vea a mercado en Cuentas, Movimientos, Resumen y el menú, con todo calculado por la API.

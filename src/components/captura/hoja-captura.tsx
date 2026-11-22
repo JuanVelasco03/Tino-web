@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode, type SyntheticEvent } from "react";
 import { Check, X } from "lucide-react";
-import { formatearDinero } from "@/domain/dinero/formato";
+import { formatearEntrada } from "@/domain/dinero/entrada";
+import { formatearDinero, type Moneda } from "@/domain/dinero/formato";
 import { formatearDiaSemana, formatearFechaSinAnio } from "@/domain/fecha/formato";
 import type { Cuenta } from "@/services/captura";
 import { BloqueEliminar } from "../bloque-eliminar";
@@ -16,10 +17,12 @@ import {
   AvisoSoloLectura,
   conceptoDe,
   ConfirmarDescarte,
+  cuentasOfrecidas,
   detalleEliminar,
   ErrorCarga,
   etiquetaEnviar,
   SinCuentas,
+  textoTasa,
   usarSiempre,
   type EstadoFormulario,
 } from "./panel-captura";
@@ -34,6 +37,11 @@ type Hoja = "categoria" | "cuenta" | "destino" | "fecha";
 /** Pesos sin «COP». */
 function pesos(monto: bigint): string {
   return formatearDinero({ monto, moneda: "COP" }, { omitirCOP: true });
+}
+
+/** En su moneda: pesos sin «COP», dólares con «US$». */
+function enMoneda(monto: bigint, moneda: Moneda): string {
+  return formatearDinero({ monto, moneda }, { omitirCOP: true });
 }
 
 /** Curva de `globals.css`: WAAPI no acepta `var()`. */
@@ -240,6 +248,7 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
 
   const erroresPie = [
     c.errores.tipo,
+    c.errores.montoDestino,
     c.errores.categoria,
     c.errores.partes,
     c.errores.cuenta,
@@ -255,7 +264,7 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
   function listaCuentas(rol: RolCuenta) {
     const elegida = rol === "cuenta" ? valores.cuentaId : valores.destinoId;
     const idPredeterminada = c.predeterminada?.id ?? null;
-    return c.cuentas.map((cuenta: Cuenta) => {
+    return cuentasOfrecidas(c).map((cuenta: Cuenta) => {
       const tipo = cuenta.naturaleza === "pasivo" ? `${ROTULO_TIPO_CUENTA[cuenta.tipo]} · pasivo` : ROTULO_TIPO_CUENTA[cuenta.tipo];
       return (
         <FilaHoja
@@ -300,7 +309,7 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
           <Boton
             type="submit"
             disabled={!c.puedeEnviar}
-            monto={registro && c.montoNumero !== null ? pesos(c.montoNumero) : undefined}
+            monto={registro && c.montoNumero !== null ? enMoneda(c.montoNumero, c.monedaMonto) : undefined}
             className="w-full justify-center"
           >
             {etiquetaEnviar(c)}
@@ -360,7 +369,7 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
                   <output aria-live="polite" className={`truncate font-mono tabular-nums ${tamano} ${valores.monto === "" ? "text-terciario" : ""}`}>
                     {montoTexto}
                   </output>
-                  <span className="text-etiqueta text-secundario">COP</span>
+                  <span className="text-etiqueta text-secundario">{c.monedaMonto}</span>
                 </div>
                 {c.errores.monto && <MensajeError mensaje={c.errores.monto} />}
                 <input
@@ -445,7 +454,26 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
                 <Celda rotulo="Fecha" valor={rotuloFechaCorto(valores.fecha, fechaHoy)} alPulsar={() => setHoja("fecha")} />
               </div>
 
-              <TecladoNumerico valor={valores.monto} alCambiar={(v) => c.cambiar("monto", v)} />
+              {c.conMontoDestino && c.monedaDestino && (
+                <div className="shrink-0 border-t border-linea px-4 py-2">
+                  <label className="flex items-baseline gap-3">
+                    <span className="text-rotulo uppercase text-secundario">Llegó</span>
+                    <input
+                      value={valores.montoDestino}
+                      onChange={(e) => c.cambiar("montoDestino", formatearEntrada(e.target.value, c.monedaDestino ?? "COP"))}
+                      inputMode={c.monedaDestino === "USD" ? "decimal" : "numeric"}
+                      autoComplete="off"
+                      placeholder="0"
+                      aria-invalid={c.errores.montoDestino ? true : undefined}
+                      className="h-11 min-w-0 flex-1 rounded-none border-0 bg-transparent p-0 text-right font-mono text-cifra-m tabular-nums text-texto placeholder:text-terciario"
+                    />
+                    <span className="text-etiqueta text-secundario">{c.monedaDestino}</span>
+                  </label>
+                  {textoTasa(c) && <p className="text-etiqueta font-normal text-secundario">{textoTasa(c)}</p>}
+                </div>
+              )}
+
+              <TecladoNumerico valor={valores.monto} moneda={c.monedaMonto} alCambiar={(v) => c.cambiar("monto", v)} />
             </fieldset>
 
             <div className="relative shrink-0 px-4 pt-3 pb-[max(24px,env(safe-area-inset-bottom))]">

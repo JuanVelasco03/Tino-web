@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ofertaDeRegla, type Oferta } from "@/domain/categorizacion/oferta";
 import { mesDeFecha } from "@/domain/fecha/formato";
-import { cuerpoDesdeValores, montoValido, type Categoria } from "@/domain/movimiento/cuerpo";
+import { cuerpoDesdeValores, type Categoria } from "@/domain/movimiento/cuerpo";
 import { cuentaArchivada, cuentaDePrestamo, hayCambios, valoresDesdeMovimiento } from "@/domain/movimiento/edicion";
 import type { DatosCaptura, ResultadoSugerencias } from "@/services/captura";
 import type {
@@ -65,7 +65,7 @@ type Opciones = {
  */
 export function useEdicion({ movimiento, datos, mes, prestamos = [], acciones, alTerminar, alCerrar }: Opciones) {
   const [iniciales] = useState(() => valoresDesdeMovimiento(movimiento));
-  const f = useFormulario({ sugerir: acciones.sugerir, iniciales, categoriasPorTipo: datos.captura.categorias });
+  const f = useFormulario({ sugerir: acciones.sugerir, iniciales, categoriasPorTipo: datos.captura.categorias, cuentas: datos.cuentas });
   const { valores } = f;
 
   const [enviando, setEnviando] = useState(false);
@@ -90,7 +90,7 @@ export function useEdicion({ movimiento, datos, mes, prestamos = [], acciones, a
     return true;
   }
 
-  const puedeEnviar = soloLectura === null && montoValido(valores.monto) !== null && f.errorDePartes === null && !ocupado;
+  const puedeEnviar = soloLectura === null && f.montosValidos && f.errorDePartes === null && !ocupado;
 
   /** `PUT /movimientos/:id`. Devuelve `true` si se guardó (la presentación cierra). */
   async function enviar(): Promise<boolean> {
@@ -103,7 +103,7 @@ export function useEdicion({ movimiento, datos, mes, prestamos = [], acciones, a
     const enviados = valores;
     // Siempre la propuesta de la descripción final: decide si se ofrece crear o ajustar la regla.
     const propuestaUsada = await f.propuestaPara(enviados, true);
-    const cuerpo = cuerpoDesdeValores(enviados, propuestaUsada);
+    const cuerpo = cuerpoDesdeValores(enviados, propuestaUsada, f.monedas);
     const resultado = cuerpo ? await acciones.guardar(movimiento.id, cuerpo) : null;
     enCurso.current = false;
     setEnviando(false);
@@ -160,6 +160,7 @@ export function useEdicion({ movimiento, datos, mes, prestamos = [], acciones, a
     estadoCarga: "lista" as const,
     captura: datos.captura,
     cuentas: datos.cuentas,
+    trm: datos.trm ?? null,
     sinCuentas: false,
     cuentaElegida: datos.cuentas.find((c) => c.id === valores.cuentaId) ?? null,
     /** Sin «Usar siempre» en la edición: el rótulo de la cuenta no la menciona. */

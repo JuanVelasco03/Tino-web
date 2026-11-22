@@ -3,7 +3,9 @@
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { cambiosEdicion, type TipoEditable } from "@/domain/cuenta/edicion";
-import { aDigitos, desdeMonto } from "@/domain/dinero/entrada";
+import { aMenores, desdeMenores, desdeMonto } from "@/domain/dinero/entrada";
+import type { Moneda } from "@/domain/dinero/formato";
+import { mensajeMonto } from "@/domain/inversion/formulario";
 import type { CampoCuenta, Cuenta, EdicionCuenta, ResultadoCuenta, ValoresCuenta } from "@/services/cuentas";
 import { CampoSubrayado } from "../campo-subrayado";
 import { Boton } from "../boton";
@@ -30,8 +32,6 @@ type Props = {
 
 type Errores = Partial<Record<CampoCuenta, string>>;
 
-const MENSAJE_MONTO = "Escribe un valor en pesos, sin decimales.";
-
 function opcion(tipo: TipoEditable): Opcion<TipoEditable> {
   return { valor: tipo, rotulo: ROTULO_TIPO_CUENTA[tipo], icono: <IconoCuenta tipo={tipo} /> };
 }
@@ -47,7 +47,8 @@ function valoresDe(cuenta: Cuenta): ValoresCuenta {
     nombre: cuenta.nombre,
     tipo: cuenta.tipo,
     detalle: cuenta.detalle ?? "",
-    saldo: desdeMonto(cuenta.saldoInicial),
+    // En una inversión, el efectivo inicial en su moneda.
+    saldo: desdeMenores(cuenta.saldoInicial, cuenta.moneda),
     cupo: cuenta.tarjeta ? desdeMonto(cuenta.tarjeta.cupo) : "",
   };
 }
@@ -57,8 +58,8 @@ function iguales(a: ValoresCuenta, b: ValoresCuenta): boolean {
 }
 
 /** Monto que no se podrá enviar. Vacío es válido: el saldo vacío vale 0 y el cupo vacío lo rechaza la API. */
-function montoMalEscrito(texto: string): boolean {
-  return texto.trim() !== "" && aDigitos(texto) === null;
+function montoMalEscrito(texto: string, moneda: Moneda = "COP"): boolean {
+  return texto.trim() !== "" && aMenores(texto, moneda) === null;
 }
 
 /**
@@ -82,6 +83,9 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
   const [pendiente, iniciar] = useTransition();
 
   const esTarjeta = valores.tipo === "tarjeta_credito";
+  /** Una inversión: tipo fijo, efectivo inicial en su moneda, sin cupo (SPEC 10). */
+  const esInversion = cuenta?.tipo === "inversion";
+  const moneda: Moneda = cuenta?.moneda ?? "COP";
   const hayCambios = !iguales(valores, iniciales);
 
   /** Retira la hoja y después quita `?cuenta=` de la URL, que la desmonta. */
@@ -108,7 +112,9 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
 
   function mostrarResultado(resultado: ResultadoCuenta): boolean {
     if (resultado.ok) return true;
-    if (resultado.campo) setErrores((actual) => ({ ...actual, [resultado.campo as CampoCuenta]: resultado.mensaje }));
+    // El efectivo inicial de una inversión que deja el efectivo negativo algún día: bajo «Efectivo inicial».
+    const campo = resultado.campo ?? (resultado.codigo === "EFECTIVO_INSUFICIENTE" ? "saldo" : undefined);
+    if (campo) setErrores((actual) => ({ ...actual, [campo]: resultado.mensaje }));
     else setErrorGeneral(resultado.mensaje);
     return false;
   }
@@ -119,8 +125,8 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
     setErrorGeneral(null);
 
     const locales: Errores = {};
-    if (montoMalEscrito(valores.saldo)) locales.saldo = MENSAJE_MONTO;
-    if (esTarjeta && montoMalEscrito(valores.cupo)) locales.cupo = MENSAJE_MONTO;
+    if (montoMalEscrito(valores.saldo, moneda)) locales.saldo = mensajeMonto(moneda);
+    if (esTarjeta && montoMalEscrito(valores.cupo)) locales.cupo = mensajeMonto("COP");
     if (Object.keys(locales).length > 0) {
       setErrores(locales);
       return;
@@ -172,7 +178,17 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
   }
 
   const guardando = pendiente && accion === "guardar";
-  const etiquetaSaldo = esAlta ? (esTarjeta ? "Deuda de hoy" : "Saldo de hoy") : esTarjeta ? "Deuda inicial" : "Saldo inicial";
+  const etiquetaSaldo = esAlta
+    ? esTarjeta
+      ? "Deuda de hoy"
+      : "Saldo de hoy"
+    : esInversion
+      ? "Efectivo inicial"
+      : esTarjeta
+        ? "Deuda inicial"
+        : "Saldo inicial";
+  /** Una inversión no se archiva con efectivo o posiciones, pero su saldo es el valor en COP: decide la API (`SALDO_NO_CERO`). */
+  const archivable = esInversion || cuenta?.saldo === 0n;
   const etiquetaGuardar = esAlta ? (guardando ? "Creando…" : "Crear cuenta") : guardando ? "Guardando…" : "Guardar cambios";
 
   return (
@@ -188,22 +204,23 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
           placeholder="Nequi"
         />
 
-        {cuenta?.tipo === "tarjeta_credito" ? (
+        {cuenta?.tipo === "tarjeta_credito" || cuenta?.tipo === "inversion" ? (
           <div className="flex flex-col gap-1">
             <span className="text-rotulo uppercase text-secundario">Tipo</span>
             <div className="flex min-h-11 items-center gap-3 text-cuerpo">
               <span className="flex text-secundario">
-                <IconoCuenta tipo="tarjeta_credito" />
+                <IconoCuenta tipo={cuenta.tipo} />
               </span>
-              {ROTULO_TIPO_CUENTA.tarjeta_credito}
+              {cuenta.tipo === "inversion" ? `${ROTULO_TIPO_CUENTA.inversion} · ${cuenta.moneda}` : ROTULO_TIPO_CUENTA.tarjeta_credito}
             </div>
+            {errores.tipo && <MensajeError mensaje={errores.tipo} />}
           </div>
         ) : (
           <OpcionUnica
             nombre="tipo"
             etiqueta="Tipo"
             opciones={esAlta ? OPCIONES_ALTA : OPCIONES_ACTIVO}
-            valor={valores.tipo}
+            valor={valores.tipo as TipoEditable}
             alCambiar={(tipo) => cambiar("tipo", tipo)}
             error={errores.tipo}
           />
@@ -222,7 +239,7 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
         <div className="flex flex-col">
           <CampoMonto
             valor={valores.saldo}
-            moneda="COP"
+            moneda={moneda}
             etiqueta={etiquetaSaldo}
             editable={{
               nombre: "saldo",
@@ -287,10 +304,10 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
       {cuenta && (
         <div className="mt-6 flex flex-col gap-6 border-t border-linea pt-6">
           <div className="flex flex-col items-start gap-2">
-            <Boton variante="secundario" onClick={archivar} disabled={pendiente || cuenta.saldo !== 0n}>
+            <Boton variante="secundario" onClick={archivar} disabled={pendiente || !archivable}>
               {pendiente && accion === "archivar" ? "Archivando…" : "Archivar"}
             </Boton>
-            {cuenta.saldo !== 0n && (
+            {!archivable && (
               <p className="text-etiqueta font-normal text-secundario">Solo puedes archivar una cuenta con saldo cero.</p>
             )}
             {errorArchivo && <MensajeError mensaje={errorArchivo} />}

@@ -82,3 +82,24 @@ describe("cambiosEdicion", () => {
     ).toEqual({ nombre: "Visa Oro", saldoInicial: "0", cupo: "6000000" });
   });
 });
+
+describe("cambiosEdicion de una inversión", () => {
+  const ETORO: CuentaEditable = { nombre: "eToro", tipo: "inversion", moneda: "USD", detalle: null, saldoInicial: 51_361n, tarjeta: null };
+  const SIN_CAMBIOS: ValoresCuenta = { nombre: "eToro", tipo: "inversion", detalle: "", saldo: "513,61", cupo: "" };
+
+  it("efectivo inicial en dólares sin cambios → null", () => {
+    expect(cambiosEdicion(ETORO, SIN_CAMBIOS)).toBeNull();
+  });
+
+  it("efectivo inicial en centavos", () => {
+    expect(cambiosEdicion(ETORO, { ...SIN_CAMBIOS, saldo: "1.000,50" })).toEqual({ saldoInicial: "100050" });
+  });
+
+  it("el tipo nunca se envía", () => {
+    expect(cambiosEdicion(ETORO, { ...SIN_CAMBIOS, nombre: "eToro USD" })).toEqual({ nombre: "eToro USD" });
+  });
+
+  it("efectivo mal escrito se devuelve tal cual (la acción lo rechaza)", () => {
+    expect(cambiosEdicion(ETORO, { ...SIN_CAMBIOS, saldo: "1,234" })).toEqual({ saldoInicial: "1,234" });
+  });
+});

@@ -42,6 +42,7 @@ const EJEMPLO: ResumenDto = {
     fechaCierre: "2026-11-30",
     patrimonioAnterior: "2580000",
     resultado: "-300000",
+    revaluacion: "0",
     otrosCambios: "0",
     patrimonioCierre: "2280000",
   },
@@ -93,6 +94,7 @@ describe("aResumen", () => {
       fechaCierre: "2026-11-30",
       patrimonioAnterior: 2_580_000n,
       resultado: -300_000n,
+      revaluacion: 0n,
       otrosCambios: 0n,
       patrimonioCierre: 2_280_000n,
     });

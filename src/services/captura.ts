@@ -4,15 +4,19 @@ import type { Propuesta } from "@/domain/movimiento/cuerpo";
 import * as apiCaptura from "@/repositories/api/captura";
 import type { Captura, Categoria, Sugerencias } from "@/repositories/api/captura";
 import { ErrorApi } from "@/repositories/api/cliente";
-import { listarCuentas, type Cuenta } from "@/repositories/api/cuentas";
+import { listarCuentas, type Cuenta, type Trm } from "@/repositories/api/cuentas";
 import type { TipoMovimiento } from "@/repositories/api/movimientos";
 import * as apiReglas from "@/repositories/api/reglas";
 
-export type { Captura, Categoria, Cuenta, Oferta, Propuesta, Sugerencias };
+export type { Captura, Categoria, Cuenta, Oferta, Propuesta, Sugerencias, Trm };
 export { ErrorApi };
 
-/** Lo que el formulario necesita al abrir: la captura y las cuentas activas (activos, luego pasivos). */
-export type DatosCaptura = { captura: Captura; cuentas: Cuenta[] };
+/**
+ * Lo que el formulario necesita al abrir: la captura, las cuentas activas
+ * (activos, luego pasivos) y la TRM de hoy de `GET /cuentas`, para la tasa de
+ * vista previa de una transferencia entre monedas.
+ */
+export type DatosCaptura = { captura: Captura; cuentas: Cuenta[]; trm?: Trm | null };
 
 export type ResultadoCarga = ({ ok: true } & DatosCaptura) | { ok: false; codigo: string; mensaje: string };
 
@@ -32,7 +36,7 @@ async function conSesion<T>(llamada: () => Promise<T>): Promise<T> {
 export async function cargar(): Promise<DatosCaptura> {
   return conSesion(async () => {
     const [captura, lista] = await Promise.all([apiCaptura.leerCaptura(), listarCuentas()]);
-    return { captura, cuentas: [...lista.activos.cuentas, ...lista.pasivos.cuentas] };
+    return { captura, cuentas: [...lista.activos.cuentas, ...lista.pasivos.cuentas], trm: lista.trm };
   });
 }
 

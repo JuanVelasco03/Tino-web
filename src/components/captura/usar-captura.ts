@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ofertaDeRegla, type Oferta } from "@/domain/categorizacion/oferta";
 import type { Sentido } from "@/domain/cuenta/naturaleza";
-import { cuerpoDesdeValores, montoValido, type Categoria } from "@/domain/movimiento/cuerpo";
+import { cuerpoDesdeValores, type Categoria } from "@/domain/movimiento/cuerpo";
 import { saldoResultante } from "@/domain/movimiento/vista-previa";
 import type { Cuenta, DatosCaptura, ResultadoCarga, ResultadoSugerencias } from "@/services/captura";
 import type {
@@ -41,6 +41,7 @@ export const PLAZO_AVISO_MS = 5000;
 const VALORES_INICIALES: ValoresCaptura = {
   tipo: "gasto",
   monto: "",
+  montoDestino: "",
   descripcion: "",
   categoria: { modo: "propuesta" },
   cuentaId: null,
@@ -75,6 +76,7 @@ export function useCaptura(acciones: AccionesCaptura) {
     sugerir: acciones.sugerir,
     iniciales: VALORES_INICIALES,
     categoriasPorTipo: datos?.captura.categorias ?? null,
+    cuentas: datos?.cuentas,
   });
   const { valores, setValores } = f;
 
@@ -106,8 +108,8 @@ export function useCaptura(acciones: AccionesCaptura) {
       setEstadoCarga((actual) => (actual === "lista" ? actual : "error"));
       return;
     }
-    const { captura, cuentas } = resultado;
-    setDatos({ captura, cuentas });
+    const { captura, cuentas, trm } = resultado;
+    setDatos({ captura, cuentas, trm });
     setEstadoCarga("lista");
     setValores((actual) => {
       const existe = (id: string | null) => id !== null && cuentas.some((c) => c.id === id);
@@ -144,7 +146,7 @@ export function useCaptura(acciones: AccionesCaptura) {
 
   const sinCuentas = datos !== null && datos.cuentas.length === 0;
   const puedeEnviar =
-    montoValido(valores.monto) !== null && f.errorDePartes === null && datos !== null && !sinCuentas && !enviando;
+    f.montosValidos && f.errorDePartes === null && datos !== null && !sinCuentas && !enviando;
 
   /** Registra. Devuelve `false`: la captura queda abierta, lista para otro. */
   async function enviar(): Promise<boolean> {
@@ -155,7 +157,7 @@ export function useCaptura(acciones: AccionesCaptura) {
 
     const enviados = valores;
     const propuestaUsada = await f.propuestaPara(enviados, false);
-    const cuerpo = cuerpoDesdeValores(enviados, propuestaUsada);
+    const cuerpo = cuerpoDesdeValores(enviados, propuestaUsada, f.monedas);
     const resultado = cuerpo ? await acciones.registrar(cuerpo) : null;
     enCurso.current = false;
     setEnviando(false);
@@ -179,7 +181,7 @@ export function useCaptura(acciones: AccionesCaptura) {
     mostrarAviso(resultado.movimiento);
 
     // Listo para otro: tipo, cuentas y fecha se mantienen.
-    setValores((actual) => ({ ...actual, monto: "", descripcion: "", categoria: { modo: "propuesta" }, nota: "", partes: null }));
+    setValores((actual) => ({ ...actual, monto: "", montoDestino: "", descripcion: "", categoria: { modo: "propuesta" }, nota: "", partes: null }));
     f.olvidarSugerencias();
     setEnvios((n) => n + 1);
     void cargar(); // saldos, gastos de hoy y frecuentes, en segundo plano
@@ -241,13 +243,19 @@ export function useCaptura(acciones: AccionesCaptura) {
   const cuentas: Cuenta[] = datos?.cuentas ?? [];
   const captura = datos?.captura ?? null;
 
-  /** Saldo estimado de la cuenta elegida en ese rol tras el movimiento (solo presentación, RN-02). */
+  /**
+   * Saldo estimado de la cuenta elegida en ese rol tras el movimiento (solo
+   * presentación, RN-02). Una inversión no: su saldo es el valor de mercado en
+   * COP y el movimiento solo toca su efectivo. Entre monedas, el destino usa
+   * «Llegó».
+   */
   function vistaPrevia(cuenta: Cuenta, rol: RolCuenta): bigint | null {
-    if (f.montoNumero === null) return null;
     const elegida = rol === "cuenta" ? valores.cuentaId : valores.destinoId;
-    if (cuenta.id !== elegida) return null;
+    if (cuenta.id !== elegida || cuenta.tipo === "inversion") return null;
     if (rol === "destino" && valores.tipo !== "transferencia") return null;
-    return saldoResultante(cuenta, sentidoDe(valores.tipo, rol), f.montoNumero);
+    const monto = rol === "destino" && f.conMontoDestino ? f.montoDestinoNumero : f.montoNumero;
+    if (monto === null) return null;
+    return saldoResultante(cuenta, sentidoDe(valores.tipo, rol), monto);
   }
 
   return {
@@ -262,6 +270,7 @@ export function useCaptura(acciones: AccionesCaptura) {
     estadoCarga,
     captura,
     cuentas,
+    trm: datos?.trm ?? null,
     sinCuentas,
     cuentaElegida: cuentas.find((c) => c.id === valores.cuentaId) ?? null,
     predeterminada: cuentas.find((c) => c.id === captura?.cuentaPredeterminadaId) ?? null,
@@ -300,6 +309,7 @@ export function datosAviso(c: EstadoCaptura): DatosAviso | null {
   return {
     tipo: movimiento.tipo,
     monto: movimiento.monto,
+    moneda: movimiento.moneda,
     descripcion: movimiento.descripcion,
     cuenta: cuentaDe(movimiento),
     alDeshacer: () => void c.deshacer(),

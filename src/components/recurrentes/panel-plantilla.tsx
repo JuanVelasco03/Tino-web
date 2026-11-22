@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { admiteGastoIngreso } from "@/domain/cuenta/naturaleza";
 import { formatearFechaSinAnio } from "@/domain/fecha/formato";
 import {
   cambiaCalendario,
@@ -438,9 +439,14 @@ type PropsGrupo = {
   error?: string;
 };
 
-/** Fichas de cuenta, dos por fila. Una cuenta archivada de la plantilla se muestra con su nombre y elegida. */
-function GrupoCuentas({ etiqueta, cuentas, elegida, guardada, alElegir, error }: PropsGrupo) {
-  const archivada = guardada && !cuentas.some((c) => c.id === guardada.id) ? guardada : null;
+/**
+ * Fichas de cuenta, dos por fila. Una cuenta archivada de la plantilla se
+ * muestra con su nombre y elegida. Las inversiones no admiten recurrentes
+ * (`CUENTA_DE_INVERSION`): no se ofrecen.
+ */
+function GrupoCuentas({ etiqueta, cuentas: todas, elegida, guardada, alElegir, error }: PropsGrupo) {
+  const cuentas = todas.filter((c) => admiteGastoIngreso(c.tipo));
+  const archivada = guardada && !todas.some((c) => c.id === guardada.id) ? guardada : null;
   return (
     <div className="flex flex-col gap-2">
       <span className="text-etiqueta text-secundario">{etiqueta}</span>

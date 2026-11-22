@@ -3,7 +3,8 @@
  * solo lectura. El `PUT` es un reemplazo completo, así que la precarga lleva
  * todo (nota y partes incluidas): lo que faltara, el reemplazo lo borraría.
  */
-import { aDigitos, desdeMonto } from "../dinero/entrada";
+import { aDigitos, desdeMenores, desdeMonto } from "../dinero/entrada";
+import type { Moneda } from "../dinero/formato";
 import type { TipoMovimiento, ValoresCaptura } from "./cuerpo";
 
 type Ref = { id: string; nombre: string };
@@ -11,8 +12,12 @@ type Ref = { id: string; nombre: string };
 /** Forma del `Movimiento` de la web que la edición necesita (el dominio no importa `repositories/`). */
 export type Movimiento = {
   tipo: TipoMovimiento;
-  /** Siempre positivo. */
+  /** Siempre positivo, en `moneda`. */
   monto: bigint;
+  /** COP si no se indica. */
+  moneda?: Moneda;
+  /** Transferencia entre monedas: lo que llegó, en la otra moneda. */
+  montoDestino?: bigint | null;
   fecha: string;
   descripcion: string | null;
   nota: string | null;
@@ -28,9 +33,13 @@ export type Movimiento = {
  */
 export function valoresDesdeMovimiento(m: Movimiento): ValoresCaptura {
   const esTransferencia = m.tipo === "transferencia";
+  const moneda = m.moneda ?? "COP";
+  // Entre monedas, el destino usa la otra: solo hay COP y USD.
+  const monedaDestino: Moneda = moneda === "COP" ? "USD" : "COP";
   return {
     tipo: m.tipo,
-    monto: desdeMonto(m.monto),
+    monto: desdeMenores(m.monto, moneda),
+    montoDestino: esTransferencia && m.montoDestino != null ? desdeMenores(m.montoDestino, monedaDestino) : "",
     descripcion: m.descripcion ?? "",
     categoria: m.categoria && !esTransferencia ? { modo: "elegida", id: m.categoria.id } : { modo: "quitada" },
     cuentaId: (m.tipo === "ingreso" ? m.cuentaDestino?.id : m.cuentaOrigen?.id) ?? null,
@@ -49,6 +58,7 @@ function comparable(v: ValoresCaptura): string {
   return JSON.stringify({
     tipo: v.tipo,
     monto: aDigitos(v.monto) ?? v.monto.trim(),
+    montoDestino: v.montoDestino.trim(),
     descripcion: v.descripcion.trim(),
     categoria: v.categoria,
     cuentaId: v.cuentaId,

@@ -100,6 +100,7 @@ const GASTO: MovimientoDto = {
   tipo: "gasto",
   monto: "500000",
   moneda: "COP",
+  montoDestino: null,
   tasa: "1",
   fecha: "2026-11-11",
   descripcion: "Condonación a Camila Ortiz",

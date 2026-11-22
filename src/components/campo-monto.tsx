@@ -2,7 +2,7 @@
 
 import type { ChangeEvent } from "react";
 import type { Moneda } from "@/domain/dinero/formato";
-import { formatearEntradaPesos } from "@/domain/dinero/entrada";
+import { formatearEntrada } from "@/domain/dinero/entrada";
 import { MensajeError } from "./mensaje-error";
 
 export type MontoEditable = {
@@ -23,7 +23,7 @@ type Props = {
   etiqueta?: string;
   /** Línea de equivalencia bajo el campo (dólares): «≈ 492.000 COP · TRM 4.100,00». */
   equivalencia?: string;
-  /** Con ella, el campo es un input real que formatea pesos al teclear. Sin ella, solo presenta. */
+  /** Con ella, el campo es un input real que formatea en su moneda al teclear. Sin ella, solo presenta. */
   editable?: MontoEditable;
   /** Signo leído desde el patrimonio («−» terracota, «+» verde), visible solo con valor. */
   signo?: "salida" | "entrada";
@@ -36,6 +36,21 @@ function Signo({ signo }: { signo: "salida" | "entrada" }) {
       {signo === "salida" ? "−" : "+"}
     </span>
   );
+}
+
+/**
+ * USD: la misma cantidad de dígitos y comas a su izquierda que antes (los
+ * puntos de miles se rehacen). Si la coma ya iba, cuenta como un carácter más.
+ */
+function cursorTrasFormatoDolares(crudo: string, cursor: number, formateado: string): number {
+  const significativos = (texto: string) => texto.replace(/[^\d,]/g, "");
+  const antes = significativos(crudo.slice(0, cursor)).length;
+  let vistos = 0;
+  for (let i = 0; i < formateado.length; i++) {
+    if (vistos === antes) return i;
+    if (/[\d,]/.test(formateado[i])) vistos++;
+  }
+  return formateado.length;
 }
 
 /**
@@ -69,8 +84,10 @@ function CampoEditable({
   function alEscribir(evento: ChangeEvent<HTMLInputElement>) {
     const input = evento.currentTarget;
     const crudo = input.value;
-    const formateado = formatearEntradaPesos(crudo);
-    const cursor = cursorTrasFormato(crudo, input.selectionStart ?? crudo.length, formateado);
+    const formateado = formatearEntrada(crudo, moneda);
+    const posicion = input.selectionStart ?? crudo.length;
+    const cursor =
+      moneda === "USD" ? cursorTrasFormatoDolares(crudo, posicion, formateado) : cursorTrasFormato(crudo, posicion, formateado);
 
     // Se escribe en el DOM antes de avisar: React encuentra el mismo valor y no mueve el cursor.
     input.value = formateado;
@@ -100,7 +117,7 @@ function CampoEditable({
             name={nombre}
             value={valor}
             onChange={alEscribir}
-            inputMode="numeric"
+            inputMode={moneda === "USD" ? "decimal" : "numeric"}
             autoComplete="off"
             placeholder="0"
             disabled={deshabilitado}
@@ -123,7 +140,8 @@ function CampoEditable({
 
 /**
  * C4 · Campo de monto. Vacío muestra un 0 en terciario y el cursor de marca;
- * con valor, la cifra va en tinta. Con `editable` es un input real (pesos).
+ * con valor, la cifra va en tinta. Con `editable` es un input real que
+ * formatea en su moneda: pesos sin decimales, dólares con coma y dos decimales.
  */
 export function CampoMonto({ valor, moneda, etiqueta = "Monto", equivalencia, editable, signo }: Props) {
   if (editable) return <CampoEditable valor={valor} moneda={moneda} etiqueta={etiqueta} editable={editable} signo={signo} />;

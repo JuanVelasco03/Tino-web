@@ -25,6 +25,7 @@ describe("valoresDesdeMovimiento", () => {
     expect(valoresDesdeMovimiento(GASTO)).toEqual<ValoresCaptura>({
       tipo: "gasto",
       monto: "15.000",
+      montoDestino: "",
       descripcion: "Almuerzo",
       categoria: { modo: "elegida", id: COMIDA.id },
       cuentaId: NEQUI.id,
@@ -161,5 +162,30 @@ describe("cuentaDePrestamo", () => {
   it("un interés (cuentas propias) o un gasto normal → null", () => {
     expect(cuentaDePrestamo({ tipo: "ingreso", cuentaOrigen: null, cuentaDestino: NEQUI }, PRESTAMOS)).toBeNull();
     expect(cuentaDePrestamo(GASTO, PRESTAMOS)).toBeNull();
+  });
+});
+
+describe("valoresDesdeMovimiento entre monedas", () => {
+  it("precarga «Llegó» en la moneda del destino", () => {
+    const fondeo: Movimiento = {
+      ...GASTO,
+      tipo: "transferencia",
+      monto: 8_240_000n,
+      moneda: "COP",
+      montoDestino: 200_000n,
+      cuentaDestino: BANCO,
+      categoria: null,
+    };
+    expect(valoresDesdeMovimiento(fondeo)).toMatchObject({ monto: "8.240.000", montoDestino: "2.000,00" });
+    expect(valoresDesdeMovimiento({ ...fondeo, moneda: "USD", monto: 200_000n, montoDestino: 8_240_000n })).toMatchObject({
+      monto: "2.000,00",
+      montoDestino: "8.240.000",
+    });
+  });
+
+  it("cambiar «Llegó» cuenta como cambio", () => {
+    const fondeo: Movimiento = { ...GASTO, tipo: "transferencia", moneda: "COP", montoDestino: 200_000n, cuentaDestino: BANCO, categoria: null };
+    const antes = valoresDesdeMovimiento(fondeo);
+    expect(hayCambios(antes, { ...antes, montoDestino: "2.100,00" })).toBe(true);
   });
 });

@@ -19,13 +19,17 @@ const FILA = "flex items-baseline justify-between gap-3";
 
 /**
  * Puente del patrimonio del mes (N-43, N-44, N-46, N-47): anterior +
- * resultado + otros cambios = cierre. Las cuatro cifras llegan de la API; la
- * web no suma. Todo en tinta, negativo con `−`.
+ * resultado + revaluación de inversiones + otros cambios = cierre. Las cifras
+ * llegan de la API; la web no suma. La revaluación solo aparece si no es 0
+ * (SPEC 10, N-73). Todo en tinta, negativo con `−`.
  */
 export function CambioDelMes({ cambio, mes, esActual }: Props) {
   const filas = [
     { rotulo: `Patrimonio al ${formatearFechaSinAnio(cambio.fechaAnterior)}`, cifra: pesos(cambio.patrimonioAnterior), tenue: true },
     { rotulo: "Resultado del mes", cifra: pesos(cambio.resultado, true), tenue: false },
+    ...(cambio.revaluacion === 0n
+      ? []
+      : [{ rotulo: "Revaluación de inversiones", cifra: pesos(cambio.revaluacion, true), tenue: false }]),
     { rotulo: "Otros cambios", cifra: pesos(cambio.otrosCambios, true), tenue: false },
   ];
   const titulo = useId();

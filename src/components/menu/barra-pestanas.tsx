@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRight, Ellipsis, LogOut, Moon, Sun } from "lucide-react";
@@ -12,6 +12,8 @@ import { ENTRADAS_MAS, estaActiva, PESTANAS, TITULO_PROXIMAMENTE, type EntradaMe
 type Props = {
   /** Server action de cierre de sesión; llega por prop desde el layout. */
   salir: () => Promise<void>;
+  /** «TRM de referencia» (N-01), leída en el servidor por el layout; nada si `GET /trm` falló. */
+  trm?: ReactNode;
 };
 
 /**
@@ -75,7 +77,7 @@ function Pestana({ entrada, ruta, hojaAbierta }: { entrada: EntradaMenu; ruta: s
 }
 
 /** Menú móvil (< md): cinco pestañas fijas abajo y hoja «Más» con el resto. */
-export function BarraPestanas({ salir }: Props) {
+export function BarraPestanas({ salir, trm }: Props) {
   const ruta = usePathname();
   const [abierta, setAbierta] = useState(false);
   const idHoja = useId();
@@ -162,6 +164,8 @@ export function BarraPestanas({ salir }: Props) {
                 </li>
               ))}
             </ul>
+
+            {trm}
 
             <div className="border-t border-linea">
               <button

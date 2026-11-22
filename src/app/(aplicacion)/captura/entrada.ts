@@ -16,10 +16,11 @@ const MENSAJE_ENTRADA = "No pudimos procesar los datos. Intenta de nuevo.";
 /**
  * Lo que registrar, editar y eliminar cambian: la lista del mes, los saldos
  * (N-20), el resumen, los recurrentes (borrar o editar un confirmado cambia
- * la bandeja y el estimado) y las deudas (editar o borrar un movimiento de
- * préstamo cambia su capital).
+ * la bandeja y el estimado), las deudas (editar o borrar un movimiento de
+ * préstamo cambia su capital) y las inversiones (un fondeo o un retiro cambia
+ * su efectivo).
  */
-export const RUTAS_AFECTADAS = ["/movimientos", "/cuentas", "/resumen", "/recurrentes", "/deudas"] as const;
+export const RUTAS_AFECTADAS = ["/movimientos", "/cuentas", "/resumen", "/recurrentes", "/deudas", "/inversiones"] as const;
 
 export type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoCaptura };
 
@@ -31,6 +32,7 @@ function campoFormulario(campo: string | undefined, tipo: TipoMovimiento | null)
   switch (campo) {
     case "tipo":
     case "monto":
+    case "montoDestino":
     case "fecha":
     case "descripcion":
     case "nota":
@@ -95,8 +97,10 @@ function partesValidas(valor: unknown): { categoriaId: string; monto: string }[]
 /** Valida la forma del cuerpo (viene del navegador). El contenido lo valida la API. */
 export function cuerpoValido(entrada: unknown): MovimientoCuerpo | null {
   if (!entrada || typeof entrada !== "object") return null;
-  const { tipo, monto, fecha, descripcion, nota, cuentaOrigenId, cuentaDestinoId, categoriaId, partes } = entrada as Record<string, unknown>;
+  const { tipo, monto, montoDestino, fecha, descripcion, nota, cuentaOrigenId, cuentaDestinoId, categoriaId, partes } =
+    entrada as Record<string, unknown>;
   if (!esTipo(tipo) || typeof monto !== "string" || !MONTO.test(monto)) return null;
+  if (montoDestino !== undefined && montoDestino !== null && (typeof montoDestino !== "string" || !MONTO.test(montoDestino))) return null;
   if (fecha !== undefined && (typeof fecha !== "string" || !FECHA.test(fecha))) return null;
   if (!esTextoOpcional(descripcion) || !esTextoOpcional(nota)) return null;
   if (!esIdOpcional(cuentaOrigenId) || !esIdOpcional(cuentaDestinoId) || !esIdOpcional(categoriaId)) return null;
@@ -105,6 +109,7 @@ export function cuerpoValido(entrada: unknown): MovimientoCuerpo | null {
 
   // Se copian solo los campos conocidos.
   const cuerpo: MovimientoCuerpo = { tipo, monto, descripcion, nota };
+  if (typeof montoDestino === "string") cuerpo.montoDestino = montoDestino;
   if (fecha !== undefined) cuerpo.fecha = fecha;
   if (cuentaOrigenId !== undefined) cuerpo.cuentaOrigenId = cuentaOrigenId;
   if (cuentaDestinoId !== undefined) cuerpo.cuentaDestinoId = cuentaDestinoId;

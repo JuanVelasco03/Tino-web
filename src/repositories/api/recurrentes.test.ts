@@ -73,6 +73,7 @@ const MOVIMIENTO: MovimientoDto = {
   tipo: "gasto",
   monto: "35120",
   moneda: "COP",
+  montoDestino: null,
   tasa: "1",
   fecha: "2026-11-14",
   descripcion: "Gas Vanti",

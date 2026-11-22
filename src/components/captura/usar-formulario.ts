@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { desdeMonto, formatearEntradaPesos } from "@/domain/dinero/entrada";
+import { admiteGastoIngreso, type TipoCuenta } from "@/domain/cuenta/naturaleza";
+import { cambiarMonedaEntrada, desdeMonto, formatearEntradaPesos } from "@/domain/dinero/entrada";
+import type { Moneda } from "@/domain/dinero/formato";
+import { tasaImplicita } from "@/domain/dinero/tasa";
 import {
   categoriaEfectiva,
   montoValido,
+  requiereMontoDestino,
   type CampoCaptura,
   type Categoria,
   type DecisionCategoria,
@@ -41,6 +45,8 @@ type Opciones = {
   iniciales: ValoresCaptura;
   /** Categorías por tipo (`GET /captura`), o `null` mientras carga. */
   categoriasPorTipo: { gasto: readonly Categoria[]; ingreso: readonly Categoria[] } | null;
+  /** Cuentas del formulario: su tipo y su moneda deciden qué se ofrece y en qué moneda va cada monto. */
+  cuentas?: readonly { id: string; tipo: TipoCuenta; moneda: Moneda }[];
 };
 
 /**
@@ -49,7 +55,7 @@ type Opciones = {
  * errores. Cada modo monta su propia instancia: editar no toca el borrador
  * de la captura.
  */
-export function useFormulario({ sugerir, iniciales, categoriasPorTipo }: Opciones) {
+export function useFormulario({ sugerir, iniciales, categoriasPorTipo, cuentas = [] }: Opciones) {
   const [valores, setValores] = useState<ValoresCaptura>(iniciales);
   const [errores, setErrores] = useState<Errores>({});
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
@@ -118,15 +124,53 @@ export function useFormulario({ sugerir, iniciales, categoriasPorTipo }: Opcione
     else setErrorGeneral(resultado.mensaje);
   }
 
-  function cambiar<C extends "monto" | "cuentaId" | "destinoId" | "fecha" | "nota">(campo: C, valor: ValoresCaptura[C]) {
-    setValores((actual) => ({ ...actual, [campo]: valor }));
+  /* ── Monedas (SPEC 10) ─────────────────────────────────────────────── */
+
+  const monedaDe = (id: string | null): Moneda | null => cuentas.find((c) => c.id === id)?.moneda ?? null;
+
+  /** Moneda del monto principal: la del origen en una transferencia; en un gasto o un ingreso, pesos. */
+  function monedaMontoPara(v: Pick<ValoresCaptura, "tipo" | "cuentaId">): Moneda {
+    return v.tipo === "transferencia" ? (monedaDe(v.cuentaId) ?? "COP") : "COP";
+  }
+
+  const monedaMonto = monedaMontoPara(valores);
+  const monedaDestino = valores.tipo === "transferencia" ? monedaDe(valores.destinoId) : null;
+  /** «Llegó»: transferencia entre monedas distintas. */
+  const conMontoDestino = valores.tipo === "transferencia" && requiereMontoDestino(monedaMonto, monedaDestino);
+
+  function cambiar<C extends "monto" | "montoDestino" | "cuentaId" | "destinoId" | "fecha" | "nota">(campo: C, valor: ValoresCaptura[C]) {
+    setValores((actual) => {
+      const nuevos = { ...actual, [campo]: valor };
+      // Otra moneda en el origen o el destino: lo tecleado conserva su parte entera y se reformatea.
+      if (campo === "cuentaId") {
+        const antes = monedaMontoPara(actual);
+        const despues = monedaMontoPara(nuevos);
+        if (antes !== despues) nuevos.monto = cambiarMonedaEntrada(actual.monto, despues);
+      }
+      if (campo === "destinoId") {
+        const antes = monedaDe(actual.destinoId);
+        const despues = monedaDe(valor as string | null);
+        if (despues !== null && antes !== despues) nuevos.montoDestino = cambiarMonedaEntrada(actual.montoDestino, despues);
+      }
+      return nuevos;
+    });
     limpiarError(campo === "cuentaId" ? "cuenta" : campo === "destinoId" ? "destino" : campo);
   }
 
   function cambiarTipo(tipo: TipoMovimiento) {
     if (tipo === valores.tipo) return;
     // La categoría y las partes son del tipo: al cambiarlo, vuelve a valer la propuesta y las partes se descartan.
-    setValores((actual) => ({ ...actual, tipo, categoria: { modo: "propuesta" }, partes: null }));
+    // Un gasto o un ingreso no admite una inversión (`CUENTA_DE_INVERSION`) y va en pesos.
+    setValores((actual) => {
+      const cuenta = cuentas.find((c) => c.id === actual.cuentaId);
+      const sinInversion = tipo !== "transferencia" && cuenta !== undefined && !admiteGastoIngreso(cuenta.tipo);
+      const nuevos: ValoresCaptura = { ...actual, tipo, categoria: { modo: "propuesta" }, partes: null };
+      if (sinInversion) nuevos.cuentaId = null;
+      const antes = monedaMontoPara(actual);
+      const despues = monedaMontoPara(nuevos);
+      if (antes !== despues) nuevos.monto = cambiarMonedaEntrada(actual.monto, despues);
+      return nuevos;
+    });
     limpiarErrores();
     cancelarEspera();
     void pedirSugerencias(tipo, valores.descripcion);
@@ -188,8 +232,20 @@ export function useFormulario({ sugerir, iniciales, categoriasPorTipo }: Opcione
 
   /* ── Monto ─────────────────────────────────────────────────────────── */
 
-  const montoDigitos = montoValido(valores.monto);
+  const montoDigitos = montoValido(valores.monto, monedaMonto);
   const montoNumero = montoDigitos === null ? null : BigInt(montoDigitos);
+  const destinoDigitos = conMontoDestino && monedaDestino ? montoValido(valores.montoDestino, monedaDestino) : null;
+  const montoDestinoNumero = destinoDigitos === null ? null : BigInt(destinoDigitos);
+
+  /** Tasa implícita de vista previa (centésimas): pesos ÷ dólares, con los dos montos válidos. La que vale la congela la API. */
+  let tasaVistaPrevia: bigint | null = null;
+  if (conMontoDestino && montoNumero !== null && montoDestinoNumero !== null) {
+    const [pesos, centavos] = monedaMonto === "COP" ? [montoNumero, montoDestinoNumero] : [montoDestinoNumero, montoNumero];
+    tasaVistaPrevia = tasaImplicita(pesos, centavos);
+  }
+  /** ¿Se puede enviar lo tecleado? Entre monedas, también «Llegó». */
+  const montosValidos = montoNumero !== null && (!conMontoDestino || montoDestinoNumero !== null);
+  const monedas = { origen: monedaMonto, destino: monedaDestino };
 
   /* ── Partes (N-41, N-42, N-43) ─────────────────────────────────────── */
 
@@ -233,7 +289,7 @@ export function useFormulario({ sugerir, iniciales, categoriasPorTipo }: Opcione
   /** «El resto»: la última parte toma lo que falta para el total, si es mayor que cero. */
   function completarResto() {
     setValores((v) => {
-      const total = montoValido(v.monto);
+      const total = montoValido(v.monto, monedaMontoPara(v));
       if (!v.partes || total === null) return v;
       const resto = restante(BigInt(total), v.partes.slice(0, -1));
       if (resto <= 0n) return v;
@@ -268,6 +324,13 @@ export function useFormulario({ sugerir, iniciales, categoriasPorTipo }: Opcione
     olvidarSugerencias,
     propuestaPara,
     montoNumero,
+    monedaMonto,
+    monedaDestino,
+    conMontoDestino,
+    montoDestinoNumero,
+    tasaVistaPrevia,
+    montosValidos,
+    monedas,
     activarPartes,
     desactivarPartes,
     agregarParte,

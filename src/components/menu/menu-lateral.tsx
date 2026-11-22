@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut, Moon, Plus, Sun } from "lucide-react";
@@ -11,12 +12,14 @@ import { ENTRADAS, estaActiva, REGISTRAR, TITULO_PROXIMAMENTE } from "./entradas
 type Props = {
   /** Server action de cierre de sesión; llega por prop desde el layout. */
   salir: () => Promise<void>;
+  /** «TRM de referencia» (N-01), leída en el servidor por el layout; nada si `GET /trm` falló. */
+  trm?: ReactNode;
 };
 
 const FILA = "flex h-10 items-center gap-3 rounded-campo px-2 text-cuerpo";
 
 /** Menú de escritorio (md+): barra lateral de 232 px. */
-export function MenuLateral({ salir }: Props) {
+export function MenuLateral({ salir, trm }: Props) {
   const ruta = usePathname();
   const { abrir } = useContextoCaptura();
 
@@ -74,6 +77,7 @@ export function MenuLateral({ salir }: Props) {
       </nav>
 
       <div className="mt-auto flex flex-col gap-1">
+        {trm}
         <button
           type="button"
           onClick={alternarTema}

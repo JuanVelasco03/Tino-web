@@ -10,6 +10,7 @@ import {
   type CampoAlta,
   type ValoresAlta,
 } from "@/domain/prestamo/formulario";
+import { admiteGastoIngreso } from "@/domain/cuenta/naturaleza";
 import type { DesembolsoCuerpo, Prestamo, PrestamoCuerpo, TipoPrestamo } from "@/domain/prestamo/tipos";
 import type { DatosCaptura } from "@/services/captura";
 import { Boton } from "../boton";
@@ -203,7 +204,8 @@ export function PanelPrestamo({ tipoInicial, fechaHoy, prestamos, formulario, ac
           <div className="flex flex-col gap-2">
             <span className="text-etiqueta text-secundario">{otorgado ? "Sale de" : "Llega a"}</span>
             <div role="group" aria-label={otorgado ? "Sale de" : "Llega a"} className="grid grid-cols-2 gap-2">
-              {formulario.cuentas.map((cuenta) => (
+              {/* Una inversión no presta ni recibe préstamos (`CUENTA_DE_INVERSION`). */}
+              {formulario.cuentas.filter((c) => admiteGastoIngreso(c.tipo)).map((cuenta) => (
                 <FichaCuenta key={cuenta.id} cuenta={cuenta} elegida={cuenta.id === valores.cuentaId} alPulsar={() => cambiar("cuentaId", cuenta.id)} />
               ))}
             </div>

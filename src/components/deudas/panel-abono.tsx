@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { aDigitos, formatearEntradaPesos } from "@/domain/dinero/entrada";
+import { admiteGastoIngreso } from "@/domain/cuenta/naturaleza";
 import { formatearFechaSinAnio } from "@/domain/fecha/formato";
 import {
   aplicarPropuesta,
@@ -307,7 +308,8 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
           <div className="flex flex-col gap-2">
             <span className="text-etiqueta text-secundario">{otorgado ? "Llega a" : "Sale de"}</span>
             <div role="group" aria-label={otorgado ? "Llega a" : "Sale de"} className="grid grid-cols-2 gap-2">
-              {formulario.cuentas.map((cuenta) => (
+              {/* Una inversión no recibe ni paga abonos (`CUENTA_DE_INVERSION`). */}
+              {formulario.cuentas.filter((c) => admiteGastoIngreso(c.tipo)).map((cuenta) => (
                 <FichaCuenta key={cuenta.id} cuenta={cuenta} elegida={cuenta.id === valores.cuentaId} alPulsar={() => cambiar("cuentaId", cuenta.id)} />
               ))}
             </div>

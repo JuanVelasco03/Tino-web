@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { efectoEnPatrimonio, efectoEnSaldo, naturalezaDe, type TipoCuenta } from "./naturaleza";
+import { admiteGastoIngreso, efectoEnPatrimonio, efectoEnSaldo, naturalezaDe, type TipoCuenta } from "./naturaleza";
 
 describe("naturalezaDe (RN-02)", () => {
   it.each<[TipoCuenta, "activo" | "pasivo"]>([
@@ -81,5 +81,15 @@ describe("efectoEnPatrimonio (signo en la lista general)", () => {
 
   it("abonar a la tarjeta (menos deuda) aumenta el patrimonio de esa cuenta", () => {
     expect(efectoEnPatrimonio("tarjeta_credito", "entrada", 1_200_000n)).toBe(1_200_000n);
+  });
+});
+
+describe("admiteGastoIngreso", () => {
+  it("una inversión solo admite transferencias", () => {
+    expect(admiteGastoIngreso("inversion")).toBe(false);
+  });
+
+  it("las demás cuentas sí", () => {
+    for (const tipo of ["efectivo", "banco", "tarjeta_credito"] as const) expect(admiteGastoIngreso(tipo)).toBe(true);
   });
 });

@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { formatearDinero } from "@/domain/dinero/formato";
+import { formatearDinero, type Moneda } from "@/domain/dinero/formato";
 import type { TipoMovimiento } from "@/domain/movimiento/cuerpo";
 import { importeEnPatrimonio } from "@/domain/movimiento/vista-previa";
 import { Boton } from "../boton";
@@ -9,8 +9,10 @@ const ROTULO_TIPO: Record<TipoMovimiento, string> = { gasto: "Gasto", ingreso: "
 
 export type DatosAviso = {
   tipo: TipoMovimiento;
-  /** Siempre positivo. */
+  /** Siempre positivo, en `moneda`. */
   monto: bigint;
+  /** La del monto: COP salvo una transferencia desde una inversión en dólares. */
+  moneda?: Moneda;
   descripcion: string | null;
   /** «Nequi»; en transferencia, «Nequi → Visa Oro». */
   cuenta: string;
@@ -43,9 +45,9 @@ type Props = {
 };
 
 /** Importe con signo y color desde el patrimonio: gasto −, ingreso +, transferencia sin signo. */
-function Importe({ tipo, monto }: { tipo: TipoMovimiento; monto: bigint }) {
+function Importe({ tipo, monto, moneda = "COP" }: { tipo: TipoMovimiento; monto: bigint; moneda?: Moneda }) {
   const efecto = importeEnPatrimonio(tipo, monto);
-  const cifra = formatearDinero({ monto: efecto ?? monto, moneda: "COP" }, { omitirCOP: true, signoMas: efecto !== null });
+  const cifra = formatearDinero({ monto: efecto ?? monto, moneda }, { omitirCOP: true, signoMas: efecto !== null });
   const color = efecto === null ? "" : efecto < 0n ? "text-salida-texto" : "text-entrada-texto";
   return <span className={`whitespace-nowrap font-mono text-cifra-s tabular-nums ${color}`}>{cifra}</span>;
 }
@@ -75,12 +77,12 @@ export function AvisoRegistro({ formato = "panel", aviso, oferta }: Props) {
                 <span className="min-w-0 flex-1 truncate text-cuerpo">
                   {aviso.descripcion ?? ROTULO_TIPO[aviso.tipo]} · {aviso.cuenta}
                 </span>
-                <Importe tipo={aviso.tipo} monto={aviso.monto} />
+                <Importe tipo={aviso.tipo} monto={aviso.monto} moneda={aviso.moneda} />
               </>
             ) : (
               <span className={`min-w-0 flex-1 text-cuerpo ${aviso.alDeshacer ? "" : "py-2 pr-3"}`}>
                 {aviso.verbo ?? "Registrado"}: {aviso.descripcion ?? ROTULO_TIPO[aviso.tipo]}{" "}
-                <Importe tipo={aviso.tipo} monto={aviso.monto} /> en {aviso.cuenta}
+                <Importe tipo={aviso.tipo} monto={aviso.monto} moneda={aviso.moneda} /> en {aviso.cuenta}
                 {aviso.sufijo}
               </span>
             )}

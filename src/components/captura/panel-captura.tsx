@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { formatearDinero } from "@/domain/dinero/formato";
+import { admiteGastoIngreso } from "@/domain/cuenta/naturaleza";
+import { formatearDinero, formatearTasa } from "@/domain/dinero/formato";
 import type { CuentaDePrestamo } from "@/domain/movimiento/edicion";
 import { importeEnPatrimonio } from "@/domain/movimiento/vista-previa";
 import type { Cuenta } from "@/services/captura";
@@ -61,11 +62,22 @@ function pesos(monto: bigint): string {
   return formatearDinero({ monto, moneda: "COP" }, { omitirCOP: true });
 }
 
-/** Monto del botón con su signo: «−15.000», «+15.000» o «15.000» en transferencia. */
+/** Monto del botón con su signo: «−15.000», «+15.000» o «15.000» en transferencia («US$ 2.000,00» desde una inversión en dólares). */
 export function montoConSigno(c: EstadoFormulario): string | undefined {
   if (c.montoNumero === null) return undefined;
   const efecto = importeEnPatrimonio(c.valores.tipo, c.montoNumero);
-  return formatearDinero({ monto: efecto ?? c.montoNumero, moneda: "COP" }, { omitirCOP: true, signoMas: efecto !== null });
+  return formatearDinero({ monto: efecto ?? c.montoNumero, moneda: c.monedaMonto }, { omitirCOP: true, signoMas: efecto !== null });
+}
+
+/**
+ * Bajo «Llegó», con los dos montos válidos: «Tasa 4.120,00 COP por US$ · TRM
+ * de hoy 4.120,00» (sin TRM, solo la tasa). Vista previa para detectar un
+ * monto mal digitado; la tasa que vale la congela la API (RN-04).
+ */
+export function textoTasa(c: EstadoFormulario): string | null {
+  if (c.tasaVistaPrevia === null) return null;
+  const tasa = `Tasa ${formatearTasa(c.tasaVistaPrevia)} COP por US$`;
+  return c.trm ? `${tasa} · TRM de hoy ${formatearTasa(c.trm.valor)}` : tasa;
 }
 
 /** «Nequi quedará en 5.321»; en un pasivo, «Visa Oro quedará en debe 1.299.300». */
@@ -144,11 +156,19 @@ export function FichaCuentaFija({ cuenta }: { cuenta: CuentaDePrestamo }) {
   );
 }
 
-/** «Usar {cuenta} siempre» (solo en la captura): la elegida pasa a ser la predeterminada (N-34). */
+/**
+ * Cuentas que se ofrecen: en un gasto o un ingreso, sin las inversiones (solo
+ * admiten transferencias, `CUENTA_DE_INVERSION`); en una transferencia, todas.
+ */
+export function cuentasOfrecidas(c: EstadoFormulario): Cuenta[] {
+  return c.valores.tipo === "transferencia" ? c.cuentas : c.cuentas.filter((cuenta) => admiteGastoIngreso(cuenta.tipo));
+}
+
+/** «Usar {cuenta} siempre» (solo en la captura): la elegida pasa a ser la predeterminada (N-34). Nunca una inversión. */
 export function usarSiempre(c: EstadoFormulario): { cuenta: Cuenta; alPulsar: () => void; pendiente: boolean } | null {
   if (c.modo !== "registro" || c.valores.tipo === "transferencia") return null;
   const elegida = c.cuentaElegida;
-  if (!elegida || elegida.id === c.predeterminada?.id) return null;
+  if (!elegida || elegida.id === c.predeterminada?.id || !admiteGastoIngreso(elegida.tipo)) return null;
   return { cuenta: elegida, alPulsar: () => void c.elegirPredeterminada(elegida.id), pendiente: c.predeterminadaPendiente };
 }
 
@@ -285,7 +305,7 @@ function GrupoFichas({ c, rol, etiqueta }: { c: EstadoFormulario; rol: RolCuenta
         )}
       </div>
       <div role="group" aria-label={etiqueta} className="grid grid-cols-2 gap-2">
-        {c.cuentas.map((cuenta) => (
+        {cuentasOfrecidas(c).map((cuenta) => (
           <FichaCuenta
             key={cuenta.id}
             cuenta={cuenta}
@@ -427,7 +447,7 @@ export function PanelCaptura({ c }: { c: EstadoFormulario }) {
 
             <CampoMonto
               valor={valores.monto}
-              moneda="COP"
+              moneda={c.monedaMonto}
               signo={valores.tipo === "gasto" ? "salida" : valores.tipo === "ingreso" ? "entrada" : undefined}
               editable={{ nombre: ID_MONTO, alCambiar: (v) => c.cambiar("monto", v), error: c.errores.monto }}
             />
@@ -442,6 +462,20 @@ export function PanelCaptura({ c }: { c: EstadoFormulario }) {
                 <>
                   <GrupoFichas c={c} rol="cuenta" etiqueta="Desde" />
                   <GrupoFichas c={c} rol="destino" etiqueta="Hacia" />
+                  {/* Entre monedas: lo que llegó, en la moneda del destino (SPEC 10). */}
+                  {c.conMontoDestino && c.monedaDestino && (
+                    <CampoMonto
+                      valor={valores.montoDestino}
+                      moneda={c.monedaDestino}
+                      etiqueta="Llegó"
+                      editable={{
+                        nombre: "captura-monto-destino",
+                        alCambiar: (v) => c.cambiar("montoDestino", v),
+                        error: c.errores.montoDestino,
+                        nota: textoTasa(c) ?? undefined,
+                      }}
+                    />
+                  )}
                 </>
               ) : (
                 <GrupoFichas c={c} rol="cuenta" etiqueta={rotuloCuenta} />

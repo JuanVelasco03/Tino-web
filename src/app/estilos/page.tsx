@@ -25,6 +25,7 @@ import type { TipoCuenta } from "@/domain/cuenta/naturaleza";
 import { formatearEquivalencia } from "@/domain/dinero/formato";
 import { AlternarTema } from "./alternar-tema";
 import { MuestraDeudas } from "./muestras-deudas";
+import { MuestraInversiones } from "./muestras-inversiones";
 import {
   MuestraAvisoRegistro,
   MuestraBloqueEliminar,
@@ -125,6 +126,7 @@ const RESUMEN = {
     fechaCierre: "2026-11-30",
     patrimonioAnterior: 2_580_000n,
     resultado: -300_000n,
+    revaluacion: 0n,
     otrosCambios: 0n,
     patrimonioCierre: 2_280_000n,
   },
@@ -204,14 +206,15 @@ function ComponentesResumen() {
           <PatrimonioNeto patrimonio={{ hoy: 34_121_072n, serie: SERIE_DOCE, variacionSerie: 6_708_692n }} />
         </div>
         <div>
-          <Etiqueta>Cambio del mes · mes cerrado</Etiqueta>
+          <Etiqueta>Cambio del mes · mes cerrado, con revaluación de inversiones</Etiqueta>
           <CambioDelMes
             cambio={{
               fechaAnterior: "2026-09-30",
               fechaCierre: "2026-10-31",
               patrimonioAnterior: 32_106_940n,
               resultado: 1_250_500n,
-              otrosCambios: 426_775n,
+              revaluacion: 312_400n,
+              otrosCambios: 114_375n,
               patrimonioCierre: 33_784_215n,
             }}
             mes="2026-10"
@@ -686,6 +689,16 @@ export default function Estilos() {
           {(["light", "dark"] as const).map((modo) => (
             <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
               <MuestraDeudas sufijo={modo} />
+            </Panel>
+          ))}
+        </div>
+      </Seccion>
+
+      <Seccion numero="09" titulo="Inversiones" nota="Tabla de posiciones desde 1280 px; por debajo, lista y hoja de precio">
+        <div className="grid grid-cols-1 gap-6">
+          {(["light", "dark"] as const).map((modo) => (
+            <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
+              <MuestraInversiones sufijo={modo} />
             </Panel>
           ))}
         </div>

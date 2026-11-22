@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowDownUp, Check, Plus } from "lucide-react";
 import { moverA, ordenCambio } from "@/domain/cuenta/orden";
+import { formatearTasa } from "@/domain/dinero/formato";
 import { formatearFecha, formatearFechaSinAnio } from "@/domain/fecha/formato";
 import type { CambioOrden, Cuenta, ListaCuentas as Lista, Naturaleza, ResultadoOrden } from "@/services/cuentas";
 import { rutaNuevo } from "../deudas/rutas";
@@ -179,6 +180,14 @@ export function ListaCuentas({ lista, guardarOrden }: Props) {
           <p className="text-etiqueta font-normal text-secundario">
             <span className="hidden md:inline">Saldos al {formatearFecha(lista.fechaSaldos)}</span>
             <span className="md:hidden">Al {formatearFechaSinAnio(lista.fechaSaldos)}</span>
+            {/* N-74: la TRM con que se valoran las cuentas en dólares. */}
+            {lista.trm && (
+              <span className={lista.trmDesactualizada ? "text-marca-texto" : ""}>
+                {" · USD a TRM "}
+                <span className="font-mono text-cifra-xs tabular-nums">{formatearTasa(lista.trm.valor)}</span>
+                {lista.trmDesactualizada && " · sin actualizar"}
+              </span>
+            )}
           </p>
         </div>
 

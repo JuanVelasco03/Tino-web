@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cuerpoDesdeValores, type Propuesta, type ValoresCaptura } from "./cuerpo";
+import { cuerpoDesdeValores, type Propuesta, type ValoresCaptura, ladoCop, requiereMontoDestino } from "./cuerpo";
 
 const NEQUI = "0f9c6c1e-3a52-4c51-9a7e-2b1f0d6f5a11";
 const VISA = "7d2b8e40-91c3-4f0e-8b6a-5c4d3e2f1a09";
@@ -12,6 +12,7 @@ const PROPUESTA: Propuesta = { categoria: COMIDA, regla: { id: "e4c10000-0000-40
 const BASE: ValoresCaptura = {
   tipo: "gasto",
   monto: "15.000",
+  montoDestino: "",
   descripcion: "Almuerzo",
   categoria: { modo: "propuesta" },
   cuentaId: NEQUI,
@@ -166,5 +167,56 @@ describe("cuerpoDesdeValores · textos", () => {
     const cuerpo = cuerpoDesdeValores({ ...BASE, descripcion: "  Almuerzo ", nota: " con Ana " }, null);
     expect(cuerpo?.descripcion).toBe("Almuerzo");
     expect(cuerpo?.nota).toBe("con Ana");
+  });
+});
+
+describe("requiereMontoDestino", () => {
+  it("solo entre monedas distintas", () => {
+    expect(requiereMontoDestino("COP", "USD")).toBe(true);
+    expect(requiereMontoDestino("USD", "COP")).toBe(true);
+    expect(requiereMontoDestino("COP", "COP")).toBe(false);
+    expect(requiereMontoDestino("USD", "USD")).toBe(false);
+    expect(requiereMontoDestino("COP", null)).toBe(false);
+  });
+});
+
+describe("ladoCop", () => {
+  it("origen COP: el monto; origen USD: lo que llegó; sin montoDestino: null", () => {
+    expect(ladoCop({ moneda: "COP", monto: 8_240_000n, montoDestino: 200_000n })).toBe(8_240_000n);
+    expect(ladoCop({ moneda: "USD", monto: 200_000n, montoDestino: 8_240_000n })).toBe(8_240_000n);
+    expect(ladoCop({ moneda: "COP", monto: 30_000n, montoDestino: null })).toBeNull();
+  });
+});
+
+describe("cuerpoDesdeValores · transferencia entre monedas", () => {
+  const ETORO = "e70e0000-0000-4000-8000-000000000009";
+  const FONDEO: ValoresCaptura = { ...BASE, tipo: "transferencia", monto: "8.240.000", montoDestino: "2.000,00", destinoId: ETORO };
+
+  it("COP → USD: monto en pesos y montoDestino en centavos", () => {
+    expect(cuerpoDesdeValores(FONDEO, null, { origen: "COP", destino: "USD" })).toMatchObject({
+      tipo: "transferencia",
+      monto: "8240000",
+      montoDestino: "200000",
+      cuentaOrigenId: NEQUI,
+      cuentaDestinoId: ETORO,
+    });
+  });
+
+  it("USD → COP: monto en centavos", () => {
+    const retiro = { ...FONDEO, monto: "2.000,00", montoDestino: "8.240.000" };
+    expect(cuerpoDesdeValores(retiro, null, { origen: "USD", destino: "COP" })).toMatchObject({ monto: "200000", montoDestino: "8240000" });
+  });
+
+  it("sin «Llegó» válido → null", () => {
+    expect(cuerpoDesdeValores({ ...FONDEO, montoDestino: "" }, null, { origen: "COP", destino: "USD" })).toBeNull();
+    expect(cuerpoDesdeValores({ ...FONDEO, montoDestino: "1,234" }, null, { origen: "COP", destino: "USD" })).toBeNull();
+  });
+
+  it("misma moneda: nunca envía montoDestino", () => {
+    expect(cuerpoDesdeValores(FONDEO, null, { origen: "COP", destino: "COP" })).not.toHaveProperty("montoDestino");
+  });
+
+  it("gasto: el monto siempre en pesos", () => {
+    expect(cuerpoDesdeValores({ ...BASE, monto: "15.000" }, null, { origen: "USD", destino: null })).toMatchObject({ monto: "15000" });
   });
 });

@@ -33,6 +33,8 @@ type Props = {
   ancho?: "normal" | "amplio";
   /** Pie fijo bajo el contenido desplazable, sobre una división (la acción principal). */
   pie?: ReactNode;
+  /** Rótulo del botón de la cabecera: «Cerrar» o, si cierra sin guardar, «Cancelar». */
+  rotuloCerrar?: string;
   ref?: Ref<ControlPanel>;
 };
 
@@ -76,7 +78,7 @@ function animarVelo(el: HTMLElement, opciones: KeyframeAnimationOptions): Animat
  * superior). Escritorio (md+): hoja de 400 px (480 en `amplio`) a la derecha, alto completo,
  * raya a la izquierda. Móvil: hoja inferior de ancho completo. Sin sombra.
  */
-export function PanelLateral({ titulo, alSolicitarCierre, children, ancho = "normal", pie, ref }: Props) {
+export function PanelLateral({ titulo, alSolicitarCierre, children, ancho = "normal", pie, rotuloCerrar = "Cerrar", ref }: Props) {
   const dialogo = useRef<HTMLDialogElement>(null);
   const salida = useRef<Promise<void> | null>(null);
   const idTitulo = useId();
@@ -151,7 +153,7 @@ export function PanelLateral({ titulo, alSolicitarCierre, children, ancho = "nor
             {titulo}
           </h2>
           <button type="button" onClick={alSolicitarCierre} className="-mr-1 h-11 px-1 text-cuerpo text-secundario">
-            Cerrar
+            {rotuloCerrar}
           </button>
         </div>
         <div

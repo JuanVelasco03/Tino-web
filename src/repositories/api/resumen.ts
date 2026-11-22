@@ -53,6 +53,9 @@ export type ResumenDto = {
     fechaCierre: string;
     patrimonioAnterior: string;
     resultado: string;
+    /** De las inversiones (SPEC 10); puede ser negativa. */
+    revaluacion: string;
+    /** cierre − anterior − resultado − revaluacion. */
     otrosCambios: string;
     patrimonioCierre: string;
   };
@@ -84,6 +87,7 @@ export type Resumen = {
     fechaCierre: string;
     patrimonioAnterior: bigint;
     resultado: bigint;
+    revaluacion: bigint;
     otrosCambios: bigint;
     patrimonioCierre: bigint;
   };
@@ -137,6 +141,7 @@ export function aResumen(dto: ResumenDto): Resumen {
       fechaCierre: dto.cambioDelMes.fechaCierre,
       patrimonioAnterior: BigInt(dto.cambioDelMes.patrimonioAnterior),
       resultado: BigInt(dto.cambioDelMes.resultado),
+      revaluacion: BigInt(dto.cambioDelMes.revaluacion),
       otrosCambios: BigInt(dto.cambioDelMes.otrosCambios),
       patrimonioCierre: BigInt(dto.cambioDelMes.patrimonioCierre),
     },

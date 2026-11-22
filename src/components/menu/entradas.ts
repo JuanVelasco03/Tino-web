@@ -3,9 +3,8 @@ import { ROTULO_DESTINO, type DestinoNavegacion } from "../iconos";
 /**
  * Destinos del menú de la aplicación. Las secciones futuras se ven y están
  * deshabilitadas («Próximamente»): el menú no cambia de forma con cada spec.
- * Hoy navegan «Resumen», «Movimientos», «Cuentas», «Deudas y préstamos» y
- * «Recurrentes»; «Registrar»
- * abre la captura.
+ * Hoy navegan «Resumen», «Movimientos», «Cuentas», «Deudas y préstamos»,
+ * «Recurrentes» e «Inversiones»; «Registrar» abre la captura.
  */
 export type EntradaMenu = {
   destino: DestinoNavegacion;
@@ -28,7 +27,7 @@ export const ENTRADAS: readonly EntradaMenu[] = [
   entrada("cuentas", "/cuentas"),
   entrada("deudas", "/deudas", "Deudas y préstamos"),
   entrada("recurrentes", "/recurrentes"),
-  entrada("inversiones"),
+  entrada("inversiones", "/inversiones"),
   entrada("metas"),
   entrada("avisos"),
 ];

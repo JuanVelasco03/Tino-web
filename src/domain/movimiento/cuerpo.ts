@@ -4,7 +4,8 @@
  * la forma del contrato de Tino API (docs/api/movimientos.md, captura.md);
  * el dominio no importa `repositories/`.
  */
-import { aDigitos } from "../dinero/entrada";
+import { aMenores } from "../dinero/entrada";
+import type { Moneda } from "../dinero/formato";
 import { errorPartes, type ValorParte } from "./partes";
 
 export type { ValorParte };
@@ -28,8 +29,10 @@ export type DecisionCategoria =
 /** Estado del formulario, en el cliente. */
 export type ValoresCaptura = {
   tipo: TipoMovimiento;
-  /** Lo tecleado ya formateado: `"15.000"`. */
+  /** Lo tecleado ya formateado, en la moneda del origen: `"15.000"`, `"2.000,00"`. */
   monto: string;
+  /** «Llegó»: transferencia entre monedas, en la moneda del destino. `""` si no aplica. */
+  montoDestino: string;
   descripcion: string;
   categoria: DecisionCategoria;
   /** Gasto: origen · ingreso: destino · transferencia: origen. */
@@ -43,13 +46,28 @@ export type ValoresCaptura = {
   partes: ValorParte[] | null;
 };
 
-export type CampoCaptura = "tipo" | "monto" | "descripcion" | "categoria" | "cuenta" | "destino" | "fecha" | "nota" | "partes";
+export type CampoCaptura =
+  | "tipo"
+  | "monto"
+  | "montoDestino"
+  | "descripcion"
+  | "categoria"
+  | "cuenta"
+  | "destino"
+  | "fecha"
+  | "nota"
+  | "partes";
+
+/** Monedas de las cuentas elegidas: la del monto (origen) y la del destino de una transferencia. */
+export type MonedasCaptura = { origen: Moneda; destino: Moneda | null };
 
 /** `MovimientoCuerpo` del contrato. */
 export type CuerpoMovimiento = {
   tipo: TipoMovimiento;
-  /** `^\d{1,19}$`, > 0. */
+  /** `^\d{1,19}$`, > 0, en la moneda del origen. */
   monto: string;
+  /** Solo en una transferencia entre monedas, en la moneda del destino. */
+  montoDestino?: string;
   fecha?: string;
   descripcion: string | null;
   nota: string | null;
@@ -75,9 +93,9 @@ export function categoriaEfectiva(valores: Pick<ValoresCaptura, "tipo" | "catego
   }
 }
 
-/** Monto tecleado como string entero > 0, o `null`. */
-export function montoValido(monto: string): string | null {
-  const digitos = aDigitos(monto);
+/** Monto tecleado como string entero > 0 en unidades menores de su moneda (pesos por defecto), o `null`. */
+export function montoValido(monto: string, moneda: Moneda = "COP"): string | null {
+  const digitos = aMenores(monto, moneda);
   return digitos === null || digitos === "0" ? null : digitos;
 }
 
@@ -103,9 +121,16 @@ function partesDelCuerpo(total: string, partes: readonly ValorParte[]): { catego
  * monto o las partes no son válidos. Gasto: `cuentaOrigenId`. Ingreso:
  * `cuentaDestinoId`. Transferencia: ambos, nunca `categoriaId` ni `partes`
  * (RN-03, RN-05). Con partes, nunca `categoriaId` (`PARTES_CON_CATEGORIA`).
+ * El monto va en la moneda del origen; entre monedas, la transferencia lleva
+ * además `montoDestino` en la del destino (SPEC 10).
  */
-export function cuerpoDesdeValores(valores: ValoresCaptura, propuesta: Propuesta | null): CuerpoMovimiento | null {
-  const monto = montoValido(valores.monto);
+export function cuerpoDesdeValores(
+  valores: ValoresCaptura,
+  propuesta: Propuesta | null,
+  monedas: MonedasCaptura = { origen: "COP", destino: null },
+): CuerpoMovimiento | null {
+  const esTransferencia = valores.tipo === "transferencia";
+  const monto = montoValido(valores.monto, esTransferencia ? monedas.origen : "COP");
   if (monto === null) return null;
 
   const cuerpo: CuerpoMovimiento = {
@@ -116,9 +141,14 @@ export function cuerpoDesdeValores(valores: ValoresCaptura, propuesta: Propuesta
   };
   if (valores.fecha !== "") cuerpo.fecha = valores.fecha;
 
-  if (valores.tipo === "transferencia") {
+  if (esTransferencia) {
     cuerpo.cuentaOrigenId = valores.cuentaId;
     cuerpo.cuentaDestinoId = valores.destinoId;
+    if (requiereMontoDestino(monedas.origen, monedas.destino) && monedas.destino !== null) {
+      const montoDestino = montoValido(valores.montoDestino, monedas.destino);
+      if (montoDestino === null) return null;
+      cuerpo.montoDestino = montoDestino;
+    }
     return cuerpo;
   }
 
@@ -133,4 +163,23 @@ export function cuerpoDesdeValores(valores: ValoresCaptura, propuesta: Propuesta
     cuerpo.categoriaId = categoriaEfectiva(valores, propuesta);
   }
   return cuerpo;
+}
+
+/**
+ * ¿La transferencia necesita «Llegó»? Solo entre cuentas de monedas
+ * distintas (`MONTO_DESTINO_REQUERIDO`); con la misma moneda está prohibido
+ * (`MONTO_DESTINO_NO_PERMITIDO`).
+ */
+export function requiereMontoDestino(origen: Moneda | null, destino: Moneda | null): boolean {
+  return origen !== null && destino !== null && origen !== destino;
+}
+
+/**
+ * El equivalente en COP de un movimiento entre monedas es su lado COP:
+ * `monto` si el origen es COP, `montoDestino` si lo es el destino. Sin
+ * `montoDestino`, `null`.
+ */
+export function ladoCop(m: { moneda: Moneda; monto: bigint; montoDestino: bigint | null }): bigint | null {
+  if (m.montoDestino === null) return null;
+  return m.moneda === "COP" ? m.monto : m.montoDestino;
 }

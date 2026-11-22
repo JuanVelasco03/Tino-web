@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { formatearDinero } from "@/domain/dinero/formato";
 import { formatearFechaSinAnio, formatearMes } from "@/domain/fecha/formato";
-import { importeEnPatrimonio } from "@/domain/movimiento/vista-previa";
+import { importeEnPatrimonio, importeMostrado } from "@/domain/movimiento/vista-previa";
 import type { DatosCaptura } from "@/services/captura";
 import type { Movimiento } from "@/services/movimientos";
 import { AvisoRegistro, type DatosAviso } from "../captura/aviso-registro";
@@ -40,12 +40,21 @@ function partesDe(m: Movimiento): ParteFila[] {
   return m.partes.map((p) => ({ categoria: p.categoria.nombre, monto: p.monto }));
 }
 
-/** Importe con signo y color desde el patrimonio: gasto −, ingreso +, transferencia sin signo. */
+/**
+ * Importe con signo y color desde el patrimonio: gasto −, ingreso +,
+ * transferencia sin signo. Entre monedas, el lado COP y debajo «US$ … · TRM …».
+ */
 function Importe({ m, peso }: { m: Movimiento; peso: string }) {
-  const efecto = importeEnPatrimonio(m.tipo, m.monto);
-  const cifra = formatearDinero({ monto: efecto ?? m.monto, moneda: "COP" }, { omitirCOP: true, signoMas: efecto !== null });
+  const { dinero, linea } = importeMostrado(m);
+  const efecto = importeEnPatrimonio(m.tipo, dinero.monto);
+  const cifra = formatearDinero({ ...dinero, monto: efecto ?? dinero.monto }, { omitirCOP: true, signoMas: efecto !== null });
   const color = efecto === null ? "" : efecto < 0n ? "text-salida-texto" : "text-entrada-texto";
-  return <span className={`text-right font-mono text-cifra-s tabular-nums ${color} ${peso}`}>{cifra}</span>;
+  return (
+    <span className="flex flex-col items-end">
+      <span className={`text-right font-mono text-cifra-s tabular-nums ${color} ${peso}`}>{cifra}</span>
+      {linea && <span className="whitespace-nowrap text-etiqueta text-secundario">{linea}</span>}
+    </span>
+  );
 }
 
 /** «Guardado: Almuerzo −18.000 en Nequi · ahora en Octubre 2026» / «Eliminado: …». */
@@ -55,6 +64,7 @@ function datosAvisoEdicion(resultado: ResultadoEdicion | null): DatosAviso | nul
   return {
     tipo: movimiento.tipo,
     monto: movimiento.monto,
+    moneda: movimiento.moneda,
     descripcion: movimiento.descripcion,
     cuenta: cuentaDe(movimiento),
     verbo: resultado.tipo === "guardado" ? "Guardado" : "Eliminado",
@@ -166,7 +176,8 @@ export function LibroMovimientos({ mes, esActual, movimientos, sinClasificar = f
                 fecha={formatearFechaSinAnio(m.fecha)}
                 concepto={conceptoDe(m)}
                 tipo={m.tipo}
-                monto={{ monto: m.monto, moneda: "COP" }}
+                monto={importeMostrado(m).dinero}
+                detalleImporte={importeMostrado(m).linea}
                 categoria={categoria(m)}
                 cuenta={m.tipo === "transferencia" ? undefined : cuentaDe(m)}
                 transferencia={

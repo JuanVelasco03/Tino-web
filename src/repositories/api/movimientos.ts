@@ -1,20 +1,26 @@
 import { enviar, ErrorApi, obtener } from "./cliente";
+import { tasaEnCentesimas } from "./trm";
 
 /*
- * Contrato de Tino API (docs/api/movimientos.md, Tino-API SPEC 04). Se copia,
- * no se redefine. Montos como string con un entero en unidades menores.
+ * Contrato de Tino API (docs/api/movimientos.md, Tino-API SPEC 04 y 10). Se
+ * copia, no se redefine. Montos como string con un entero en unidades menores
+ * de su moneda.
  */
 export type TipoMovimiento = "gasto" | "ingreso" | "transferencia";
+export type Moneda = "COP" | "USD";
 
 export type Ref = { id: string; nombre: string };
 
 export type MovimientoDto = {
   id: string;
   tipo: TipoMovimiento;
-  /** SIEMPRE positivo; el signo lo pone el cliente según `tipo`. */
+  /** SIEMPRE positivo, en la moneda de `moneda`; el signo lo pone el cliente según `tipo`. */
   monto: string;
-  moneda: "COP";
-  /** Decimal como texto; hoy `"1"`. */
+  /** La de la cuenta de origen, o la del destino en un ingreso. */
+  moneda: Moneda;
+  /** Solo en una transferencia entre monedas: lo que llegó, en la moneda del destino. */
+  montoDestino: string | null;
+  /** Decimal como texto: la implícita (COP por US$ 1) entre monedas, o `"1"`. */
   tasa: string;
   /** `"YYYY-MM-DD"`, día contable del usuario. */
   fecha: string;
@@ -34,8 +40,10 @@ export type ListaMovimientosDto = { mes: string; movimientos: MovimientoDto[] };
 /** Cuerpo de `POST /movimientos` y de `PUT /movimientos/:id` (con `fecha` obligatoria). */
 export type MovimientoCuerpo = {
   tipo: TipoMovimiento;
-  /** `^\d{1,19}$`, > 0. */
+  /** `^\d{1,19}$`, > 0, en la moneda del origen (o del destino en un ingreso). */
   monto: string;
+  /** Solo en una transferencia entre monedas: lo que llegó, en la moneda del destino. */
+  montoDestino?: string | null;
   /** `"YYYY-MM-DD"`. Opcional en POST: hoy en la zona del usuario. */
   fecha?: string;
   /** ≤ 80; `""` = sin descripción. */
@@ -55,8 +63,13 @@ export type Parte = { categoria: Ref; monto: bigint };
 export type Movimiento = {
   id: string;
   tipo: TipoMovimiento;
-  /** Siempre positivo. */
+  /** Siempre positivo, en `moneda`. */
   monto: bigint;
+  moneda: Moneda;
+  /** Transferencia entre monedas: lo que llegó, en la moneda del destino. */
+  montoDestino: bigint | null;
+  /** Centésimas de peso por US$; `100n` con la misma moneda. */
+  tasa: bigint;
   /** `"YYYY-MM-DD"`. */
   fecha: string;
   descripcion: string | null;
@@ -81,6 +94,9 @@ export function aMovimiento(dto: MovimientoDto): Movimiento {
     id: dto.id,
     tipo: dto.tipo,
     monto: BigInt(dto.monto),
+    moneda: dto.moneda,
+    montoDestino: dto.montoDestino === null ? null : BigInt(dto.montoDestino),
+    tasa: tasaEnCentesimas(dto.tasa),
     fecha: dto.fecha,
     descripcion: dto.descripcion,
     nota: dto.nota,
