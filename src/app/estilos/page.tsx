@@ -35,6 +35,7 @@ import {
   MuestraMontoEditable,
   MuestraOpcionUnica,
   MuestraPanelLateral,
+  MuestraRecurrentes,
   MuestraSelectorTipo,
   MuestraTeclado,
 } from "./muestras-interactivas";
@@ -664,6 +665,16 @@ export default function Estilos() {
           {(["light", "dark"] as const).map((modo) => (
             <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
               <ComponentesResumen />
+            </Panel>
+          ))}
+        </div>
+      </Seccion>
+
+      <Seccion numero="07" titulo="Recurrentes" nota="Bandeja y plantillas cambian de forma con el ancho de su contenedor">
+        <div className="grid grid-cols-1 gap-6">
+          {(["light", "dark"] as const).map((modo) => (
+            <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
+              <MuestraRecurrentes sufijo={modo} />
             </Panel>
           ))}
         </div>

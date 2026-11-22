@@ -2,8 +2,16 @@ import type { Naturaleza, TipoCuenta } from "@/domain/cuenta/naturaleza";
 import { formatearDinero } from "@/domain/dinero/formato";
 import { IconoCuenta } from "../iconos";
 
+/**
+ * Sin `tipo` ni `saldo`: una cuenta archivada que solo se conoce por su nombre
+ * (la de una plantilla recurrente); se muestra «Archivada» en vez del saldo.
+ */
+type CuentaFicha =
+  | { nombre: string; tipo: TipoCuenta; naturaleza: Naturaleza; saldo: bigint }
+  | { nombre: string; tipo?: undefined; naturaleza?: undefined; saldo?: undefined };
+
 type Props = {
-  cuenta: { nombre: string; tipo: TipoCuenta; naturaleza: Naturaleza; saldo: bigint };
+  cuenta: CuentaFicha;
   elegida: boolean;
   /** Saldo estimado tras el movimiento («20.321 → 5.321»), solo en la elegida y con monto. */
   resultante?: bigint | null;
@@ -31,15 +39,17 @@ export function FichaCuenta({ cuenta, elegida, resultante = null, alPulsar }: Pr
         elegida ? "border-texto" : "border-linea hover:border-secundario"
       }`}
     >
-      <span className="flex text-secundario">
-        <IconoCuenta tipo={cuenta.tipo} />
-      </span>
+      <span className="flex text-secundario">{cuenta.tipo && <IconoCuenta tipo={cuenta.tipo} />}</span>
       <span className="flex min-w-0 flex-col">
         <span className={`truncate text-cuerpo ${elegida ? "font-semibold" : ""}`}>{cuenta.nombre}</span>
-        <span className="truncate font-mono text-cifra-xs tabular-nums text-secundario">
-          {saldoTexto(cuenta.saldo, cuenta.naturaleza)}
-          {resultante !== null && ` → ${saldoTexto(resultante, cuenta.naturaleza)}`}
-        </span>
+        {cuenta.saldo === undefined ? (
+          <span className="truncate text-etiqueta font-normal text-secundario">Archivada</span>
+        ) : (
+          <span className="truncate font-mono text-cifra-xs tabular-nums text-secundario">
+            {saldoTexto(cuenta.saldo, cuenta.naturaleza)}
+            {resultante !== null && ` → ${saldoTexto(resultante, cuenta.naturaleza)}`}
+          </span>
+        )}
       </span>
     </button>
   );

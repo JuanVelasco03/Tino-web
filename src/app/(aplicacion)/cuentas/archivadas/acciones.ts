@@ -13,7 +13,7 @@ const ENTRADA_INVALIDA: ResultadoCuenta = {
   mensaje: "No pudimos procesar los datos. Intenta de nuevo.",
 };
 
-/** Llama a la API, traduce el error y revalida las dos listas y el resumen en éxito. */
+/** Llama a la API, traduce el error y revalida las dos listas, el resumen y los recurrentes en éxito. */
 async function ejecutar(llamada: () => Promise<unknown>): Promise<ResultadoCuenta> {
   try {
     await llamada();
@@ -24,6 +24,7 @@ async function ejecutar(llamada: () => Promise<unknown>): Promise<ResultadoCuent
   revalidatePath("/cuentas");
   revalidatePath("/cuentas/archivadas");
   revalidatePath("/resumen");
+  revalidatePath("/recurrentes");
   return { ok: true };
 }
 

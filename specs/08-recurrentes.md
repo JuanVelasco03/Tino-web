@@ -1,6 +1,6 @@
 # SPEC 08 — Recurrentes
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 03, SPEC 04, SPEC 05, SPEC 06, Tino-API SPEC 07
 > **Fecha:** 2026-11-21
 > **Objetivo:** Que el usuario gestione en `/recurrentes` sus plantillas de pagos e ingresos que se repiten y resuelva la bandeja por confirmar (confirmar, ajustar, omitir y deshacer), viendo lo comprometido del mes, con todo calculado por la API.

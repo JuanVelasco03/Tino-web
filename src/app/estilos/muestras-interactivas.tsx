@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { BloqueEliminar } from "@/components/bloque-eliminar";
 import { Boton } from "@/components/boton";
 import { CampoMonto } from "@/components/campo-monto";
@@ -14,11 +14,23 @@ import { EstadoVacio } from "@/components/estado-vacio";
 import { IconoCuenta } from "@/components/iconos";
 import { OpcionUnica } from "@/components/opcion-unica";
 import { PanelLateral, type ControlPanel } from "@/components/panel-lateral";
+import {
+  AvisoBandeja,
+  BandejaRecurrentes,
+  CifraAviso,
+  FilaBandeja,
+  type AccionesBandeja,
+} from "@/components/recurrentes/bandeja-recurrentes";
+import { ComprometidoMes } from "@/components/recurrentes/comprometido-mes";
+import { ListaPlantillas } from "@/components/recurrentes/lista-plantillas";
+import { PanelPlantilla, type AccionesPlantilla, type DatosFormulario } from "@/components/recurrentes/panel-plantilla";
 import { VistaDiaUno } from "@/components/resumen/dia-uno";
 import { desdeMonto, formatearEntradaPesos } from "@/domain/dinero/entrada";
 import type { TipoMovimiento } from "@/domain/movimiento/cuerpo";
 import { errorPartes, restante, type ValorParte } from "@/domain/movimiento/partes";
 import { saldoResultante } from "@/domain/movimiento/vista-previa";
+import type { Ocurrencia, Recurrente } from "@/domain/recurrente/tipos";
+import type { Cuenta } from "@/services/cuentas";
 
 type Tipo = "banco" | "efectivo" | "tarjeta_credito";
 
@@ -286,5 +298,311 @@ export function MuestraDiaUno({ cuentasActivas }: { cuentasActivas: number }) {
       patrimonioHoy={975_372n}
       alRegistrar={() => {}}
     />
+  );
+}
+
+/* ── Recurrentes ─────────────────────────────────────────────────────── */
+
+const HOY_RECURRENTES = "2026-11-11";
+
+type DatosRecurrentes = { recurrentes: Recurrente[]; bandeja: Ocurrencia[]; ingresos: Ocurrencia[] };
+
+type DatosPlantilla = Partial<Recurrente> & { estado?: Ocurrencia["estado"]; vence?: string; estimado?: bigint };
+
+/**
+ * Datos del diseño (`Recurrentes.dc.html`) con `fechaHoy` 2026-11-11, más una
+ * vencida, una omitida y una pausada para mostrar todos los estados del mes.
+ * `sufijo` separa los ids de claro y oscuro.
+ */
+function datosRecurrentes(sufijo: string): DatosRecurrentes {
+  const banco = { id: "banco", nombre: "Bancolombia" };
+  const tarjeta = { id: "visa", nombre: "Visa Oro" };
+  const nequi = { id: "nequi", nombre: "Nequi" };
+  const cat = (nombre: string) => ({ id: nombre.toLowerCase(), nombre });
+
+  function plantilla(id: string, concepto: string, monto: bigint, datos: DatosPlantilla): Recurrente {
+    const { estado, vence, estimado, ...resto } = datos;
+    const idCompleto = `${id}-${sufijo}`;
+    const ocurrencias: Ocurrencia[] =
+      estado && vence
+        ? [
+            {
+              recurrenteId: idCompleto,
+              vencimiento: vence,
+              estado,
+              monto: estimado ?? monto,
+              estimado: (resto.variable ?? false) && estado !== "pagada",
+              movimientoId: estado === "pagada" ? `mov-${idCompleto}` : null,
+            },
+          ]
+        : [];
+    return {
+      id: idCompleto,
+      tipo: "gasto",
+      concepto,
+      monto,
+      variable: false,
+      periodicidad: "mensual",
+      primerVencimiento: vence ?? "2026-01-01",
+      ultimoDia: false,
+      cuentaOrigen: banco,
+      cuentaDestino: null,
+      categoria: cat("Servicios"),
+      pausada: false,
+      pausadaDesde: null,
+      ultimoConfirmado: null,
+      ocurrenciasDelMes: ocurrencias,
+      proximoVencimiento: estado === "pagada" || estado === "omitida" ? null : (vence ?? null),
+      ...resto,
+    };
+  }
+
+  const recurrentes = [
+    plantilla("arriendo", "Arriendo", 1_100_000n, { categoria: cat("Casa"), estado: "pagada", vence: "2026-11-01" }),
+    plantilla("spotify", "Spotify", 16_900n, { cuentaOrigen: tarjeta, categoria: cat("Suscripciones"), estado: "pagada", vence: "2026-11-01" }),
+    plantilla("enel", "Energía Enel", 84_320n, { variable: true, estado: "pagada", vence: "2026-11-03" }),
+    plantilla("mama", "Abono a mamá", 100_000n, {
+      tipo: "transferencia",
+      cuentaOrigen: nequi,
+      cuentaDestino: banco,
+      categoria: null,
+      estado: "pagada",
+      vence: "2026-11-06",
+    }),
+    plantilla("parqueadero", "Parqueadero", 120_000n, { categoria: cat("Transporte"), estado: "omitida", vence: "2026-11-05" }),
+    plantilla("seguro", "Seguro del carro", 210_000n, { categoria: cat("Transporte"), estado: "vencida", vence: "2026-11-09" }),
+    plantilla("internet", "Internet Claro hogar", 89_900n, { estado: "por_confirmar", vence: "2026-11-12" }),
+    plantilla("gas", "Gas Vanti", 32_400n, {
+      variable: true,
+      estimado: 31_870n,
+      estado: "por_confirmar",
+      vence: "2026-11-14",
+      ultimoConfirmado: { monto: 31_870n, vencimiento: "2026-10-14" },
+    }),
+    plantilla("manejo", "Cuota de manejo", 26_990n, {
+      cuentaOrigen: tarjeta,
+      categoria: cat("Cargo del banco"),
+      estado: "por_confirmar",
+      vence: "2026-11-16",
+    }),
+    plantilla("apple", "Mensualidad Apple", 3_900n, {
+      cuentaOrigen: tarjeta,
+      categoria: cat("Suscripciones"),
+      estado: "programada",
+      vence: "2026-11-25",
+    }),
+    plantilla("salario", "Salario Andina SAS", 4_200_000n, {
+      tipo: "ingreso",
+      cuentaOrigen: null,
+      cuentaDestino: banco,
+      categoria: cat("Salario"),
+      ultimoDia: true,
+      estado: "programada",
+      vence: "2026-11-30",
+    }),
+    plantilla("agua", "Acueducto EAAB", 41_860n, {
+      variable: true,
+      periodicidad: "bimestral",
+      primerVencimiento: "2026-02-18",
+      proximoVencimiento: "2026-12-18",
+    }),
+    plantilla("ingles", "Clases de inglés", 380_000n, {
+      categoria: cat("Educación"),
+      primerVencimiento: "2026-03-20",
+      pausada: true,
+      pausadaDesde: "2026-11-12",
+    }),
+  ];
+
+  const ocurrencias = recurrentes.flatMap((r) => r.ocurrenciasDelMes);
+  return {
+    recurrentes,
+    bandeja: ocurrencias.filter((o) => o.estado === "vencida" || o.estado === "por_confirmar"),
+    ingresos: ocurrencias.filter((o) => o.recurrenteId.startsWith("salario")),
+  };
+}
+
+const COMPROMETIDO = {
+  total: 1_618_170n,
+  pagado: { monto: 1_396_220n, cantidad: 5 },
+  porConfirmar: { monto: 191_150n, cantidad: 4 },
+  programado: { monto: 30_800n, cantidad: 2 },
+};
+
+function cuentaMuestra(id: string, nombre: string, tipo: Tipo, saldo: bigint): Cuenta {
+  return {
+    id,
+    nombre,
+    tipo,
+    naturaleza: tipo === "tarjeta_credito" ? "pasivo" : "activo",
+    detalle: null,
+    saldo,
+    saldoInicial: 0n,
+    tarjeta: null,
+    archivadaEn: null,
+  };
+}
+
+const FORMULARIO_PLANTILLA: DatosFormulario = {
+  captura: {
+    fechaHoy: HOY_RECURRENTES,
+    cuentaPredeterminadaId: "banco",
+    categorias: {
+      gasto: ["Servicios", "Casa", "Suscripciones", "Transporte", "Educación"].map((nombre) => ({
+        id: nombre.toLowerCase(),
+        nombre,
+        tipo: "gasto" as const,
+      })),
+      ingreso: [{ id: "salario", nombre: "Salario", tipo: "ingreso" as const }],
+    },
+    gastosHoy: 0n,
+    conceptosFrecuentes: { gasto: [], ingreso: [], transferencia: [] },
+  },
+  cuentas: [
+    cuentaMuestra("banco", "Bancolombia", "banco", 3_284_300n),
+    cuentaMuestra("nequi", "Nequi", "efectivo", 412_000n),
+    cuentaMuestra("visa", "Visa Oro", "tarjeta_credito", 1_284_300n),
+  ],
+};
+
+async function esperar(): Promise<void> {
+  await new Promise((resolver) => setTimeout(resolver, 400));
+}
+
+const ACCIONES_BANDEJA: AccionesBandeja = {
+  async confirmar(_id, _vencimiento, monto) {
+    await esperar();
+    return { ok: true, movimiento: { id: "muestra", monto: monto === undefined ? 89_900n : BigInt(monto) } };
+  },
+  async omitir() {
+    await esperar();
+    return { ok: true };
+  },
+  async deshacerConfirmacion() {
+    await esperar();
+    return { ok: true };
+  },
+  async deshacerOmision() {
+    await esperar();
+    return { ok: true };
+  },
+};
+
+const ACCIONES_PLANTILLA: AccionesPlantilla = {
+  async crear() {
+    await esperar();
+    return { ok: true };
+  },
+  async editar() {
+    await esperar();
+    return { ok: true };
+  },
+  async pausar() {
+    await esperar();
+    return { ok: false, codigo: "MUESTRA", mensaje: "En la muestra la pausa no se guarda." };
+  },
+  async eliminar() {
+    await esperar();
+    return { ok: true };
+  },
+};
+
+function EtiquetaMuestra({ children }: { children: ReactNode }) {
+  return <div className="mb-3 font-mono text-cifra-xs text-secundario">{children}</div>;
+}
+
+const NADA = () => {};
+
+/**
+ * Recurrentes: bandeja (normal, ajustando, aviso y vacía), comprometido,
+ * plantillas con todos los estados del mes y el panel de plantilla.
+ */
+export function MuestraRecurrentes({ sufijo }: { sufijo: string }) {
+  const [datos] = useState(() => datosRecurrentes(sufijo));
+  const [panel, setPanel] = useState<"nueva" | "editar" | null>(null);
+  const gas = datos.recurrentes.find((r) => r.id === `gas-${sufijo}`) as Recurrente;
+  const pausada = datos.recurrentes.find((r) => r.pausada) as Recurrente;
+
+  return (
+    <div className="flex flex-col gap-12">
+      <div className="grid grid-cols-1 gap-12 xl:grid-cols-[minmax(0,1fr)_400px]">
+        <div>
+          <EtiquetaMuestra>Bandeja · normal, con una vencida (las acciones responden sin guardar)</EtiquetaMuestra>
+          <BandejaRecurrentes
+            fechaHoy={HOY_RECURRENTES}
+            ventanaDias={7}
+            bandeja={datos.bandeja}
+            recurrentes={datos.recurrentes}
+            acciones={ACCIONES_BANDEJA}
+          />
+        </div>
+        <div>
+          <EtiquetaMuestra>Comprometido del mes · total, barra, grupos e ingreso esperado</EtiquetaMuestra>
+          <ComprometidoMes mes="2026-11" comprometido={COMPROMETIDO} ingresosEsperados={datos.ingresos} recurrentes={datos.recurrentes} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-12 xl:grid-cols-[minmax(0,1fr)_400px]">
+        <div className="@container">
+          <EtiquetaMuestra>Bandeja · aviso tras confirmar y fila ajustando el importe</EtiquetaMuestra>
+          <AvisoBandeja
+            texto={
+              <>
+                Gas Vanti confirmado con <CifraAviso>35.120</CifraAviso>. Ya cuenta en Bancolombia.
+              </>
+            }
+            alDeshacer={NADA}
+            deshaciendo={false}
+          />
+          <ul>
+            <FilaBandeja
+              o={gas.ocurrenciasDelMes[0]}
+              r={gas}
+              fechaHoy={HOY_RECURRENTES}
+              ajuste={{ clave: "gas", valor: "35.120", error: null }}
+              error={null}
+              ocupado={false}
+              enfocar={false}
+              alConfirmar={NADA}
+              alAjustar={NADA}
+              alOmitir={NADA}
+              alCambiarAjuste={NADA}
+              alEnviarAjuste={NADA}
+              alCancelarAjuste={NADA}
+            />
+          </ul>
+        </div>
+        <div>
+          <EtiquetaMuestra>Bandeja · vacía</EtiquetaMuestra>
+          <BandejaRecurrentes fechaHoy={HOY_RECURRENTES} ventanaDias={7} bandeja={[]} recurrentes={[]} acciones={ACCIONES_BANDEJA} />
+        </div>
+      </div>
+
+      <div>
+        <EtiquetaMuestra>Plantillas · pagado, omitido, vencido, por confirmar, programado, próximo y pausada</EtiquetaMuestra>
+        <ListaPlantillas recurrentes={datos.recurrentes} mes="2026-11" />
+      </div>
+
+      <div>
+        <EtiquetaMuestra>Panel de plantilla · alta y edición de una pausada</EtiquetaMuestra>
+        <div className="flex flex-wrap gap-3">
+          <Boton variante="secundario" onClick={() => setPanel("nueva")}>
+            Nueva plantilla
+          </Boton>
+          <Boton variante="secundario" onClick={() => setPanel("editar")}>
+            Editar {pausada.concepto}
+          </Boton>
+        </div>
+        {panel && (
+          <PanelPlantilla
+            recurrente={panel === "editar" ? pausada : null}
+            fechaHoy={HOY_RECURRENTES}
+            formulario={FORMULARIO_PLANTILLA}
+            acciones={ACCIONES_PLANTILLA}
+            alCerrar={() => setPanel(null)}
+          />
+        )}
+      </div>
+    </div>
   );
 }
