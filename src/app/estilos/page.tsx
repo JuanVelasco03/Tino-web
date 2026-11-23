@@ -29,6 +29,7 @@ import { AlternarTema } from "./alternar-tema";
 import { MuestraAvisos } from "./muestras-avisos";
 import { MuestraDeudas } from "./muestras-deudas";
 import { MuestraInversiones } from "./muestras-inversiones";
+import { MuestraMetas } from "./muestras-metas";
 import {
   MuestraAvisoRegistro,
   MuestraBloqueEliminar,
@@ -743,6 +744,16 @@ export default function Estilos() {
           {(["light", "dark"] as const).map((modo) => (
             <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
               <MuestraAvisos sufijo={modo} />
+            </Panel>
+          ))}
+        </div>
+      </Seccion>
+
+      <Seccion numero="11" titulo="Metas de ahorro" nota="Maestro-detalle: lista y detalle lado a lado desde 1280 px; filas con cuenta y ritmo corto por debajo de 768 px">
+        <div className="grid grid-cols-1 gap-6">
+          {(["light", "dark"] as const).map((modo) => (
+            <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
+              <MuestraMetas sufijo={modo} />
             </Panel>
           ))}
         </div>

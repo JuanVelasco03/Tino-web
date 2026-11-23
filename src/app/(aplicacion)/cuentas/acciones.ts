@@ -115,7 +115,7 @@ export async function crearCuenta(valores: ValoresCuenta): Promise<ResultadoCuen
     alta.cupo = digitosCupo;
   }
 
-  return ejecutar(() => cuentas.crearCuenta(alta), ["/cuentas", "/resumen", "/deudas", "/inversiones"]);
+  return ejecutar(() => cuentas.crearCuenta(alta), ["/cuentas", "/resumen", "/deudas", "/inversiones", "/metas"]);
 }
 
 /** `PATCH /cuentas/:id` con solo los campos que cambian. */
@@ -147,17 +147,17 @@ export async function editarCuenta(id: string, cambios: EdicionCuenta): Promise<
     edicion.cupo = digitos;
   }
 
-  return ejecutar(() => cuentas.editarCuenta(id, edicion), ["/cuentas", "/resumen", "/recurrentes", "/deudas", "/inversiones"]);
+  return ejecutar(() => cuentas.editarCuenta(id, edicion), ["/cuentas", "/resumen", "/recurrentes", "/deudas", "/inversiones", "/metas"]);
 }
 
 /** `POST /cuentas/:id/archivar`. Sale de la lista y aparece en archivadas. */
 export async function archivarCuenta(id: string): Promise<ResultadoCuenta> {
   if (!esId(id)) return ENTRADA_INVALIDA;
-  return ejecutar(() => cuentas.archivarCuenta(id), ["/cuentas", "/cuentas/archivadas", "/resumen", "/recurrentes", "/deudas", "/inversiones"]);
+  return ejecutar(() => cuentas.archivarCuenta(id), ["/cuentas", "/cuentas/archivadas", "/resumen", "/recurrentes", "/deudas", "/inversiones", "/metas"]);
 }
 
 /** `DELETE /cuentas/:id`. La confirmación ya la pidió el panel. */
 export async function eliminarCuenta(id: string): Promise<ResultadoCuenta> {
   if (!esId(id)) return ENTRADA_INVALIDA;
-  return ejecutar(() => cuentas.eliminarCuenta(id), ["/cuentas", "/resumen", "/recurrentes", "/deudas", "/inversiones"]);
+  return ejecutar(() => cuentas.eliminarCuenta(id), ["/cuentas", "/resumen", "/recurrentes", "/deudas", "/inversiones", "/metas"]);
 }

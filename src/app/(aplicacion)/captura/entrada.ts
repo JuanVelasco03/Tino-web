@@ -18,9 +18,10 @@ const MENSAJE_ENTRADA = "No pudimos procesar los datos. Intenta de nuevo.";
  * (N-20), el resumen, los recurrentes (borrar o editar un confirmado cambia
  * la bandeja y el estimado), las deudas (editar o borrar un movimiento de
  * préstamo cambia su capital), las inversiones (un fondeo o un retiro cambia
- * su efectivo) y los avisos (resolver un recurrente o un préstamo).
+ * su efectivo), los avisos (resolver un recurrente o un préstamo) y las metas
+ * (el saldo de la cuenta mueve el avance y el saldo libre).
  */
-export const RUTAS_AFECTADAS = ["/movimientos", "/cuentas", "/resumen", "/recurrentes", "/deudas", "/inversiones", "/avisos"] as const;
+export const RUTAS_AFECTADAS = ["/movimientos", "/cuentas", "/resumen", "/recurrentes", "/deudas", "/inversiones", "/avisos", "/metas"] as const;
 
 export type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoCaptura };
 

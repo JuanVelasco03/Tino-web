@@ -81,9 +81,10 @@ export function IconoNavegacion({ destino }: { destino: DestinoNavegacion }) {
   return <Icono size={20} strokeWidth={1.5} aria-hidden />;
 }
 
-export function IconoCuenta({ tipo }: { tipo: TipoCuenta }) {
+/** 20 px; 16 px donde acompaña a una `etiqueta` (cuenta de una meta). */
+export function IconoCuenta({ tipo, tamano = 20 }: { tipo: TipoCuenta; tamano?: 16 | 20 }) {
   const Icono = ICONO_CUENTA[tipo];
-  return <Icono size={20} strokeWidth={1.5} aria-hidden />;
+  return <Icono size={tamano} strokeWidth={1.5} aria-hidden />;
 }
 
 /** Recurrente ⟳ (el de Recurrentes), cobro ↗, deuda ↙ y precio manual el de Inversiones. */

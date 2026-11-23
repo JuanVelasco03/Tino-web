@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Familjen Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#8A5F1F}
+a:hover{color:#1A1A17}
+input::placeholder{color:var(--t3,#9A958B);opacity:1}
+</style>
+</helmet>
+<div style="{{ vars }}">
+
+<sc-if value="{{ esc }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Tarjeta de crédito escritorio" style="width:1440px;min-height:1024px;display:grid;grid-template-columns:232px minmax(0,1fr);background:var(--bg,#FAF8F3);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;border:1px solid var(--ln,#E4DFD4);box-sizing:border-box">
+<aside style="border-right:1px solid var(--ln,#E4DFD4);padding:28px 16px;display:flex;flex-direction:column;gap:28px">
+<div style="padding:0 8px;font-size:20px;font-weight:700;letter-spacing:0.16em">TINO</div>
+<button style="height:44px;display:flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:4px;background:var(--tx,#1A1A17);color:var(--bg,#FAF8F3);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer"><span style="display:flex">{{ ic.plus }}</span>Registrar</button>
+<nav style="display:flex;flex-direction:column;gap:2px">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+<div style="height:40px;display:flex;align-items:center;gap:12px;padding:0 8px;border-radius:4px;background:{{ n.bg }};color:{{ n.color }};font-size:15px;font-weight:{{ n.weight }};cursor:pointer"><span style="display:flex">{{ n.icon }}</span><span style="flex:1">{{ n.label }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--br,#8A5F1F)">{{ n.badge }}</span></div>
+</sc-for>
+</nav>
+<div style="margin-top:auto;padding:0 8px;display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--t2,#6B6760)"><span>TRM de referencia</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--tx,#1A1A17)">4.120 COP</span><span>11 nov 2026</span></div>
+</aside>
+
+<main style="padding:28px 56px 64px;display:flex;flex-direction:column;gap:40px;min-width:0">
+<header style="display:flex;flex-direction:column;gap:14px">
+<span style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--t2,#6B6760)"><span>Cuentas</span><span style="display:flex">{{ ic.chevR }}</span><span>Pasivos</span></span>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px">
+<div style="display:flex;align-items:center;gap:12px"><span style="display:flex;color:var(--t2,#6B6760)">{{ ic.tarjeta }}</span><h1 style="margin:0;font-size:28px;line-height:34px;font-weight:600;letter-spacing:-0.01em">Tarjeta de crédito</h1><span style="font-size:13px;color:var(--t2,#6B6760)">Visa ·· 7731 · pasivo</span></div>
+<button style="height:44px;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid var(--ln,#E4DFD4);border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:500;cursor:pointer">Registrar pago</button>
+</div>
+</header>
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:56px;align-items:start">
+<div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.8fr);border-top:1px solid var(--lf,#1A1A17)">
+<div style="padding:18px 24px 0 0;display:flex;flex-direction:column;gap:10px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)">Cupo total</span><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;line-height:32px;font-weight:500">4.000.000</span></div>
+<div style="padding:18px 24px 0;border-left:1px solid var(--ln,#E4DFD4);display:flex;flex-direction:column;gap:10px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)">Deuda actual</span><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;line-height:32px;font-weight:500;color:var(--out,#B0452E)">−1.284.300</span></div>
+<div style="padding:18px 0 0 24px;border-left:1px solid var(--ln,#E4DFD4);display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Disponible hoy</span><span style="font-family:'IBM Plex Mono',monospace;font-size:48px;line-height:56px;font-weight:500;letter-spacing:-0.03em">2.715.700</span></div>
+</div>
+<div style="padding-top:20px;display:flex;flex-direction:column;gap:8px">
+<div style="height:8px;display:flex;gap:2px"><div style="width:32.1%;background:var(--out,#B0452E);border-radius:2px 0 0 2px"></div><div style="width:{{ newW }}%;border:{{ newBorder }};box-sizing:border-box"></div><div style="flex:1;background:var(--ln,#E4DFD4);border-radius:0 2px 2px 0"></div></div>
+<div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)"><span>Usado 32 %</span><span>{{ usoText }}</span></div>
+</div>
+</div>
+
+<div style="border-top:1px solid var(--lf,#1A1A17);padding-top:16px;display:flex;flex-direction:column;gap:12px">
+<span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">¿Puedo comprar esto?</span>
+<label style="display:flex;align-items:baseline;gap:8px;padding:4px 0 8px;border-bottom:1px solid var(--lf,#1A1A17)"><input value="{{ consVal }}" onChange="{{ onCons }}" inputmode="numeric" placeholder="Valor de la compra" style="flex:1;min-width:0;background:none;border:none;outline:none;padding:0;font-family:'IBM Plex Mono',monospace;font-size:32px;line-height:40px;font-weight:500;color:var(--tx,#1A1A17)"><span style="font-size:13px;font-weight:500;color:var(--t2,#6B6760)">COP</span></label>
+<div style="display:flex;gap:10px;align-items:flex-start;min-height:44px"><span style="display:flex;color:{{ ansColor }};padding-top:1px">{{ ansIcon }}</span><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">{{ ans1 }}</span><span style="font-size:13px;line-height:20px;color:var(--t2,#6B6760)">{{ ans2 }}</span></div></div>
+</div>
+</div>
+
+<div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px;border-bottom:1px solid var(--lf,#1A1A17)"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Ciclo de facturación</span><span style="font-size:13px;color:var(--t2,#6B6760)">16 oct – 15 nov · pago hasta 30 nov</span></div>
+<div style="position:relative;height:104px;margin:0 8px">
+<div style="position:absolute;left:0;right:0;top:50px;height:1px;background:var(--ln,#E4DFD4)"></div>
+<div style="position:absolute;left:0;width:57.8%;top:49px;height:3px;background:var(--tx,#1A1A17)"></div>
+<div style="position:absolute;left:0;top:14px;display:flex;flex-direction:column;gap:22px"><span style="font-size:13px;color:var(--t2,#6B6760)">Inicio</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--t2,#6B6760)">16 oct</span></div>
+<div style="position:absolute;left:0;top:44px;width:1px;height:13px;background:var(--tx,#1A1A17)"></div>
+<div style="position:absolute;left:57.8%;top:43px;width:15px;height:15px;margin-left:-7px;border-radius:50%;background:var(--tx,#1A1A17);border:3px solid var(--bg,#FAF8F3);box-sizing:border-box"></div>
+<div style="position:absolute;left:57.8%;top:66px;transform:translateX(-50%);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600">Hoy 11 nov</div>
+<div style="position:absolute;left:66.7%;top:38px;width:1px;height:25px;background:var(--tx,#1A1A17)"></div>
+<div style="position:absolute;left:66.7%;top:0;padding-left:8px;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:600">Corte 15 nov</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--t2,#6B6760)">en 4 días</span></div>
+<div style="position:absolute;right:0;top:38px;width:1px;height:25px;background:var(--tx,#1A1A17)"></div>
+<div style="position:absolute;right:0;top:66px;padding-right:8px;text-align:right;display:flex;flex-direction:column"><span style="font-size:15px;font-weight:600">Pago límite 30 nov</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--t2,#6B6760)">en 19 días</span></div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:56px;align-items:start">
+<div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px;border-bottom:1px solid var(--lf,#1A1A17)"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Ciclo en curso</span><span style="font-size:13px;color:var(--t2,#6B6760)">{{ nCons }} consumos</span></div>
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 140px 120px 120px;gap:12px;padding:10px 0 8px;border-bottom:1px solid var(--ln,#E4DFD4);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)"><span>Fecha</span><span>Concepto</span><span>Categoría</span><span style="text-align:right">Cargo</span><span style="text-align:right">Abono</span></div>
+<sc-for list="{{ prevRows }}" as="r" hint-placeholder-count="2">
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 140px 120px 120px;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ r.fecha }}</span><span style="font-size:15px;color:{{ r.color }}">{{ r.concepto }}</span><span style="font-size:13px;color:var(--t2,#6B6760)">{{ r.cat }}</span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--t2,#6B6760)">{{ r.cargo }}</span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--in,#2F7D5A)">{{ r.abono }}</span></div>
+</sc-for>
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 140px 120px 120px;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span></span><span style="font-size:15px;font-weight:600">Saldo anterior pendiente</span><span></span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600">597.980</span><span></span></div>
+<div style="padding:20px 0 6px;font-size:13px;font-weight:600;color:var(--t2,#6B6760)">Consumos del período</div>
+<sc-for list="{{ consumos }}" as="r" hint-placeholder-count="11">
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 140px 120px 120px;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ r.fecha }}</span><span style="font-size:15px">{{ r.concepto }}</span><span style="font-size:13px;color:var(--t2,#6B6760)">{{ r.cat }}</span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--out,#B0452E)">{{ r.amt }}</span><span></span></div>
+</sc-for>
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 140px 120px 120px;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span></span><span style="font-size:15px;font-weight:600">Subtotal consumos</span><span></span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600">{{ totCons }}</span><span></span></div>
+<div style="padding:20px 0 6px;font-size:13px;font-weight:600;color:var(--t2,#6B6760)">Cargos del banco · no son consumos</div>
+<sc-for list="{{ cargos }}" as="r" hint-placeholder-count="2">
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 140px 120px 120px;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px dashed var(--t3,#9A958B)"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ r.fecha }}</span><span style="font-size:15px">{{ r.concepto }}</span><span style="font-size:13px;color:var(--t2,#6B6760)">{{ r.cat }}</span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--out,#B0452E)">{{ r.amt }}</span><span></span></div>
+</sc-for>
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 140px 120px 120px;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span></span><span style="font-size:15px;font-weight:600">Subtotal cargos</span><span></span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600">{{ totCarg }}</span><span></span></div>
+<div style="display:grid;grid-template-columns:64px minmax(0,1fr) 140px 120px 120px;gap:12px;align-items:baseline;padding:14px 0 10px;border-bottom:3px double var(--lf,#1A1A17)"><span></span><span style="font-size:17px;font-weight:600">Deuda actual</span><span></span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:500;color:var(--out,#B0452E)">1.284.300</span><span></span></div>
+</div>
+
+<div>
+<div style="padding-bottom:8px;border-bottom:1px solid var(--lf,#1A1A17);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Condiciones</div>
+<sc-for list="{{ datos }}" as="d" hint-placeholder-count="6">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:13px;color:var(--t2,#6B6760)">{{ d.l }}</span><span style="font-family:{{ d.font }};font-size:15px;text-align:right">{{ d.v }}</span></div>
+</sc-for>
+</div>
+</div>
+</main>
+</div>
+</sc-if>
+
+<sc-if value="{{ mov }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Tarjeta de crédito móvil" style="width:390px;background:var(--bg,#FAF8F3);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;border:1px solid var(--ln,#E4DFD4);box-sizing:border-box;display:flex;flex-direction:column">
+<div style="height:48px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 6px;font-size:15px;font-weight:600"><span>9:41</span><span style="font-size:12px">5G</span></div>
+<div style="height:44px;display:flex;align-items:center;padding:0 4px"><span style="height:44px;display:flex;align-items:center;gap:2px;font-size:15px;color:var(--br,#8A5F1F);font-weight:600"><span style="display:flex">{{ ic.chevL }}</span>Cuentas</span></div>
+<div style="padding:4px 16px 0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="display:flex;color:var(--t2,#6B6760)">{{ ic.tarjeta }}</span><h1 style="margin:0;font-size:24px;line-height:30px;font-weight:600">Tarjeta de crédito</h1></div>
+<div style="display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--lf,#1A1A17);padding-top:12px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Disponible hoy</span><span style="font-family:'IBM Plex Mono',monospace;font-size:48px;line-height:56px;font-weight:500;letter-spacing:-0.03em">2.715.700</span></div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="height:8px;display:flex;gap:2px"><div style="width:32.1%;background:var(--out,#B0452E);border-radius:2px 0 0 2px"></div><div style="width:{{ newW }}%;border:{{ newBorder }};box-sizing:border-box"></div><div style="flex:1;background:var(--ln,#E4DFD4);border-radius:0 2px 2px 0"></div></div>
+<div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)"><span>Usado 32 %</span><span>de 4.000.000</span></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-top:1px solid var(--ln,#E4DFD4);border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:15px">Debes</span><span style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:500;color:var(--out,#B0452E)">−1.284.300</span></div>
+</div>
+
+<div style="padding:28px 16px 0;display:flex;flex-direction:column;gap:10px">
+<span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">¿Puedo comprar esto?</span>
+<label style="display:flex;align-items:baseline;gap:8px;padding:4px 0 8px;border-bottom:1px solid var(--lf,#1A1A17)"><input value="{{ consVal }}" onChange="{{ onCons }}" inputmode="numeric" placeholder="Valor de la compra" style="flex:1;min-width:0;background:none;border:none;outline:none;padding:0;font-family:'IBM Plex Mono',monospace;font-size:28px;line-height:36px;font-weight:500;color:var(--tx,#1A1A17)"><span style="font-size:13px;font-weight:500;color:var(--t2,#6B6760)">COP</span></label>
+<div style="display:flex;gap:10px;align-items:flex-start;min-height:44px"><span style="display:flex;color:{{ ansColor }};padding-top:1px">{{ ansIcon }}</span><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">{{ ans1 }}</span><span style="font-size:13px;line-height:20px;color:var(--t2,#6B6760)">{{ ans2 }}</span></div></div>
+</div>
+
+<div style="padding:28px 16px 0">
+<div style="padding-bottom:8px;border-bottom:1px solid var(--lf,#1A1A17);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Ciclo 16 oct – 15 nov</div>
+<div style="position:relative;height:14px;margin:16px 6px 0"><div style="position:absolute;left:0;right:0;top:6px;height:1px;background:var(--ln,#E4DFD4)"></div><div style="position:absolute;left:0;width:57.8%;top:5px;height:3px;background:var(--tx,#1A1A17)"></div><div style="position:absolute;left:57.8%;top:0;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--tx,#1A1A17);border:3px solid var(--bg,#FAF8F3);box-sizing:border-box"></div><div style="position:absolute;left:66.7%;top:0;width:1px;height:14px;background:var(--tx,#1A1A17)"></div><div style="position:absolute;right:0;top:0;width:1px;height:14px;background:var(--tx,#1A1A17)"></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 0 12px;border-bottom:1px solid var(--ln,#E4DFD4)">
+<div><div style="font-size:13px;color:var(--t2,#6B6760)">Corte</div><div style="font-size:17px;font-weight:600">15 nov</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">en 4 días</div></div>
+<div><div style="font-size:13px;color:var(--t2,#6B6760)">Pago límite</div><div style="font-size:17px;font-weight:600">30 nov</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">en 19 días</div></div>
+</div>
+</div>
+
+<div style="padding:24px 16px 32px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:15px">Saldo anterior pendiente</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500">597.980</span></div>
+<div style="padding:18px 0 6px;font-size:13px;font-weight:600;color:var(--t2,#6B6760)">Consumos del período</div>
+<sc-for list="{{ consumos }}" as="r" hint-placeholder-count="11">
+<div style="display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ r.fecha }}</span><span style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.concepto }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--out,#B0452E)">{{ r.amt }}</span></div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:15px;font-weight:600">Subtotal consumos</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600">{{ totCons }}</span></div>
+<div style="padding:18px 0 6px;font-size:13px;font-weight:600;color:var(--t2,#6B6760)">Cargos del banco</div>
+<sc-for list="{{ cargos }}" as="r" hint-placeholder-count="2">
+<div style="display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px dashed var(--t3,#9A958B)"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ r.fecha }}</span><span style="font-size:15px">{{ r.short }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--out,#B0452E)">{{ r.amt }}</span></div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 10px;border-bottom:3px double var(--lf,#1A1A17)"><span style="font-size:17px;font-weight:600">Deuda actual</span><span style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:500;color:var(--out,#B0452E)">1.284.300</span></div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1024},&quot;modo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;claro&quot;,&quot;oscuro&quot;],&quot;default&quot;:&quot;claro&quot;,&quot;tsType&quot;:&quot;'claro'|'oscuro'&quot;},&quot;formato&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;escritorio&quot;,&quot;movil&quot;],&quot;default&quot;:&quot;escritorio&quot;,&quot;tsType&quot;:&quot;'escritorio'|'movil'&quot;},&quot;consulta&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const SVG = (d, s = 20) => React.createElement('svg', { width: s, height: s, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: d } });
+const P = {
+  resumen: '<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>',
+  movimientos: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
+  cuentas: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  deudas: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  avisos: '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>',
+  recurrentes: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+  metas: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  inversion: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>'
+};
+const ICONS = {
+  plus: SVG('<path d="M5 12h14"/><path d="M12 5v14"/>', 18), chevR: SVG('<path d="m9 18 6-6-6-6"/>', 14), chevL: SVG('<path d="m15 18-6-6 6-6"/>', 22),
+  tarjeta: SVG('<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>', 22),
+  si: SVG('<path d="M20 6 9 17l-5-5"/>', 18), no: SVG('<circle cx="12" cy="12" r="9"/><path d="m5.7 5.7 12.6 12.6"/>', 18), q: SVG('<circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/>', 18)
+};
+const MODES = {
+  claro: { '--bg':'#FAF8F3','--sf':'#FFFFFF','--sk':'#F2EEE5','--tx':'#1A1A17','--t2':'#6B6760','--t3':'#9A958B','--ln':'#E4DFD4','--lf':'#1A1A17','--br':'#8A5F1F','--in':'#2F7D5A','--out':'#B0452E' },
+  oscuro: { '--bg':'#12141A','--sf':'#181B22','--sk':'#1F232C','--tx':'#E8E4DC','--t2':'#8B8A84','--t3':'#5E5F63','--ln':'#272B34','--lf':'#8B8A84','--br':'#BC8A3E','--in':'#4E9E78','--out':'#D0664B' }
+};
+const CONS = [['17 oct','Rappi · restaurante','Salidas',46900],['19 oct','Mercado D1','Comida',87400],['23 oct','Cine Procinal','Salidas',38000],['25 oct','Mensualidad Apple','Suscripciones',3900],['26 oct','Falabella','Otros',189900],['30 oct','Netflix','Suscripciones',26900],['01 nov','Spotify','Suscripciones',16900],['02 nov','Droguería Cruz Verde','Salud',23450],['04 nov','Mercado D1','Comida',87400],['07 nov','Uber','Transporte',18700],['09 nov','Restaurante Wok','Salidas',112000]];
+const CARG = [['16 oct','Cuota de manejo','Cuota de manejo','Cargo fijo',26990],['16 oct','Intereses corrientes · 1,98 % M.V.','Intereses','Sobre 597.980',7880]];
+const CUPO = 4000000, DEUDA = 1284300, DISP = CUPO - DEUDA;
+const fmt = n => String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const digits = s => String(s).replace(/\D/g, '');
+
+class Component extends DCLogic {
+  state = { cons: digits(this.props.consulta ?? '') };
+  renderVals() {
+    const esc = (this.props.formato ?? 'escritorio') === 'escritorio';
+    const n = parseInt(this.state.cons || '0', 10);
+    let ans1, ans2, ansIcon, ansColor;
+    if (!n) { ans1 = 'Escribe el valor y te digo si cabe.'; ans2 = 'Se compara con el cupo disponible de hoy.'; ansIcon = ICONS.q; ansColor = 'var(--t2,#6B6760)'; }
+    else if (n <= DISP) { ans1 = 'Sí, cabe en el cupo.'; ans2 = `Te quedarían ${fmt(DISP - n)} disponibles (uso ${Math.round((DEUDA + n) / CUPO * 100)} %). Entra al corte del 15 nov y se paga hasta el 30 nov.`; ansIcon = ICONS.si; ansColor = 'var(--in,#2F7D5A)'; }
+    else { ans1 = 'No cabe en el cupo.'; ans2 = `Faltan ${fmt(n - DISP)}. Hoy tienes ${fmt(DISP)} disponibles.`; ansIcon = ICONS.no; ansColor = 'var(--tx,#1A1A17)'; }
+    const newW = n ? Math.min(n, DISP) / CUPO * 100 : 0;
+    const navDef = [['resumen','Resumen'],['movimientos','Movimientos'],['cuentas','Cuentas'],['deudas','Deudas y préstamos'],['recurrentes','Recurrentes'],['inversion','Inversiones'],['metas','Metas'],['avisos','Avisos']];
+    return {
+      vars: MODES[this.props.modo ?? 'claro'] || MODES.claro, esc, mov: !esc, ic: ICONS,
+      nav: navDef.map(([k, label]) => ({ label, icon: SVG(P[k]), badge: k === 'avisos' ? '3' : '', bg: k === 'cuentas' ? 'var(--sk,#F2EEE5)' : 'transparent', color: k === 'cuentas' ? 'var(--tx,#1A1A17)' : 'var(--t2,#6B6760)', weight: k === 'cuentas' ? 600 : 400 })),
+      consVal: n ? fmt(n) : '', onCons: e => this.setState({ cons: digits(e.target.value).slice(0, 10) }),
+      ans1, ans2, ansIcon, ansColor, newW, newBorder: newW ? '1px dashed var(--out,#B0452E)' : 'none',
+      usoText: n ? `Con esta compra: ${Math.round((DEUDA + Math.min(n, DISP)) / CUPO * 100)} %` : 'Disponible 68 %',
+      prevRows: [{ fecha:'15 oct', concepto:'Saldo al corte anterior', cat:'', cargo:'1.217.980', abono:'', color:'var(--t2,#6B6760)' }, { fecha:'28 oct', concepto:'Pago desde Bancolombia', cat:'Transferencia', cargo:'', abono:'620.000', color:'var(--tx,#1A1A17)' }],
+      consumos: CONS.map(c => ({ fecha:c[0], concepto:c[1], cat:c[2], amt: fmt(c[3]) })), nCons: CONS.length,
+      totCons: fmt(CONS.reduce((a, c) => a + c[3], 0)),
+      cargos: CARG.map(c => ({ fecha:c[0], concepto:c[1], short:c[2], cat:c[3], amt: fmt(c[4]) })),
+      totCarg: fmt(CARG.reduce((a, c) => a + c[4], 0)),
+      datos: [
+        { l:'Cupo', v:'4.000.000', font:"'IBM Plex Mono',monospace" },
+        { l:'Tasa de interés', v:'1,98 % M.V. · 26,52 % E.A.', font:"'IBM Plex Mono',monospace" },
+        { l:'Cuota de manejo', v:'26.990 al mes', font:"'IBM Plex Mono',monospace" },
+        { l:'Día de corte', v:'15 de cada mes', font:'inherit' },
+        { l:'Día límite de pago', v:'30 de cada mes', font:'inherit' },
+        { l:'Se paga desde', v:'Bancolombia', font:'inherit' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

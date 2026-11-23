@@ -1,6 +1,6 @@
 # SPEC 12 — Metas de ahorro
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 03, SPEC 04, SPEC 05, SPEC 06, SPEC 09, SPEC 10, SPEC 11, Tino-API SPEC 13
 > **Fecha:** 2026-11-23
 > **Objetivo:** Que el usuario lleve en `/metas` sus metas de ahorro sobre una cuenta (lista, detalle con ritmo e historial, alta, edición, aportes y retiros, eliminar, archivar y restaurar), con todo calculado por la API y solo las frases armadas en la web.

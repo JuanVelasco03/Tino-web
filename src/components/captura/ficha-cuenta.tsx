@@ -15,6 +15,8 @@ type Props = {
   elegida: boolean;
   /** Saldo estimado tras el movimiento («20.321 → 5.321»), solo en la elegida y con monto. */
   resultante?: bigint | null;
+  /** Solo el nombre, sin saldo («Ya está en Nubank» en el origen de un aporte). */
+  sinSaldo?: boolean;
   alPulsar: () => void;
 };
 
@@ -29,7 +31,7 @@ function saldoTexto(monto: bigint, naturaleza: Naturaleza): string {
  * fila. La elegida lleva borde en tinta y nombre en 600; con monto muestra la
  * vista previa del saldo (presentación, RN-02).
  */
-export function FichaCuenta({ cuenta, elegida, resultante = null, alPulsar }: Props) {
+export function FichaCuenta({ cuenta, elegida, resultante = null, sinSaldo = false, alPulsar }: Props) {
   return (
     <button
       type="button"
@@ -42,7 +44,7 @@ export function FichaCuenta({ cuenta, elegida, resultante = null, alPulsar }: Pr
       <span className="flex text-secundario">{cuenta.tipo && <IconoCuenta tipo={cuenta.tipo} />}</span>
       <span className="flex min-w-0 flex-col">
         <span className={`truncate text-cuerpo ${elegida ? "font-semibold" : ""}`}>{cuenta.nombre}</span>
-        {cuenta.saldo === undefined ? (
+        {sinSaldo ? null : cuenta.saldo === undefined ? (
           <span className="truncate text-etiqueta font-normal text-secundario">Archivada</span>
         ) : (
           <span className="truncate font-mono text-cifra-xs tabular-nums text-secundario">

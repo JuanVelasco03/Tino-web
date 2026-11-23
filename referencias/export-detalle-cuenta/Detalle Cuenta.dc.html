@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Familjen Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#8A5F1F}
+a:hover{color:#1A1A17}
+input::placeholder{color:var(--t3,#9A958B);opacity:1}
+</style>
+</helmet>
+<div style="{{ vars }}">
+
+<sc-if value="{{ esc }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Detalle de cuenta escritorio" style="width:1440px;min-height:1024px;display:grid;grid-template-columns:232px minmax(0,1fr);background:var(--bg,#FAF8F3);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;border:1px solid var(--ln,#E4DFD4);box-sizing:border-box">
+<aside style="border-right:1px solid var(--ln,#E4DFD4);padding:28px 16px;display:flex;flex-direction:column;gap:28px">
+<div style="padding:0 8px;font-size:20px;font-weight:700;letter-spacing:0.16em">TINO</div>
+<button style="height:44px;display:flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:4px;background:var(--tx,#1A1A17);color:var(--bg,#FAF8F3);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer"><span style="display:flex">{{ ic.plus }}</span>Registrar</button>
+<nav style="display:flex;flex-direction:column;gap:2px">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+<div style="height:40px;display:flex;align-items:center;gap:12px;padding:0 8px;border-radius:4px;background:{{ n.bg }};color:{{ n.color }};font-size:15px;font-weight:{{ n.weight }};cursor:pointer"><span style="display:flex">{{ n.icon }}</span><span style="flex:1">{{ n.label }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--br,#8A5F1F)">{{ n.badge }}</span></div>
+</sc-for>
+</nav>
+<div style="margin-top:auto;padding:0 8px;display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--t2,#6B6760)"><span>TRM de referencia</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--tx,#1A1A17)">4.120 COP</span><span>11 nov 2026</span></div>
+</aside>
+
+<div style="display:flex;min-width:0">
+<main style="flex:1;min-width:0;padding:28px 56px 64px;display:flex;flex-direction:column;gap:32px">
+<header style="display:flex;flex-direction:column;gap:14px">
+<span style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--t2,#6B6760)"><span>Cuentas</span><span style="display:flex">{{ ic.chevR }}</span><span>Activos</span></span>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px">
+<div style="display:flex;align-items:center;gap:12px"><span style="display:flex;color:var(--t2,#6B6760)">{{ ic.efectivo }}</span><h1 style="margin:0;font-size:28px;line-height:34px;font-weight:600;letter-spacing:-0.01em">Efectivo</h1><span style="font-size:13px;color:var(--t2,#6B6760)">Efectivo · billetera · activo</span></div>
+<button onClick="{{ openAdj }}" style="height:44px;display:flex;align-items:center;gap:8px;padding:0 16px;border:1px solid {{ adjBorder }};border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:500;cursor:pointer"><span style="display:flex">{{ ic.ajuste }}</span>Ajustar saldo</button>
+</div>
+</header>
+
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--lf,#1A1A17)">
+<div style="padding:18px 28px 0 0;display:flex;flex-direction:column;gap:10px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Saldo actual</span><span style="font-family:'IBM Plex Mono',monospace;font-size:40px;line-height:44px;font-weight:500;letter-spacing:-0.03em">{{ saldo }}</span></div>
+<div style="padding:18px 28px 0;border-left:1px solid var(--ln,#E4DFD4);display:flex;flex-direction:column;gap:10px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Conciliado</span><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;line-height:32px;font-weight:500">{{ concSaldo }}</span><span style="font-size:13px;color:var(--t2,#6B6760)">{{ concText }}</span></div>
+<div style="padding:18px 28px 0;border-left:1px solid var(--ln,#E4DFD4);display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">En el rango</span>
+<div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px;color:var(--t2,#6B6760)">Entradas</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500;color:var(--in,#2F7D5A)">{{ entradas }}</span></div>
+<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid var(--ln,#E4DFD4)"><span style="font-size:13px;color:var(--t2,#6B6760)">Salidas</span><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500;color:var(--out,#B0452E)">{{ salidas }}</span></div>
+</div>
+</div>
+
+<div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding-bottom:12px">
+<div style="display:flex;gap:8px">
+<sc-for list="{{ ranges }}" as="g" hint-placeholder-count="3">
+<button onClick="{{ g.pick }}" style="height:36px;padding:0 12px;border:1px solid {{ g.border }};border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:13px;font-weight:{{ g.weight }};cursor:pointer">{{ g.label }}</button>
+</sc-for>
+</div>
+<div style="height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid var(--ln,#E4DFD4);border-radius:4px;background:var(--sf,#FFFFFF);font-family:'IBM Plex Mono',monospace;font-size:13px"><span style="display:flex;color:var(--t2,#6B6760)">{{ ic.fecha }}</span>{{ rangeText }}</div>
+</div>
+
+<sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+<div style="height:44px;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:8px;align-items:center;border-top:1px solid var(--lf,#1A1A17);border-bottom:1px solid var(--lf,#1A1A17);background:var(--sk,#F2EEE5)">
+<button onClick="{{ clearSel }}" aria-label="Quitar selección" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer"><span style="width:18px;height:18px;border-radius:2px;background:var(--tx,#1A1A17);color:var(--bg,#FAF8F3);display:flex;align-items:center;justify-content:center">{{ ic.minus }}</span></button>
+<span style="font-size:15px;font-weight:600">{{ selText }} <span style="font-family:'IBM Plex Mono',monospace;font-weight:500;color:var(--t2,#6B6760)">· {{ selSum }}</span></span>
+<div style="display:flex;gap:4px;padding-right:8px"><button onClick="{{ concSel }}" style="height:32px;display:flex;align-items:center;gap:6px;padding:0 12px;border:none;border-radius:4px;background:var(--tx,#1A1A17);color:var(--bg,#FAF8F3);font-family:'Familjen Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer"><span style="display:flex">{{ ic.checkS }}</span>Marcar como conciliados</button><button onClick="{{ clearSel }}" style="height:32px;padding:0 10px;background:none;border:none;font-family:'Familjen Grotesk',sans-serif;font-size:13px;font-weight:600;color:var(--br,#8A5F1F);cursor:pointer">Cancelar</button></div>
+</div>
+</sc-if>
+<sc-if value="{{ noSel }}" hint-placeholder-val="{{ true }}">
+<div style="height:44px;display:grid;grid-template-columns:{{ cols }};gap:12px;align-items:center;border-top:1px solid var(--lf,#1A1A17);border-bottom:1px solid var(--lf,#1A1A17);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)">
+<button onClick="{{ selAll }}" aria-label="Seleccionar pendientes" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer"><span style="width:18px;height:18px;border:1px solid var(--t2,#6B6760);border-radius:2px;box-sizing:border-box"></span></button>
+<span>Fecha</span><span>Concepto</span><span style="overflow:hidden">Categoría</span><span style="text-align:right">Movimiento</span><span style="text-align:right">Saldo</span><span style="text-align:center">Conc.</span>
+</div>
+</sc-if>
+
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="12">
+<div style="height:44px;display:grid;grid-template-columns:{{ cols }};gap:12px;align-items:center;border-bottom:1px solid var(--ln,#E4DFD4);background:{{ r.bg }}">
+<button onClick="{{ r.toggleSel }}" aria-label="Seleccionar" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer"><span style="width:18px;height:18px;border:1px solid {{ r.cbBorder }};border-radius:2px;background:{{ r.cbBg }};color:var(--bg,#FAF8F3);display:flex;align-items:center;justify-content:center;box-sizing:border-box">{{ r.cbMark }}</span></button>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--t2,#6B6760)">{{ r.fecha }}</span>
+<span style="font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.concepto }}</span>
+<span style="font-size:13px;color:var(--t2,#6B6760);overflow:hidden;white-space:nowrap">{{ r.cat }}</span>
+<span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;color:{{ r.amtColor }}">{{ r.amt }}</span>
+<span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500">{{ r.saldo }}</span>
+<button onClick="{{ r.toggleConc }}" aria-label="{{ r.concAria }}" title="{{ r.concAria }}" style="height:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:{{ r.concColor }};cursor:pointer">{{ r.concIcon }}</button>
+</div>
+</sc-for>
+<div style="height:44px;display:grid;grid-template-columns:{{ cols }};gap:12px;align-items:center;border-bottom:3px double var(--lf,#1A1A17)">
+<span></span><span></span><span style="font-size:13px;color:var(--t2,#6B6760)">{{ openLabel }}</span><span></span><span></span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--t2,#6B6760)">{{ openSaldo }}</span><span></span>
+</div>
+</div>
+</main>
+
+<sc-if value="{{ adjOpen }}" hint-placeholder-val="{{ false }}">
+<aside style="width:400px;flex:none;border-left:1px solid var(--lf,#1A1A17);background:var(--sf,#FFFFFF);padding:28px 28px 40px;box-sizing:border-box;display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:20px;font-weight:600">Ajustar saldo</span><button onClick="{{ closeAdj }}" aria-label="Cerrar" style="width:44px;height:44px;margin-right:-12px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--tx,#1A1A17);cursor:pointer">{{ ic.x }}</button></div>
+<p style="margin:0;font-size:15px;line-height:22px;color:var(--t2,#6B6760);text-wrap:pretty">Cuenta lo que tienes en la billetera y escribe el total. TINO registra la diferencia como un movimiento aparte.</p>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-top:1px solid var(--ln,#E4DFD4);border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:15px;color:var(--t2,#6B6760)">Saldo en TINO</span><span style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:500">{{ saldo }}</span></div>
+<label style="display:flex;flex-direction:column;gap:4px;padding:8px 0 10px;border-bottom:1px solid var(--lf,#1A1A17)"><span style="font-size:13px;color:var(--t2,#6B6760)">Saldo real contado</span><span style="display:flex;align-items:baseline;gap:8px"><input value="{{ adjVal }}" onChange="{{ onAdj }}" inputmode="numeric" placeholder="0" style="flex:1;min-width:0;background:none;border:none;outline:none;padding:0;font-family:'IBM Plex Mono',monospace;font-size:44px;line-height:52px;font-weight:500;letter-spacing:-0.02em;color:var(--tx,#1A1A17)"><span style="font-size:13px;font-weight:500;color:var(--t2,#6B6760)">COP</span></span></label>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:4px 0 10px;border-bottom:3px double var(--lf,#1A1A17)"><span style="font-size:15px;font-weight:600">Diferencia</span><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:500;color:{{ diffColor }}">{{ diff }}</span></div>
+<div style="display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:20px;color:var(--t2,#6B6760)"><span style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Se registrará</span><span style="color:var(--tx,#1A1A17);font-size:15px">11 nov · Ajuste de saldo · <span style="font-family:'IBM Plex Mono',monospace">{{ diff }}</span></span><span>No cuenta como gasto en el resumen: queda en «Ajustes».</span></div>
+<button onClick="{{ toggleAdjConc }}" style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0;background:none;border:none;text-align:left;font-family:'Familjen Grotesk',sans-serif;font-size:15px;color:var(--tx,#1A1A17);cursor:pointer"><span style="width:18px;height:18px;flex:none;border:1px solid {{ adjCbBorder }};border-radius:2px;background:{{ adjCbBg }};color:var(--bg,#FAF8F3);display:flex;align-items:center;justify-content:center;box-sizing:border-box">{{ adjCbMark }}</span>Marcar todo como conciliado hasta hoy</button>
+<div style="display:flex;gap:12px;margin-top:auto"><button onClick="{{ applyAdj }}" style="flex:1;height:48px;border:none;border-radius:4px;background:{{ applyBg }};color:{{ applyColor }};font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer">Registrar ajuste</button><button onClick="{{ closeAdj }}" style="height:48px;padding:0 20px;border:1px solid var(--ln,#E4DFD4);border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:500;cursor:pointer">Cancelar</button></div>
+</aside>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ mov }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Detalle de cuenta móvil" style="width:390px;min-height:844px;position:relative;background:var(--bg,#FAF8F3);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;border:1px solid var(--ln,#E4DFD4);box-sizing:border-box;display:flex;flex-direction:column">
+<div style="height:48px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 30px 6px;font-size:15px;font-weight:600"><span>9:41</span><span style="font-size:12px">5G</span></div>
+<div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 8px 0 4px"><span style="height:44px;display:flex;align-items:center;gap:2px;font-size:15px;color:var(--br,#8A5F1F);font-weight:600"><span style="display:flex">{{ ic.chevL }}</span>Cuentas</span><button onClick="{{ toggleSelMode }}" style="height:44px;padding:0 8px;background:none;border:none;font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600;color:var(--br,#8A5F1F);cursor:pointer">{{ selModeLabel }}</button></div>
+<div style="padding:4px 16px 0;display:flex;flex-direction:column;gap:2px">
+<div style="display:flex;align-items:center;gap:10px"><span style="display:flex;color:var(--t2,#6B6760)">{{ ic.efectivo }}</span><h1 style="margin:0;font-size:24px;line-height:30px;font-weight:600">Efectivo</h1></div>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;padding-top:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:40px;line-height:44px;font-weight:500;letter-spacing:-0.03em">{{ saldo }}</span><button onClick="{{ openAdj }}" style="height:44px;display:flex;align-items:center;gap:6px;padding:0 12px;border:1px solid var(--ln,#E4DFD4);border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:13px;font-weight:600;cursor:pointer"><span style="display:flex">{{ ic.ajuste }}</span>Ajustar</button></div>
+<span style="font-size:13px;color:var(--t2,#6B6760);padding-top:6px">Conciliado <span style="font-family:'IBM Plex Mono',monospace;color:var(--tx,#1A1A17)">{{ concSaldo }}</span> · {{ concText }}</span>
+</div>
+<div style="display:flex;gap:8px;padding:20px 16px 12px;overflow-x:auto;scrollbar-width:none">
+<sc-for list="{{ ranges }}" as="g" hint-placeholder-count="3">
+<button onClick="{{ g.pick }}" style="flex:none;height:44px;padding:0 14px;border:1px solid {{ g.border }};border-radius:4px;background:var(--sf,#FFFFFF);color:var(--tx,#1A1A17);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:{{ g.weight }};cursor:pointer">{{ g.label }}</button>
+</sc-for>
+</div>
+<div style="padding:0 16px 100px">
+<div style="display:grid;grid-template-columns:{{ colsM }};gap:10px;padding-bottom:6px;border-bottom:1px solid var(--lf,#1A1A17);font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--t2,#6B6760)"><span></span><span>Concepto</span><span style="text-align:right">Mov.</span><span style="text-align:right">Saldo</span></div>
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="12">
+<div style="min-height:52px;display:grid;grid-template-columns:{{ colsM }};gap:10px;align-items:center;border-bottom:1px solid var(--ln,#E4DFD4);background:{{ r.bg }}">
+<button onClick="{{ r.tapLeft }}" aria-label="{{ r.concAria }}" style="width:24px;height:44px;display:flex;align-items:center;justify-content:center;padding:0;background:none;border:none;color:{{ r.concColor }};cursor:pointer">{{ r.leftIcon }}</button>
+<div style="min-width:0;padding:7px 0"><div style="font-size:15px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.concepto }}</div><div style="font-size:12px;line-height:16px;color:var(--t2,#6B6760)"><span style="font-family:'IBM Plex Mono',monospace">{{ r.fecha }}</span> · {{ r.cat }}</div></div>
+<span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:14px;color:{{ r.amtColor }}">{{ r.amt }}</span>
+<span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500">{{ r.saldo }}</span>
+</div>
+</sc-for>
+<div style="min-height:44px;display:grid;grid-template-columns:{{ colsM }};gap:10px;align-items:center;border-bottom:3px double var(--lf,#1A1A17)"><span></span><span style="font-size:13px;color:var(--t2,#6B6760)">{{ openLabel }}</span><span></span><span style="text-align:right;font-family:'IBM Plex Mono',monospace;font-size:14px;color:var(--t2,#6B6760)">{{ openSaldo }}</span></div>
+</div>
+
+<sc-if value="{{ hasSelM }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;right:0;bottom:0;padding:12px 16px 30px;background:var(--sf,#FFFFFF);border-top:1px solid var(--lf,#1A1A17);display:flex;flex-direction:column;gap:10px">
+<span style="font-size:15px;font-weight:600">{{ selText }} <span style="font-family:'IBM Plex Mono',monospace;font-weight:500;color:var(--t2,#6B6760)">· {{ selSum }}</span></span>
+<button onClick="{{ concSel }}" style="height:52px;display:flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:4px;background:var(--tx,#1A1A17);color:var(--bg,#FAF8F3);font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600;cursor:pointer"><span style="display:flex">{{ ic.checkS }}</span>Marcar como conciliados</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ adjOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ closeAdj }}" style="position:absolute;inset:0;background:var(--bg,#FAF8F3);opacity:0.6"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:var(--sf,#FFFFFF);border-top:1px solid var(--lf,#1A1A17);border-radius:6px 6px 0 0;padding:4px 16px 34px;display:flex;flex-direction:column;gap:16px">
+<div style="height:52px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:17px;font-weight:600">Ajustar saldo</span><button onClick="{{ closeAdj }}" style="height:44px;padding:0 4px;background:none;border:none;font-family:'Familjen Grotesk',sans-serif;font-size:15px;font-weight:600;color:var(--br,#8A5F1F);cursor:pointer">Cancelar</button></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-top:1px solid var(--ln,#E4DFD4);border-bottom:1px solid var(--ln,#E4DFD4)"><span style="font-size:15px;color:var(--t2,#6B6760)">Saldo en TINO</span><span style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:500">{{ saldo }}</span></div>
+<label style="display:flex;flex-direction:column;gap:4px;padding:4px 0 8px;border-bottom:1px solid var(--lf,#1A1A17)"><span style="font-size:13px;color:var(--t2,#6B6760)">Saldo real contado</span><span style="display:flex;align-items:baseline;gap:8px"><input value="{{ adjVal }}" onChange="{{ onAdj }}" inputmode="numeric" placeholder="0" style="flex:1;min-width:0;background:none;border:none;outline:none;padding:0;font-family:'IBM Plex Mono',monospace;font-size:40px;line-height:48px;font-weight:500;letter-spacing:-0.02em;color:var(--tx,#1A1A17)"><span style="font-size:13px;font-weight:500;color:var(--t2,#6B6760)">COP</span></span></label>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:2px 0 10px;border-bottom:3px double var(--lf,#1A1A17)"><span style="font-size:15px;font-weight:600">Diferencia</span><span style="font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:500;color:{{ diffColor }}">{{ diff }}</span></div>
+<span style="font-size:13px;line-height:20px;color:var(--t2,#6B6760)">Se registra hoy como «Ajuste de saldo». No cuenta como gasto en el resumen.</span>
+<button onClick="{{ toggleAdjConc }}" style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0;background:none;border:none;text-align:left;font-family:'Familjen Grotesk',sans-serif;font-size:15px;color:var(--tx,#1A1A17);cursor:pointer"><span style="width:18px;height:18px;flex:none;border:1px solid {{ adjCbBorder }};border-radius:2px;background:{{ adjCbBg }};color:var(--bg,#FAF8F3);display:flex;align-items:center;justify-content:center;box-sizing:border-box">{{ adjCbMark }}</span>Marcar todo como conciliado</button>
+<button onClick="{{ applyAdj }}" style="height:56px;border:none;border-radius:4px;background:{{ applyBg }};color:{{ applyColor }};font-family:'Familjen Grotesk',sans-serif;font-size:17px;font-weight:600;cursor:pointer">Registrar ajuste</button>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1024},&quot;modo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;claro&quot;,&quot;oscuro&quot;],&quot;default&quot;:&quot;claro&quot;,&quot;tsType&quot;:&quot;'claro'|'oscuro'&quot;},&quot;formato&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;escritorio&quot;,&quot;movil&quot;],&quot;default&quot;:&quot;escritorio&quot;,&quot;tsType&quot;:&quot;'escritorio'|'movil'&quot;},&quot;estado&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;normal&quot;,&quot;lote&quot;,&quot;ajuste&quot;],&quot;default&quot;:&quot;normal&quot;,&quot;tsType&quot;:&quot;'normal'|'lote'|'ajuste'&quot;}}">
+const SVG = (d, s = 20) => React.createElement('svg', { width: s, height: s, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round', strokeLinejoin: 'round', dangerouslySetInnerHTML: { __html: d } });
+const P = {
+  resumen: '<line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/>',
+  movimientos: '<path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/>',
+  cuentas: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>',
+  deudas: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  avisos: '<path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>',
+  recurrentes: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+  metas: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  inversion: '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>'
+};
+const CHK = '<path d="M20 6 9 17l-5-5"/>';
+const ICONS = {
+  plus: SVG('<path d="M5 12h14"/><path d="M12 5v14"/>', 18), x: SVG('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>', 22),
+  chevR: SVG('<path d="m9 18 6-6-6-6"/>', 14), chevL: SVG('<path d="m15 18-6-6 6-6"/>', 22),
+  efectivo: SVG('<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>', 22),
+  fecha: SVG('<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>', 16),
+  ajuste: SVG('<path d="M10 2h4"/><path d="M12 14v-4"/><path d="M4 13a8 8 0 0 1 8-7 8 8 0 1 1-5.3 14L4 17.6"/><path d="M9 17H4v5"/>', 18),
+  checkS: SVG(CHK, 14), cbMark: SVG(CHK, 14), minus: SVG('<path d="M5 12h14"/>', 14),
+  conc: SVG(CHK, 18), pend: SVG('<circle cx="12" cy="12" r="6"/>', 18)
+};
+const MODES = {
+  claro: { '--bg':'#FAF8F3','--sf':'#FFFFFF','--sk':'#F2EEE5','--tx':'#1A1A17','--t2':'#6B6760','--t3':'#9A958B','--ln':'#E4DFD4','--lf':'#1A1A17','--br':'#8A5F1F','--in':'#2F7D5A','--out':'#B0452E' },
+  oscuro: { '--bg':'#12141A','--sf':'#181B22','--sk':'#1F232C','--tx':'#E8E4DC','--t2':'#8B8A84','--t3':'#5E5F63','--ln':'#272B34','--lf':'#8B8A84','--br':'#BC8A3E','--in':'#4E9E78','--out':'#D0664B' }
+};
+const BASE = [
+  ['oct','22 oct','Almuerzo','Comida',-15000],['oct','24 oct','Pago taxi','Transporte',-30000],['oct','27 oct','Desayuno','Comida',-8000],
+  ['oct','28 oct','Retiro cajero','Desde Bancolombia',100000],['oct','29 oct','Agua','Comida',-1100],['oct','30 oct','Almuerzo','Comida',-15000],
+  ['oct','31 oct','Pan','Comida',-5000],['nov','03 nov','Recarga datos','Servicios',-4000],['nov','04 nov','Almuerzo','Comida',-15000],
+  ['nov','05 nov','Recarga tarjeta SITP','Transporte',-10000],['nov','06 nov','Almuerzo','Comida',-15000],['nov','07 nov','Pago taxi','Transporte',-30000],
+  ['nov','10 nov','Desayuno','Comida',-8000],['nov','10 nov','Pan','Comida',-5000],['nov','11 nov','Agua','Comida',-1100],['nov','11 nov','Almuerzo','Comida',-15000]
+].map((m, i) => ({ id:'m' + i, mes:m[0], fecha:m[1], concepto:m[2], cat:m[3], amt:m[4], conc: m[0] === 'oct' }));
+const START = 122200;
+const fmt = n => String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const fs = n => n > 0 ? '+' + fmt(n) : n < 0 ? '−' + fmt(n) : '0';
+const digits = s => String(s).replace(/\D/g, '');
+
+class Component extends DCLogic {
+  constructor(p) {
+    super(p);
+    const e = p.estado ?? 'normal';
+    this.state = { movs: BASE, range: '30d', sel: e === 'lote' ? ['m7','m8','m9'] : [], selMode: e === 'lote', adjOpen: e === 'ajuste', adj: e === 'ajuste' ? '41500' : '', adjConc: true };
+  }
+  setConc(ids, v) { this.setState(s => ({ movs: s.movs.map(m => ids.includes(m.id) ? { ...m, conc: v } : m), sel: [] })); }
+  renderVals() {
+    const s = this.state;
+    const esc = (this.props.formato ?? 'escritorio') === 'escritorio';
+    let run = START; const withBal = s.movs.map(m => { run += m.amt; return { ...m, bal: run }; });
+    const saldo = run;
+    const inRange = m => s.range === '30d' || m.mes === s.range;
+    const vis = withBal.filter(inRange);
+    const openBal = vis.length ? vis[0].bal - vis[0].amt : saldo;
+    let concIdx = -1; withBal.forEach((m, i) => { if (m.conc && withBal.slice(0, i + 1).every(x => x.conc)) concIdx = i; });
+    const concM = concIdx >= 0 ? withBal[concIdx] : null;
+    const pending = withBal.filter(m => !m.conc).length;
+    const rows = [...vis].reverse().map(m => {
+      const isSel = s.sel.includes(m.id);
+      const isT = m.cat.startsWith('Desde') || m.cat === 'Ajuste';
+      return {
+        fecha: m.fecha, concepto: m.concepto, cat: m.cat,
+        amt: fs(m.amt), amtColor: m.amt < 0 ? 'var(--out,#B0452E)' : 'var(--in,#2F7D5A)',
+        saldo: (m.bal < 0 ? '−' : '') + fmt(m.bal),
+        bg: isSel ? 'var(--sk,#F2EEE5)' : 'transparent',
+        cbBorder: isSel ? 'var(--tx,#1A1A17)' : 'var(--t3,#9A958B)', cbBg: isSel ? 'var(--tx,#1A1A17)' : 'transparent', cbMark: isSel ? ICONS.cbMark : null,
+        toggleSel: () => this.setState(st => ({ sel: st.sel.includes(m.id) ? st.sel.filter(x => x !== m.id) : [...st.sel, m.id] })),
+        concIcon: m.conc ? ICONS.conc : ICONS.pend, concColor: m.conc ? 'var(--in,#2F7D5A)' : 'var(--t3,#9A958B)',
+        concAria: m.conc ? 'Conciliado. Tocar para desmarcar' : 'Pendiente. Tocar para conciliar',
+        toggleConc: () => this.setConc([m.id], !m.conc),
+        leftIcon: s.selMode ? React.createElement('span', { style: { width: 18, height: 18, border: '1px solid ' + (isSel ? 'var(--tx,#1A1A17)' : 'var(--t3,#9A958B)'), borderRadius: 2, background: isSel ? 'var(--tx,#1A1A17)' : 'transparent', color: 'var(--bg,#FAF8F3)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' } }, isSel ? ICONS.cbMark : null) : (m.conc ? ICONS.conc : ICONS.pend),
+        tapLeft: s.selMode ? () => this.setState(st => ({ sel: st.sel.includes(m.id) ? st.sel.filter(x => x !== m.id) : [...st.sel, m.id] })) : () => this.setConc([m.id], !m.conc)
+      };
+    });
+    const ent = vis.filter(m => m.amt > 0).reduce((a, m) => a + m.amt, 0);
+    const sal = vis.filter(m => m.amt < 0).reduce((a, m) => a + m.amt, 0);
+    const selSum = s.movs.filter(m => s.sel.includes(m.id)).reduce((a, m) => a + m.amt, 0);
+    const realN = parseInt(digits(s.adj) || '0', 10);
+    const diffN = s.adj === '' ? 0 : realN - saldo;
+    const R = { '30d': ['Últimos 30 días', '12 oct – 11 nov 2026', 'Saldo al 12 oct'], nov: ['Noviembre', '1 nov – 11 nov 2026', 'Saldo al 31 oct'], oct: ['Octubre', '1 oct – 31 oct 2026', 'Saldo al 30 sep'] };
+    const navDef = [['resumen','Resumen'],['movimientos','Movimientos'],['cuentas','Cuentas'],['deudas','Deudas y préstamos'],['recurrentes','Recurrentes'],['inversion','Inversiones'],['metas','Metas'],['avisos','Avisos']];
+    return {
+      vars: MODES[this.props.modo ?? 'claro'] || MODES.claro, esc, mov: !esc, ic: ICONS,
+      nav: navDef.map(([k, label]) => ({ label, icon: SVG(P[k]), badge: k === 'avisos' ? '3' : '', bg: k === 'cuentas' ? 'var(--sk,#F2EEE5)' : 'transparent', color: k === 'cuentas' ? 'var(--tx,#1A1A17)' : 'var(--t2,#6B6760)', weight: k === 'cuentas' ? 600 : 400 })),
+      saldo: fmt(saldo), concSaldo: concM ? fmt(concM.bal) : '—',
+      concText: concM ? `al ${concM.fecha} · ${pending ? pending + ' sin conciliar' : 'todo conciliado'}` : `${pending} sin conciliar`,
+      entradas: fs(ent), salidas: fs(sal),
+      ranges: ['30d','nov','oct'].map(k => ({ label: R[k][0], border: s.range === k ? 'var(--tx,#1A1A17)' : 'var(--ln,#E4DFD4)', weight: s.range === k ? 600 : 400, pick: () => this.setState({ range: k }) })),
+      rangeText: R[s.range][1], openLabel: R[s.range][2], openSaldo: fmt(openBal),
+      rows, hasSel: s.sel.length > 0, noSel: s.sel.length === 0, hasSelM: s.sel.length > 0 && !s.adjOpen,
+      selText: `${s.sel.length} ${s.sel.length === 1 ? 'seleccionado' : 'seleccionados'}`, selSum: fs(selSum),
+      clearSel: () => this.setState({ sel: [] }),
+      selAll: () => this.setState({ sel: vis.filter(m => !m.conc).map(m => m.id) }),
+      concSel: () => { this.setConc(s.sel, true); this.setState({ selMode: false }); },
+      colsM: '24px minmax(0,1fr) 76px 76px',
+      cols: s.adjOpen ? '44px 56px minmax(0,1fr) 0px 104px 104px 48px' : '44px 64px minmax(0,1fr) 170px 130px 130px 64px',
+      toggleSelMode: () => this.setState({ selMode: !s.selMode, sel: [] }),
+      selModeLabel: s.selMode ? 'Listo' : 'Seleccionar',
+      openAdj: () => this.setState({ adjOpen: true, sel: [] }), closeAdj: () => this.setState({ adjOpen: false }),
+      adjOpen: s.adjOpen, adjBorder: s.adjOpen ? 'var(--tx,#1A1A17)' : 'var(--ln,#E4DFD4)',
+      adjVal: s.adj ? fmt(realN) : '', onAdj: e => this.setState({ adj: digits(e.target.value) }),
+      diff: fs(diffN), diffColor: diffN < 0 ? 'var(--out,#B0452E)' : diffN > 0 ? 'var(--in,#2F7D5A)' : 'var(--t2,#6B6760)',
+      adjCbBorder: s.adjConc ? 'var(--tx,#1A1A17)' : 'var(--t3,#9A958B)', adjCbBg: s.adjConc ? 'var(--tx,#1A1A17)' : 'transparent', adjCbMark: s.adjConc ? ICONS.cbMark : null,
+      toggleAdjConc: () => this.setState({ adjConc: !s.adjConc }),
+      applyBg: diffN ? 'var(--tx,#1A1A17)' : 'var(--ln,#E4DFD4)', applyColor: diffN ? 'var(--bg,#FAF8F3)' : 'var(--t2,#6B6760)',
+      applyAdj: () => { if (!diffN) return; this.setState(st => ({ movs: [...st.movs.map(m => st.adjConc ? { ...m, conc: true } : m), { id: 'adj' + st.movs.length, mes: 'nov', fecha: '11 nov', concepto: 'Ajuste de saldo', cat: 'Ajuste', amt: diffN, conc: true }], adjOpen: false, adj: '' })); }
+    };
+  }
+}
+</script>
+</body>
+</html>

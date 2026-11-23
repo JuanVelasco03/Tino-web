@@ -6,6 +6,10 @@ export type Opcion<T extends string> = {
   rotulo: string;
   /** Ícono opcional entre el círculo y el rótulo (Lucide, 20 px). */
   icono?: ReactNode;
+  /** Explicación bajo el rótulo, en `etiqueta` secundaria. */
+  detalle?: string;
+  /** Solo esta opción no se puede elegir (el grupo sigue activo). */
+  deshabilitada?: boolean;
 };
 
 type Props<T extends string> = {
@@ -51,19 +55,20 @@ export function OpcionUnica<T extends string>({
       >
         {opciones.map((opcion) => {
           const elegida = opcion.valor === valor;
+          const inactiva = deshabilitado || opcion.deshabilitada === true;
           return (
             <label
               key={opcion.valor}
               className={`flex min-h-11 items-center gap-3 text-cuerpo has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-marca ${
-                deshabilitado ? "cursor-not-allowed text-terciario" : "cursor-pointer"
-              }`}
+                opcion.detalle ? "py-2" : ""
+              } ${inactiva ? "cursor-not-allowed text-terciario" : "cursor-pointer"}`}
             >
               <input
                 type="radio"
                 name={nombre}
                 value={opcion.valor}
                 checked={elegida}
-                disabled={deshabilitado}
+                disabled={inactiva}
                 onChange={() => alCambiar(opcion.valor)}
                 className="sr-only"
               />
@@ -76,7 +81,14 @@ export function OpcionUnica<T extends string>({
                 {elegida && <span className="size-2.5 rounded-full bg-texto" />}
               </span>
               {opcion.icono && <span className="flex text-secundario">{opcion.icono}</span>}
-              <span className={elegida ? "font-semibold" : ""}>{opcion.rotulo}</span>
+              {opcion.detalle ? (
+                <span className="flex flex-col">
+                  <span className={elegida ? "font-semibold" : ""}>{opcion.rotulo}</span>
+                  <span className={`text-etiqueta font-normal ${inactiva ? "" : "text-secundario"}`}>{opcion.detalle}</span>
+                </span>
+              ) : (
+                <span className={elegida ? "font-semibold" : ""}>{opcion.rotulo}</span>
+              )}
             </label>
           );
         })}
