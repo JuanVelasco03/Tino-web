@@ -6,8 +6,8 @@ import { importeEnPatrimonio } from "@/domain/movimiento/vista-previa";
 export type ParteFila = { categoria: string; monto: bigint };
 
 type Props = {
-  /** Ya formateada, p. ej. "04 nov". */
-  fecha: string;
+  /** Ya formateada, p. ej. "04 nov". Sin ella (agrupada bajo su día), la fila no lleva columna de fecha. */
+  fecha?: string;
   concepto: string;
   tipo: "gasto" | "ingreso" | "transferencia";
   monto: Dinero;
@@ -82,11 +82,11 @@ export function FilaMovimiento({
 
   return (
     <div
-      className={`relative grid grid-cols-[52px_minmax(0,1fr)_auto] items-baseline gap-x-3 border-b border-linea py-3 ${
+      className={`relative grid ${fecha === undefined ? "grid-cols-[minmax(0,1fr)_auto]" : "grid-cols-[52px_minmax(0,1fr)_auto]"} items-baseline gap-x-3 border-b border-linea py-3 ${
         resaltada ? "bg-hundido" : href ? "hover:bg-hundido" : ""
       }`}
     >
-      <span className="font-mono text-cifra-xs text-secundario">{fecha}</span>
+      {fecha !== undefined && <span className="font-mono text-cifra-xs text-secundario">{fecha}</span>}
       <div className="min-w-0">
         {href ? (
           // El enlace se estira sobre toda la fila (`after:inset-0`): un solo objetivo, nombrado por el concepto.
@@ -122,7 +122,9 @@ export function FilaMovimiento({
         )}
         {detalleImporte && <div className="whitespace-nowrap text-etiqueta text-secundario">{detalleImporte}</div>}
       </div>
-      {partes.length > 0 && <SubRenglones partes={partes} omitirCOP={omitirCOP} className="col-span-2 col-start-2 pt-1" />}
+      {partes.length > 0 && (
+        <SubRenglones partes={partes} omitirCOP={omitirCOP} className={`col-span-2 pt-1 ${fecha === undefined ? "col-start-1" : "col-start-2"}`} />
+      )}
     </div>
   );
 }

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F2EEE5;font-family:'Familjen Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#8A5F1F}
+a:hover{color:#1A1A17}
+</style>
+</helmet>
+<div style="padding:64px;display:flex;flex-direction:column;gap:32px;color:#1A1A17">
+<div style="display:flex;flex-direction:column;gap:6px;padding-bottom:16px;border-bottom:1px solid #1A1A17"><span style="font-size:28px;font-weight:700;letter-spacing:0.16em">TINO</span><h1 style="margin:0;font-size:28px;font-weight:600">Movimientos</h1><span style="font-size:13px;color:#6B6760">Lista densa con filtros y búsqueda. Fila en edición y propuesta de regla al corregir una categoría.</span></div>
+<div style="display:flex;align-items:baseline;gap:16px;padding-bottom:10px;border-bottom:1px solid #1A1A17;margin-top:24px"><h2 style="margin:0;font-size:20px;font-weight:600">Escritorio</h2><span style="font-size:13px;color:#6B6760"></span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:15px;font-weight:600">Lista · claro</span><dc-import name="Movimientos" modo="claro" formato="escritorio" hint-size="1440px,1024px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:15px;font-weight:600">Lista · oscuro</span><dc-import name="Movimientos" modo="oscuro" formato="escritorio" hint-size="1440px,1024px"></dc-import></div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:15px;font-weight:600">Edición y regla · claro</span><dc-import name="Movimientos" modo="claro" formato="escritorio" estado="edicion" hint-size="1440px,1024px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:15px;font-weight:600">Edición y regla · oscuro</span><dc-import name="Movimientos" modo="oscuro" formato="escritorio" estado="edicion" hint-size="1440px,1024px"></dc-import></div>
+</div>
+<div style="display:flex;align-items:baseline;gap:16px;padding-bottom:10px;border-bottom:1px solid #1A1A17;margin-top:24px"><h2 style="margin:0;font-size:20px;font-weight:600">Móvil</h2><span style="font-size:13px;color:#6B6760"></span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:15px;font-weight:600">Lista · claro</span><dc-import name="Movimientos" modo="claro" formato="movil" hint-size="390px,844px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:15px;font-weight:600">Lista · oscuro</span><dc-import name="Movimientos" modo="oscuro" formato="movil" hint-size="390px,844px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:15px;font-weight:600">Edición y regla · claro</span><dc-import name="Movimientos" modo="claro" formato="movil" estado="edicion" hint-size="390px,844px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:15px;font-weight:600">Edición y regla · oscuro</span><dc-import name="Movimientos" modo="oscuro" formato="movil" estado="edicion" hint-size="390px,844px"></dc-import></div>
+</div>
+<div style="display:flex;align-items:baseline;gap:16px;padding-bottom:10px;border-bottom:1px solid #1A1A17;margin-top:24px"><h2 style="margin:0;font-size:20px;font-weight:600">Día uno</h2><span style="font-size:13px;color:#6B6760">Sin un solo movimiento</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:15px;font-weight:600">Móvil · claro</span><dc-import name="Vacios" modo="claro" formato="movil" pantalla="movimientos" hint-size="390px,844px"></dc-import></div>
+<div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:15px;font-weight:600">Móvil · oscuro</span><dc-import name="Vacios" modo="oscuro" formato="movil" pantalla="movimientos" hint-size="390px,844px"></dc-import></div>
+</div>
+</div>
+</x-dc>
+</body>
+</html>

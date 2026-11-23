@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { LibroMovimientos } from "@/components/movimientos/libro-movimientos";
-import { NavegacionMes } from "@/components/movimientos/navegacion-mes";
 import type { AccionesEdicion } from "@/components/movimientos/usar-edicion";
 import { esMes, mesEnZona } from "@/domain/fecha/formato";
 import { esSinClasificar } from "@/domain/movimiento/sin-clasificar";
@@ -42,9 +41,11 @@ export default async function PaginaMovimientos({ searchParams }: PageProps<"/mo
   const sinClasificar = texto(parametros.sinClasificar) === "1";
   if (mesPedido !== undefined && !esMes(mesPedido)) redirect("/movimientos");
 
-  const [{ mes, movimientos }, perfil] = await Promise.all([
+  // Los préstamos dan la persona de cada movimiento: su cuenta no está entre las activas.
+  const [{ mes, movimientos }, perfil, { prestamos }] = await Promise.all([
     listarDelMes(mesPedido),
     mesPedido === undefined ? null : obtenerPerfil(),
+    obtenerPrestamos(),
   ]);
 
   // Sin `?mes` manda la API; con él, el actual se calcula en la zona del perfil (REGLAS §6).
@@ -55,21 +56,16 @@ export default async function PaginaMovimientos({ searchParams }: PageProps<"/mo
   if (idPedido !== undefined) {
     const movimiento = movimientos.find((m) => m.id === idPedido);
     if (!movimiento) redirect(`/movimientos?mes=${mes}${sinClasificar ? "&sinClasificar=1" : ""}`);
-    // Los préstamos solo se piden al abrir una edición: su cuenta no está entre las activas.
-    const [datos, { prestamos }] = await Promise.all([cargarCaptura(), obtenerPrestamos()]);
-    edicion = { movimiento, datos, prestamos };
+    edicion = { movimiento, datos: await cargarCaptura(), prestamos };
   }
   const listados = sinClasificar ? movimientos.filter(esSinClasificar) : movimientos;
 
   return (
-    <div className="flex flex-col gap-6 md:gap-8">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-titulo-1">Movimientos</h1>
-        <NavegacionMes mes={mes} actual={actual} />
-      </header>
+    <div className="flex flex-col gap-4 md:gap-6">
       <LibroMovimientos
         mes={mes}
-        esActual={mes === actual}
+        actual={actual}
+        personas={prestamos.map((p) => ({ id: p.id, nombre: p.nombre }))}
         movimientos={listados}
         sinClasificar={sinClasificar}
         edicion={edicion}

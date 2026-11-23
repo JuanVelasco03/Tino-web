@@ -392,17 +392,23 @@ Sin icono. Grid `52px | flexible | auto` con división inferior y 12 px de relle
 - **Como enlace (`href`):** toda la fila abre su edición. El enlace es el concepto, estirado sobre la fila con un pseudo-elemento (un solo objetivo, nombrado por el concepto); al pasar el cursor, fondo `hundido`.
 
 ### Libro de movimientos (`/movimientos`)
-En escritorio, rejilla de cuatro columnas `52px | flexible | hasta 176px | 128px` (Fecha, Descripción con la categoría debajo, Cuenta, Importe a la derecha) con rótulos sobre una raya y divisiones entre filas. En móvil, filas C2. Transferencia: «origen → destino» en la cuenta y sin signo.
-- **Cabecera:** el título y debajo la navegación de meses.
-- **Filas:** cada una es un enlace a `?mes=…&movimiento=<id>` (sin mover el scroll); las partes van como sub-renglones que ocupan de la Descripción al Importe.
+Referencia: `referencias/export-movimientos/Movimientos.dc.html`. En escritorio, rejilla `52px | 2fr | 1fr | 1,2fr | (0,7fr desde lg) | 128px` (Fecha, Concepto, Categoría, Cuenta, Persona desde `lg`, Monto a la derecha) con rótulos entre dos rayas y divisiones entre filas. Categoría en `etiqueta` tinta («Transferencia» en secundario, «Sin clasificar» punteada); cuenta y persona en `etiqueta` 400 secundaria. En móvil, filas C2. Transferencia: «origen → destino» en la cuenta y sin signo.
+- **Cabecera:** «Movimientos» (titulo-1) y a la derecha la cantidad visible en mono («26 movimientos»; en móvil solo la cifra). Sin sumas de entradas ni salidas: la web no suma montos (REGLAS §5).
+- **Filtros (`FiltrosMovimientos`):** bajo la cabecera. Fecha cambia de mes por URL (`?mes=`; el actual y los 11 anteriores) y reemplaza a la navegación de meses en esta pantalla. Búsqueda, Cuenta, Categoría, Tipo y Persona filtran en el cliente los movimientos ya cargados (`src/domain/movimiento/filtros.ts`); sus opciones salen del mes. Persona = nombre de la cuenta de préstamo en un extremo. Sin resultados: «Nada con estos filtros.» · «Prueba otro mes o limpia los filtros.».
+- **Agrupación por día:** los movimientos del mismo día van juntos. Escritorio: la fecha solo en la primera fila del día. Móvil: encabezado por día («mié 11 nov», `rotulo` sobre raya, 24 px entre días) y filas C2 sin columna de fecha.
+- **Filas:** cada una es un enlace a `?mes=…&movimiento=<id>` (sin mover el scroll); las partes van como sub-renglones del Concepto al Monto.
 - **Aviso:** tras guardar o eliminar, el `AvisoRegistro` va arriba de la lista («Guardado: …» / «Eliminado: …», sin «Deshacer») con la oferta de regla si aplica.
-- **Vacío:** en el mes actual, «Aún no registras movimientos este mes.»; en otro, «No hay movimientos en {mes}.» · «Registra uno o cambia de mes.».
-
+- **Vacío:** en el mes actual, «Aún no registras movimientos este mes.»; en otro, «No hay movimientos en {mes}.» · «Registra uno o cambia de mes.». Los filtros siguen visibles para cambiar de mes.
 - **Filtro «Gastos sin clasificar»** (`?sinClasificar=1`, solo desde el resumen): arriba «Gastos sin clasificar · N» en `rotulo` con «Ver todos» (`EnlaceTexto`) a la derecha; solo esos gastos, con las mismas filas, que conservan el filtro en su enlace y al cerrar la edición. Al clasificar uno, sale de la lista. Vacío: «Sin clasificar · {mes}», «No quedan gastos sin clasificar en {mes}.» y «Ver todos» (sin `+`). Cambiar de mes quita el filtro.
+
+### Filtros de movimientos (`FiltrosMovimientos`)
+- **Buscador:** caja `superficie` con borde `linea` (raya con foco), radio de campo, 36 px (44 en móvil), lupa de 18 px en secundario y texto en cuerpo; 300 px en escritorio, ancho completo en móvil. Es la excepción a «los campos son una línea»: es un control de filtro, como los chips.
+- **Desplegable:** botón de 36 px (44 en móvil) con fondo `superficie`, borde `linea` y radio de campo: rótulo en `etiqueta` secundaria, valor y chevron de 16 px. Activo: borde `texto` y valor en 600. En móvil la fila se desplaza en horizontal y el botón muestra solo el valor (o el rótulo en «Todas»). Las opciones van en una lista `superficie` con borde `raya` (mín. 200 px, bajo el botón en escritorio; a todo el ancho bajo la fila en móvil), 36 / 44 px por opción, la elegida en 600 con check de 16 px, fondo `hundido` al pasar el cursor. Escape o un clic fuera la cierran.
+- **Limpiar filtros:** botón de texto en `marca-texto` 600, solo con algún filtro activo.
 
 ### Navegación de meses (`NavegacionMes`)
 `‹` y `›` como objetivos de 44 px con chevrones de 18 px en `secundario` (pasan a `texto` al pasar el cursor), y entre ellos el mes («Noviembre 2026») en cuerpo 600. A la derecha, «Este mes» (`EnlaceTexto`) solo fuera del mes actual. Cada mes es una URL (`?mes=YYYY-MM`). Las flechas se nombran con el destino: «Mes anterior: Octubre 2026».
-- **Límites** (`hayAnterior`, `haySiguiente`): una flecha oculta deja su hueco de 44 px, para que el mes no salte. `/movimientos` no tiene límites (la captura admite fechas futuras); en `/resumen` los da la API (`limitesMes`: sin `‹` en el mes de inicio o antes, sin `›` en el actual).
+- **Límites** (`hayAnterior`, `haySiguiente`): una flecha oculta deja su hueco de 44 px, para que el mes no salte. En `/resumen` los da la API (`limitesMes`: sin `‹` en el mes de inicio o antes, sin `›` en el actual).
 - **Variante título** (`variante="titulo"`): el mes es el `h1` (titulo-1). Escritorio: `‹ Mes ›` y «Este mes» a continuación. Móvil: el mes a la izquierda, `‹ ›` a la derecha y «Este mes» debajo.
 
 ### Resumen del mes (`/resumen`)

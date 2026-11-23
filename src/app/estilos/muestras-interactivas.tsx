@@ -12,6 +12,7 @@ import { TecladoNumerico } from "@/components/captura/teclado-numerico";
 import { ChipCategoria } from "@/components/chip-categoria";
 import { EstadoVacio } from "@/components/estado-vacio";
 import { IconoCuenta } from "@/components/iconos";
+import { FiltrosMovimientos } from "@/components/movimientos/filtros-movimientos";
 import { OpcionUnica } from "@/components/opcion-unica";
 import { PanelLateral, type ControlPanel } from "@/components/panel-lateral";
 import {
@@ -606,5 +607,29 @@ export function MuestraRecurrentes({ sufijo }: { sufijo: string }) {
         )}
       </div>
     </div>
+  );
+}
+
+/** Filtros del libro de movimientos: la fecha navega (aquí a `#`), el resto filtra en el cliente. */
+export function MuestraFiltrosMovimientos() {
+  const [texto, setTexto] = useState("");
+  const [cuenta, setCuenta] = useState<string | null>("nequi");
+  const [tipo, setTipo] = useState<string | null>(null);
+  return (
+    <FiltrosMovimientos
+      texto={texto}
+      alCambiarTexto={setTexto}
+      activos={texto !== "" || cuenta !== null || tipo !== null}
+      alLimpiar={() => {
+        setTexto("");
+        setCuenta(null);
+        setTipo(null);
+      }}
+      filtros={[
+        { clave: "fecha", rotulo: "Fecha", valor: "2026-11", fijo: true, opciones: [{ valor: "2026-11", etiqueta: "Noviembre", href: "#" }, { valor: "2026-10", etiqueta: "Octubre", href: "#" }] },
+        { clave: "cuenta", rotulo: "Cuenta", valor: cuenta, alElegir: setCuenta, opciones: [{ valor: null, etiqueta: "Todas" }, { valor: "nequi", etiqueta: "Nequi" }, { valor: "efectivo", etiqueta: "Efectivo" }] },
+        { clave: "tipo", rotulo: "Tipo", valor: tipo, alElegir: setTipo, opciones: [{ valor: null, etiqueta: "Todos" }, { valor: "gasto", etiqueta: "Gastos" }, { valor: "ingreso", etiqueta: "Ingresos" }] },
+      ]}
+    />
   );
 }

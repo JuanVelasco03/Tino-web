@@ -37,6 +37,7 @@ import {
   MuestraEditorPartes,
   MuestraEstadoVacioBoton,
   MuestraFichasCuenta,
+  MuestraFiltrosMovimientos,
   MuestraMontoEditable,
   MuestraOpcionUnica,
   MuestraPanelLateral,
@@ -348,6 +349,18 @@ function Componentes({ modo }: { modo: "light" | "dark" }) {
           <FilaMovimiento fecha="01 nov" concepto="Nómina octubre" tipo="ingreso" monto={{ monto: 4_850_000n, moneda: "COP" }} categoria="Salario" cuenta="Bancolombia" omitirCOP />
           <FilaMovimiento fecha="01 nov" concepto="Compra VOO" tipo="transferencia" transferencia={{ origen: "Bancolombia", destino: "Interactive Brokers" }} monto={{ monto: 50_000n, moneda: "USD" }} equivalenteCOP={2_050_000n} omitirCOP />
         </div>
+      </div>
+
+      <div>
+        <Etiqueta>Filtros de movimientos · buscador y desplegables (activo: borde en tinta y «Limpiar filtros»)</Etiqueta>
+        <MuestraFiltrosMovimientos />
+      </div>
+
+      <div>
+        <Etiqueta>C2 · Fila de movimiento · agrupada bajo su día (sin columna de fecha)</Etiqueta>
+        <h3 className="border-b border-raya pb-2 text-rotulo uppercase">mié 11 nov</h3>
+        <FilaMovimiento concepto="Almuerzo" tipo="gasto" monto={{ monto: 15_000n, moneda: "COP" }} categoria="Comida" cuenta="Efectivo" omitirCOP />
+        <FilaMovimiento concepto="Mercado D1" tipo="gasto" monto={{ monto: 87_400n, moneda: "COP" }} categoria="Comida" cuenta="Bancolombia" omitirCOP />
       </div>
 
       <div>
