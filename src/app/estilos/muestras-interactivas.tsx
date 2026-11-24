@@ -27,7 +27,7 @@ import { ListaPlantillas } from "@/components/recurrentes/lista-plantillas";
 import { PanelPlantilla, type AccionesPlantilla, type DatosFormulario } from "@/components/recurrentes/panel-plantilla";
 import { VistaDiaUno } from "@/components/resumen/dia-uno";
 import { desdeMonto, formatearEntradaPesos } from "@/domain/dinero/entrada";
-import type { TipoMovimiento } from "@/domain/movimiento/cuerpo";
+import type { TipoCaptura as TipoMovimiento } from "@/domain/movimiento/cuerpo";
 import { errorPartes, restante, type ValorParte } from "@/domain/movimiento/partes";
 import { saldoResultante } from "@/domain/movimiento/vista-previa";
 import type { Ocurrencia, Recurrente } from "@/domain/recurrente/tipos";

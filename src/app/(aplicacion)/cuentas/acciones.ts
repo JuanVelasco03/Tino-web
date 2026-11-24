@@ -8,6 +8,7 @@ import type {
   AltaCuenta,
   CambioOrden,
   CampoCuenta,
+  CondicionesTarjeta,
   EdicionCuenta,
   ResultadoCuenta,
   ResultadoOrden,
@@ -83,6 +84,48 @@ function esId(id: unknown): id is string {
   return typeof id === "string" && UUID.test(id);
 }
 
+const MONTO = /^\d{1,19}$/;
+
+function esDia(valor: unknown): valor is number {
+  return Number.isInteger(valor) && (valor as number) >= 1 && (valor as number) <= 31;
+}
+
+/**
+ * Forma de las condiciones de la tarjeta (vienen del navegador). Se copian
+ * solo los campos conocidos; el contenido lo valida la API (SPEC 14).
+ */
+function condicionesValidas(entrada: unknown): CondicionesTarjeta | null {
+  if (!entrada || typeof entrada !== "object") return null;
+  const e = entrada as Record<string, unknown>;
+  const condiciones: CondicionesTarjeta = {};
+  if ("diaCorte" in e) {
+    if (!esDia(e.diaCorte)) return null;
+    condiciones.diaCorte = e.diaCorte;
+  }
+  if ("diaPago" in e) {
+    if (!esDia(e.diaPago)) return null;
+    condiciones.diaPago = e.diaPago;
+  }
+  if ("tasaMensual" in e) {
+    const t = e.tasaMensual;
+    if (t !== null && !(Number.isInteger(t) && (t as number) >= 0 && (t as number) <= 10_000)) return null;
+    condiciones.tasaMensual = t as number | null;
+  }
+  if ("cuotaManejo" in e) {
+    const c = e.cuotaManejo;
+    if (c !== null && !(typeof c === "string" && MONTO.test(c))) return null;
+    condiciones.cuotaManejo = c as string | null;
+  }
+  if ("cuentaPagoId" in e) {
+    if (e.cuentaPagoId !== null && !esId(e.cuentaPagoId)) return null;
+    condiciones.cuentaPagoId = e.cuentaPagoId as string | null;
+  }
+  return condiciones;
+}
+
+/** Además de las rutas de la lista, el detalle de cualquier cuenta (`/cuentas/[id]`, SPEC 13). */
+const RUTA_DETALLE = "/cuentas/[id]";
+
 /** Llama a la API y traduce el resultado. Redirecciones de Next (sesión vencida) se relanzan. */
 async function ejecutar(llamada: () => Promise<unknown>, rutas: readonly string[]): Promise<ResultadoCuenta> {
   try {
@@ -92,11 +135,15 @@ async function ejecutar(llamada: () => Promise<unknown>, rutas: readonly string[
     return cuentas.resultadoDeError(error);
   }
   for (const ruta of rutas) revalidatePath(ruta);
+  revalidatePath(RUTA_DETALLE, "page");
   return { ok: true };
 }
 
-/** `POST /cuentas` desde los valores del formulario. Un saldo vacío vale 0 (C4 lo muestra como «0»). */
-export async function crearCuenta(valores: ValoresCuenta): Promise<ResultadoCuenta> {
+/**
+ * `POST /cuentas` desde los valores del formulario. Un saldo vacío vale 0 (C4
+ * lo muestra como «0»). Una tarjeta lleva sus condiciones (`tarjeta`, SPEC 13).
+ */
+export async function crearCuenta(valores: ValoresCuenta, tarjeta: CondicionesTarjeta | null = null): Promise<ResultadoCuenta> {
   if (!valores || typeof valores !== "object") return ENTRADA_INVALIDA;
   const { nombre, tipo, detalle, saldo, cupo } = valores as Record<string, unknown>;
   if (typeof nombre !== "string" || typeof detalle !== "string") return ENTRADA_INVALIDA;
@@ -113,6 +160,12 @@ export async function crearCuenta(valores: ValoresCuenta): Promise<ResultadoCuen
     const digitosCupo = aDigitos(cupo);
     if (digitosCupo === null) return montoInvalido("cupo");
     alta.cupo = digitosCupo;
+  }
+
+  if (tarjeta !== null) {
+    const condiciones = condicionesValidas(tarjeta);
+    if (condiciones === null || tipo !== "tarjeta_credito") return ENTRADA_INVALIDA;
+    alta.tarjeta = condiciones;
   }
 
   return ejecutar(() => cuentas.crearCuenta(alta), ["/cuentas", "/resumen", "/deudas", "/inversiones", "/metas"]);
@@ -145,6 +198,11 @@ export async function editarCuenta(id: string, cambios: EdicionCuenta): Promise<
     const digitos = typeof entrada.cupo === "string" ? aDigitos(entrada.cupo) : null;
     if (digitos === null) return montoInvalido("cupo");
     edicion.cupo = digitos;
+  }
+  if ("tarjeta" in entrada) {
+    const condiciones = condicionesValidas(entrada.tarjeta);
+    if (condiciones === null) return ENTRADA_INVALIDA;
+    edicion.tarjeta = condiciones;
   }
 
   return ejecutar(() => cuentas.editarCuenta(id, edicion), ["/cuentas", "/resumen", "/recurrentes", "/deudas", "/inversiones", "/metas"]);

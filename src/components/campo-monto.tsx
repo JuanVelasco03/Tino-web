@@ -14,6 +14,11 @@ export type MontoEditable = {
   /** Nota secundaria bajo el campo («Cambiarlo queda registrado.»). */
   nota?: string;
   deshabilitado?: boolean;
+  /**
+   * Solo pesos: deja escribir una coma decimal para rechazarla con su mensaje
+   * en vez de descartarla en silencio (saldo contado del ajuste, SPEC 13).
+   */
+  admiteComa?: boolean;
 };
 
 type Props = {
@@ -76,7 +81,9 @@ function CampoEditable({
   editable,
   signo,
 }: Required<Pick<Props, "valor" | "moneda" | "etiqueta" | "editable">> & Pick<Props, "signo">) {
-  const { alCambiar, nombre, error, nota, deshabilitado } = editable;
+  const { alCambiar, nombre, error, nota, deshabilitado, admiteComa = false } = editable;
+  /** Pesos con coma: se formatea la parte entera y lo demás queda, para que la validación lo vea. */
+  const conComa = admiteComa && moneda === "COP";
   const idError = `${nombre}-error`;
   const idNota = `${nombre}-nota`;
   const descritoPor = [error && idError, nota && idNota].filter(Boolean).join(" ") || undefined;
@@ -84,10 +91,16 @@ function CampoEditable({
   function alEscribir(evento: ChangeEvent<HTMLInputElement>) {
     const input = evento.currentTarget;
     const crudo = input.value;
-    const formateado = formatearEntrada(crudo, moneda);
+    const indiceComa = crudo.indexOf(",");
+    const formateado =
+      conComa && indiceComa !== -1
+        ? `${formatearEntrada(crudo.slice(0, indiceComa), moneda) || "0"},${crudo.slice(indiceComa + 1).replace(/\D/g, "")}`
+        : formatearEntrada(crudo, moneda);
     const posicion = input.selectionStart ?? crudo.length;
     const cursor =
-      moneda === "USD" ? cursorTrasFormatoDolares(crudo, posicion, formateado) : cursorTrasFormato(crudo, posicion, formateado);
+      moneda === "USD" || (conComa && indiceComa !== -1)
+        ? cursorTrasFormatoDolares(crudo, posicion, formateado)
+        : cursorTrasFormato(crudo, posicion, formateado);
 
     // Se escribe en el DOM antes de avisar: React encuentra el mismo valor y no mueve el cursor.
     input.value = formateado;
@@ -117,7 +130,7 @@ function CampoEditable({
             name={nombre}
             value={valor}
             onChange={alEscribir}
-            inputMode={moneda === "USD" ? "decimal" : "numeric"}
+            inputMode={moneda === "USD" || conComa ? "decimal" : "numeric"}
             autoComplete="off"
             placeholder="0"
             disabled={deshabilitado}

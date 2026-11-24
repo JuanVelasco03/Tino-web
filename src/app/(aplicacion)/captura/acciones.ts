@@ -1,12 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import * as captura from "@/services/captura";
 import type { ResultadoCarga, ResultadoSugerencias } from "@/services/captura";
 import * as movimientos from "@/services/movimientos";
-import type { MovimientoCuerpo, ResultadoRegistro, ResultadoSimple, TipoMovimiento } from "@/services/movimientos";
+import type { MovimientoCuerpo, ResultadoRegistro, ResultadoSimple, TipoCaptura } from "@/services/movimientos";
 import * as perfil from "@/services/perfil";
-import { cuerpoValido, ENTRADA_INVALIDA, esId, esTipo, fallo, RUTAS_AFECTADAS } from "./entrada";
+import { cuerpoValido, ENTRADA_INVALIDA, esId, esTipo, fallo, revalidarAfectadas } from "./entrada";
 
 const MENSAJE_CARGA = "No pudimos cargar el formulario.";
 
@@ -21,7 +20,7 @@ export async function cargarCaptura(): Promise<ResultadoCarga> {
 }
 
 /** `GET /sugerencias` mientras se escribe la descripción. */
-export async function sugerir(tipo: TipoMovimiento, texto: string): Promise<ResultadoSugerencias> {
+export async function sugerir(tipo: TipoCaptura, texto: string): Promise<ResultadoSugerencias> {
   if (!esTipo(tipo) || typeof texto !== "string") return ENTRADA_INVALIDA;
   try {
     return { ok: true, sugerencias: await captura.sugerir(tipo, texto) };
@@ -42,7 +41,7 @@ export async function registrarMovimiento(entrada: MovimientoCuerpo): Promise<Re
   } catch (error) {
     return fallo(error, cuerpo.tipo);
   }
-  for (const ruta of RUTAS_AFECTADAS) revalidatePath(ruta);
+  revalidarAfectadas();
   return { ok: true, movimiento };
 }
 
@@ -55,7 +54,7 @@ export async function deshacerRegistro(id: string): Promise<ResultadoSimple> {
     const { codigo, mensaje } = fallo(error);
     return { ok: false, codigo, mensaje };
   }
-  for (const ruta of RUTAS_AFECTADAS) revalidatePath(ruta);
+  revalidarAfectadas();
   return { ok: true };
 }
 

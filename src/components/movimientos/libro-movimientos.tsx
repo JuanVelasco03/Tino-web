@@ -9,12 +9,14 @@ import { importeEnPatrimonio, importeMostrado } from "@/domain/movimiento/vista-
 import type { DatosCaptura } from "@/services/captura";
 import type { Movimiento } from "@/services/movimientos";
 import { AvisoRegistro, type DatosAviso } from "../captura/aviso-registro";
+import { ChipCategoria } from "../chip-categoria";
 import { conceptoDe } from "../captura/panel-captura";
 import { useContextoCaptura } from "../captura/proveedor-captura";
 import { cuentaDe, datosDeOferta } from "../captura/usar-captura";
 import { EnlaceTexto } from "../enlace-texto";
 import { EstadoVacio } from "../estado-vacio";
 import { FilaMovimiento, SubRenglones, type ParteFila } from "../fila-movimiento";
+import { EdicionAjuste } from "./edicion-ajuste";
 import { EdicionMovimiento } from "./edicion-movimiento";
 import { FiltrosMovimientos, type DefinicionFiltro, type OpcionFiltro } from "./filtros-movimientos";
 import { useAvisoEdicion, type AccionesEdicion, type PrestamoDeEdicion, type ResultadoEdicion } from "./usar-edicion";
@@ -45,13 +47,19 @@ function partesDe(m: Movimiento): ParteFila[] {
   return m.partes.map((p) => ({ categoria: p.categoria.nombre, monto: p.monto }));
 }
 
+/** Un ajuste sube el saldo si trae `cuentaDestino` (SPEC 14). */
+function ajusteSube(m: Movimiento): boolean {
+  return m.cuentaDestino !== null;
+}
+
 /**
  * Importe con signo y color desde el patrimonio: gasto −, ingreso +,
- * transferencia sin signo. Entre monedas, el lado COP y debajo «US$ … · TRM …».
+ * transferencia sin signo; un ajuste + o − según su cuenta. Entre monedas, el
+ * lado COP y debajo «US$ … · TRM …».
  */
 function Importe({ m, peso }: { m: Movimiento; peso: string }) {
   const { dinero, linea } = importeMostrado(m);
-  const efecto = importeEnPatrimonio(m.tipo, dinero.monto);
+  const efecto = importeEnPatrimonio(m.tipo, dinero.monto, ajusteSube(m));
   const cifra = formatearDinero({ ...dinero, monto: efecto ?? dinero.monto }, { omitirCOP: true, signoMas: efecto !== null });
   const color = efecto === null ? "" : efecto < 0n ? "text-salida-texto" : "text-entrada-texto";
   return (
@@ -69,6 +77,7 @@ function datosAvisoEdicion(resultado: ResultadoEdicion | null): DatosAviso | nul
   return {
     tipo: movimiento.tipo,
     monto: movimiento.monto,
+    ajusteSube: ajusteSube(movimiento),
     moneda: movimiento.moneda,
     descripcion: movimiento.descripcion,
     cuenta: cuentaDe(movimiento),
@@ -104,6 +113,7 @@ const COLUMNAS =
 /** Categoría en su columna: transferencia y sin clasificar en secundario. */
 function CeldaCategoria({ m }: { m: Movimiento }) {
   if (m.tipo === "transferencia") return <span className="text-secundario">Transferencia</span>;
+  if (m.tipo === "ajuste") return <ChipCategoria etiqueta={m.categoria?.nombre ?? "Ajuste"} estatico />;
   const cat = categoria(m);
   return cat ? <span>{cat}</span> : <span className="punteada text-secundario">Sin clasificar</span>;
 }
@@ -193,7 +203,7 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
           rotulo={`Movimientos · ${nombreMes}`}
           titulo={esActual ? "Aún no registras movimientos este mes." : `No hay movimientos en ${nombreMes}.`}
           detalle={esActual ? "Registra tu primer gasto." : "Registra uno o cambia de mes."}
-          accion={{ etiqueta: "Registrar", alPulsar: abrir }}
+          accion={{ etiqueta: "Registrar", alPulsar: () => abrir() }}
         />
       ) : (
         <section aria-label={`Movimientos de ${formatearMes(mes)}`}>
@@ -262,6 +272,7 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
                     key={m.id}
                     concepto={conceptoDe(m)}
                     tipo={m.tipo}
+                    ajusteSube={ajusteSube(m)}
                     monto={importeMostrado(m).dinero}
                     detalleImporte={importeMostrado(m).linea}
                     categoria={categoria(m)}
@@ -288,7 +299,18 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
         </section>
       )}
 
-      {edicion && (
+      {edicion && edicion.movimiento.tipo === "ajuste" && (
+        <EdicionAjuste
+          key={edicion.movimiento.id}
+          movimiento={edicion.movimiento}
+          datos={edicion.datos}
+          mes={mes}
+          sinClasificar={sinClasificar}
+          acciones={acciones}
+          alTerminar={aviso.mostrar}
+        />
+      )}
+      {edicion && edicion.movimiento.tipo !== "ajuste" && (
         <EdicionMovimiento
           key={edicion.movimiento.id}
           movimiento={edicion.movimiento}

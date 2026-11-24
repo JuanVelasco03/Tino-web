@@ -1,5 +1,5 @@
 import { enviar, ErrorApi, obtener } from "./cliente";
-import { aMovimiento, type Movimiento, type MovimientoDto, type TipoMovimiento } from "./movimientos";
+import { aMovimiento, type Movimiento, type MovimientoDto, type TipoCaptura as TipoMovimiento } from "./movimientos";
 
 /*
  * Contrato de Tino API (docs/api/recurrentes.md, Tino-API SPEC 07). Se copia,

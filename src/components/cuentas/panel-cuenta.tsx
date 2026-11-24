@@ -2,7 +2,17 @@
 
 import { useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { cambiosEdicion, type TipoEditable } from "@/domain/cuenta/edicion";
+import {
+  cambiosEdicion,
+  cambiosTarjeta,
+  hayCambiosTarjeta,
+  validarTarjeta,
+  valoresTarjetaDesde,
+  type CampoTarjeta,
+  type CondicionesTarjeta,
+  type TipoEditable,
+  type ValoresTarjeta,
+} from "@/domain/cuenta/edicion";
 import { aMenores, desdeMenores, desdeMonto } from "@/domain/dinero/entrada";
 import type { Moneda } from "@/domain/dinero/formato";
 import { mensajeMonto } from "@/domain/inversion/formulario";
@@ -15,10 +25,14 @@ import { IconoCuenta, ROTULO_TIPO_CUENTA } from "../iconos";
 import { OpcionUnica, type Opcion } from "../opcion-unica";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { BloqueEliminar, DETALLE_ELIMINAR_CUENTA } from "../bloque-eliminar";
+import { CamposTarjeta, type CuentaPago } from "./campos-tarjeta";
+
+export type { CuentaPago };
 
 /** Server actions; llegan por prop desde la página (los componentes no importan `app/`). */
 export type AccionesCuenta = {
-  crear: (valores: ValoresCuenta) => Promise<ResultadoCuenta>;
+  /** Una tarjeta lleva sus condiciones (`tarjeta`, SPEC 13); las demás, `null`. */
+  crear: (valores: ValoresCuenta, tarjeta: CondicionesTarjeta | null) => Promise<ResultadoCuenta>;
   editar: (id: string, cambios: EdicionCuenta) => Promise<ResultadoCuenta>;
   archivar: (id: string) => Promise<ResultadoCuenta>;
   eliminar: (id: string) => Promise<ResultadoCuenta>;
@@ -28,6 +42,12 @@ type Props = {
   /** `null`: alta. Con cuenta: edición de una cuenta no archivada. */
   cuenta: Cuenta | null;
   acciones: AccionesCuenta;
+  /** Efectivo y banco activas, en su orden: «Se paga desde» de una tarjeta. */
+  cuentasPago?: readonly CuentaPago[];
+  /** A dónde vuelve al cerrar o guardar: `/cuentas` o el detalle (`/cuentas/<id>`). */
+  rutaCierre?: string;
+  /** A dónde va tras archivar o eliminar (el detalle ya no aplica). */
+  rutaTrasQuitar?: string;
 };
 
 type Errores = Partial<Record<CampoCuenta, string>>;
@@ -67,12 +87,14 @@ function montoMalEscrito(texto: string, moneda: Moneda = "COP"): boolean {
  * server action recibe los valores y nunca reinicia lo escrito al fallar.
  * En edición añade archivar y eliminar.
  */
-export function PanelCuenta({ cuenta, acciones }: Props) {
+export function PanelCuenta({ cuenta, acciones, cuentasPago = [], rutaCierre = "/cuentas", rutaTrasQuitar = "/cuentas" }: Props) {
   const router = useRouter();
   const panel = useRef<ControlPanel>(null);
   const esAlta = cuenta === null;
   const [iniciales] = useState<ValoresCuenta>(() => (cuenta ? valoresDe(cuenta) : VALORES_ALTA));
   const [valores, setValores] = useState<ValoresCuenta>(iniciales);
+  const [inicialesTarjeta] = useState<ValoresTarjeta>(() => valoresTarjetaDesde(cuenta?.tarjeta ?? null));
+  const [tarjeta, setTarjeta] = useState<ValoresTarjeta>(inicialesTarjeta);
   const [errores, setErrores] = useState<Errores>({});
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [confirmandoDescarte, setConfirmandoDescarte] = useState(false);
@@ -86,12 +108,19 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
   /** Una inversión: tipo fijo, efectivo inicial en su moneda, sin cupo (SPEC 10). */
   const esInversion = cuenta?.tipo === "inversion";
   const moneda: Moneda = cuenta?.moneda ?? "COP";
-  const hayCambios = !iguales(valores, iniciales);
+  const tocoTarjeta = esTarjeta && hayCambiosTarjeta(cuenta?.tarjeta ?? null, tarjeta);
+  const hayCambios = !iguales(valores, iniciales) || tocoTarjeta;
 
-  /** Retira la hoja y después quita `?cuenta=` de la URL, que la desmonta. */
-  async function cerrar() {
+  /** Retira la hoja y después quita el parámetro de la URL, que la desmonta. */
+  async function cerrar(ruta = rutaCierre) {
     await panel.current?.cerrar();
-    router.replace("/cuentas", { scroll: false });
+    router.replace(ruta, { scroll: false });
+  }
+
+  function cambiarTarjeta<C extends keyof ValoresTarjeta>(campo: C, valor: ValoresTarjeta[C]) {
+    setTarjeta((actual) => ({ ...actual, [campo]: valor }));
+    const clave: CampoTarjeta = campo === "tasa" ? "tasaMensual" : (campo as Exclude<keyof ValoresTarjeta, "tasa">);
+    setErrores((actual) => (actual[clave] || actual.tarjeta ? { ...actual, [clave]: undefined, tarjeta: undefined } : actual));
   }
 
   function solicitarCierre() {
@@ -107,6 +136,8 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
       if (campo === "tipo" && valor !== "tarjeta_credito") nuevos.cupo = "";
       return nuevos;
     });
+    // Las condiciones también: plegadas se descartan.
+    if (campo === "tipo" && valor !== "tarjeta_credito") setTarjeta(inicialesTarjeta);
     setErrores((actual) => (actual[campo] ? { ...actual, [campo]: undefined } : actual));
   }
 
@@ -124,9 +155,19 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
     if (pendiente) return;
     setErrorGeneral(null);
 
-    const locales: Errores = {};
+    let locales: Errores = {};
     if (montoMalEscrito(valores.saldo, moneda)) locales.saldo = mensajeMonto(moneda);
     if (esTarjeta && montoMalEscrito(valores.cupo)) locales.cupo = mensajeMonto("COP");
+
+    // Condiciones: en el alta, completas y con los dos días; en la edición, solo si se tocaron
+    // (la primera vez en una tarjeta sin condiciones, con los dos días: `CONDICIONES_REQUERIDAS`).
+    let condiciones: CondicionesTarjeta | null = null;
+    if (esTarjeta && (esAlta || tocoTarjeta)) {
+      const validacion = validarTarjeta(tarjeta, true);
+      if ("errores" in validacion) locales = { ...locales, ...validacion.errores };
+      else condiciones = esAlta ? validacion.condiciones : cambiosTarjeta(cuenta?.tarjeta ?? null, tarjeta);
+    }
+
     if (Object.keys(locales).length > 0) {
       setErrores(locales);
       return;
@@ -134,15 +175,16 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
 
     let llamada: () => Promise<ResultadoCuenta>;
     if (cuenta) {
-      const cambios = cambiosEdicion(cuenta, valores);
+      const cambios: EdicionCuenta | null = cambiosEdicion(cuenta, valores);
+      const conTarjeta: EdicionCuenta | null = condiciones ? { ...(cambios ?? {}), tarjeta: condiciones } : cambios;
       // Nada cambió: sin petición.
-      if (cambios === null) {
+      if (conTarjeta === null) {
         void cerrar();
         return;
       }
-      llamada = () => acciones.editar(cuenta.id, cambios);
+      llamada = () => acciones.editar(cuenta.id, conTarjeta);
     } else {
-      llamada = () => acciones.crear(valores);
+      llamada = () => acciones.crear(valores, esTarjeta ? condiciones : null);
     }
 
     setErrores({});
@@ -159,7 +201,7 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
     setAccion("archivar");
     iniciar(async () => {
       const resultado = await acciones.archivar(cuenta.id);
-      if (resultado.ok) await cerrar();
+      if (resultado.ok) await cerrar(rutaTrasQuitar);
       else setErrorArchivo(resultado.mensaje);
       setAccion(null);
     });
@@ -171,7 +213,7 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
     setAccion("eliminar");
     iniciar(async () => {
       const resultado = await acciones.eliminar(cuenta.id);
-      if (resultado.ok) await cerrar();
+      if (resultado.ok) await cerrar(rutaTrasQuitar);
       else setErrorBorrado(resultado.mensaje);
       setAccion(null);
     });
@@ -276,6 +318,11 @@ export function PanelCuenta({ cuenta, acciones }: Props) {
                   etiqueta="Cupo total"
                   editable={{ nombre: "cupo", alCambiar: (v) => cambiar("cupo", v), error: errores.cupo }}
                 />
+                {cuenta?.tipo !== "inversion" && (
+                  <div className="pt-6">
+                    <CamposTarjeta valores={tarjeta} alCambiar={cambiarTarjeta} cuentasPago={cuentasPago} errores={errores} />
+                  </div>
+                )}
               </div>
             </div>
           </div>

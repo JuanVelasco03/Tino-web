@@ -31,9 +31,9 @@ export type EstadoFormulario = EstadoCaptura | EstadoEdicion;
 export const ID_MONTO = "captura-monto";
 const ID_FORMULARIO = "captura-formulario";
 
-const ROTULO_TIPO: Record<TipoMovimiento, string> = { gasto: "Gasto", ingreso: "Ingreso", transferencia: "Transferencia" };
+const ROTULO_TIPO: Record<TipoMovimiento, string> = { gasto: "Gasto", ingreso: "Ingreso", transferencia: "Transferencia", ajuste: "Ajuste" };
 
-const VERBO: Record<TipoMovimiento, string> = {
+const VERBO: Record<Exclude<TipoMovimiento, "ajuste">, string> = {
   gasto: "Registrar gasto",
   ingreso: "Registrar ingreso",
   transferencia: "Registrar transferencia",

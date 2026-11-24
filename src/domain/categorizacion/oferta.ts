@@ -3,7 +3,7 @@
  * registrar, si el usuario eligió a mano o corrigió la propuesta, se le
  * ofrece crear o ajustar la regla. Nunca se hace sola.
  */
-import type { Categoria, DecisionCategoria, Propuesta, TipoMovimiento } from "../movimiento/cuerpo";
+import type { Categoria, DecisionCategoria, Propuesta, TipoCaptura as TipoMovimiento } from "../movimiento/cuerpo";
 
 /** Largo máximo de una palabra clave en la API (`PALABRA_CLAVE_LARGA`). */
 const MAX_PALABRA_CLAVE = 60;

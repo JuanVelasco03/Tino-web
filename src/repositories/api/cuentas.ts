@@ -2,9 +2,10 @@ import { enviar, ErrorApi, obtener } from "./cliente";
 import { aTrm, tasaEnCentesimas, type Trm, type TrmDto } from "./trm";
 
 /*
- * Contrato de Tino API (docs/api/cuentas.md, Tino-API SPEC 03 y 10). Se copia,
- * no se redefine. Montos como string con un entero en unidades menores.
+ * Contrato de Tino API (docs/api/cuentas.md, Tino-API SPEC 03, 10 y 14). Se
+ * copia, no se redefine. Montos como string con un entero en unidades menores.
  */
+export type Ref = { id: string; nombre: string };
 /** `inversion`: solo la crea `POST /inversiones` (SPEC 10). */
 export type TipoCuenta = "efectivo" | "banco" | "tarjeta_credito" | "inversion";
 export type Naturaleza = "activo" | "pasivo";
@@ -22,10 +23,35 @@ export type CuentaDto = {
   saldo: string;
   /** En una inversión, el efectivo inicial en su moneda. */
   saldoInicial: string;
-  tarjeta: { cupo: string; disponible: string; porcentajeUsado: number } | null;
+  tarjeta: TarjetaDto | null;
   /** Solo en una inversión, en su moneda. `tasa`: TRM aplicada; `null` en COP o sin TRM. */
   inversion: { efectivo: string; valorMercado: string; tasa: string | null } | null;
   archivadaEn: string | null;
+};
+
+/** Tino-API SPEC 14. */
+export type TarjetaDto = {
+  cupo: string;
+  disponible: string;
+  porcentajeUsado: number;
+  /** `null`: tarjeta sin condiciones (N-79). */
+  diaCorte: number | null;
+  diaPago: number | null;
+  /** Centésimas de punto: 198 = 1,98 % M.V. */
+  tasaMensual: number | null;
+  /** Centésimas de punto: 2652 = 26,52 % E.A. */
+  tasaEfectivaAnual: number | null;
+  cuotaManejo: string | null;
+  cuentaPago: Ref | null;
+};
+
+/** Condiciones de la tarjeta en `POST` y `PATCH /cuentas`. `null` en un opcional lo borra. */
+export type CondicionesTarjeta = {
+  diaCorte?: number;
+  diaPago?: number;
+  tasaMensual?: number | null;
+  cuotaManejo?: string | null;
+  cuentaPagoId?: string | null;
 };
 
 export type ListaArchivadasDto = { cuentas: CuentaDto[] };
@@ -39,6 +65,8 @@ export type AltaCuenta = {
   saldoInicial: string;
   /** Obligatorio y > 0 en `tarjeta_credito`; prohibido en las demás. */
   cupo?: string;
+  /** Obligatorio con `diaCorte` y `diaPago` en `tarjeta_credito`; prohibido en las demás (SPEC 14). */
+  tarjeta?: CondicionesTarjeta;
 };
 
 /** Cuerpo de `PATCH /cuentas/:id`: solo los campos que cambian, al menos uno. */
@@ -51,6 +79,8 @@ export type EdicionCuenta = {
   saldoInicial?: string;
   /** Solo si la cuenta es `tarjeta_credito`; > 0. */
   cupo?: string;
+  /** Solo en una tarjeta, parcial. La primera vez en una tarjeta sin condiciones, con los dos días. */
+  tarjeta?: CondicionesTarjeta;
 };
 
 export type GrupoCuentasDto = {
@@ -82,11 +112,24 @@ export type Cuenta = {
   saldo: bigint;
   /** En un pasivo, la deuda inicial; en una inversión, el efectivo inicial en su moneda. Solo para editarlo. */
   saldoInicial: bigint;
-  tarjeta: { cupo: bigint; disponible: bigint; porcentajeUsado: number } | null;
+  tarjeta: Tarjeta | null;
   /** Solo en una inversión, en su moneda. `tasa` en centésimas de peso por US$. */
   inversion: { efectivo: bigint; valorMercado: bigint; tasa: bigint | null } | null;
   /** ISO 8601, tal cual llega. `null` = no archivada. */
   archivadaEn: string | null;
+};
+
+/** Condiciones de la tarjeta en la web. Tasas en centésimas de punto; disponible y porcentaje de la API. */
+export type Tarjeta = {
+  cupo: bigint;
+  disponible: bigint;
+  porcentajeUsado: number;
+  diaCorte: number | null;
+  diaPago: number | null;
+  tasaMensual: number | null;
+  tasaEfectivaAnual: number | null;
+  cuotaManejo: bigint | null;
+  cuentaPago: Ref | null;
 };
 
 export type GrupoCuentas = { total: bigint; cuentas: Cuenta[] };
@@ -110,6 +153,20 @@ function aMonto(valor: string): bigint {
   return BigInt(valor);
 }
 
+export function aTarjeta(dto: TarjetaDto): Tarjeta {
+  return {
+    cupo: aMonto(dto.cupo),
+    disponible: aMonto(dto.disponible),
+    porcentajeUsado: dto.porcentajeUsado,
+    diaCorte: dto.diaCorte,
+    diaPago: dto.diaPago,
+    tasaMensual: dto.tasaMensual,
+    tasaEfectivaAnual: dto.tasaEfectivaAnual,
+    cuotaManejo: dto.cuotaManejo === null ? null : aMonto(dto.cuotaManejo),
+    cuentaPago: dto.cuentaPago,
+  };
+}
+
 export function aCuenta(dto: CuentaDto): Cuenta {
   return {
     id: dto.id,
@@ -120,11 +177,7 @@ export function aCuenta(dto: CuentaDto): Cuenta {
     detalle: dto.detalle,
     saldo: aMonto(dto.saldo),
     saldoInicial: aMonto(dto.saldoInicial),
-    tarjeta: dto.tarjeta && {
-      cupo: aMonto(dto.tarjeta.cupo),
-      disponible: aMonto(dto.tarjeta.disponible),
-      porcentajeUsado: dto.tarjeta.porcentajeUsado,
-    },
+    tarjeta: dto.tarjeta && aTarjeta(dto.tarjeta),
     inversion: dto.inversion && {
       efectivo: aMonto(dto.inversion.efectivo),
       valorMercado: aMonto(dto.inversion.valorMercado),
@@ -171,6 +224,15 @@ function rutaCuenta(id: string, sufijo = ""): string {
 function cuentaDe(dto: CuentaDto | null, ruta: string): Cuenta {
   if (!dto) throw new ErrorApi(500, "ERROR_INTERNO", `Tino API no devolvió la cuenta en ${ruta}.`);
   return aCuenta(dto);
+}
+
+/**
+ * `GET /cuentas/:id`, también archivada. `null` si la API responde 404
+ * (`CUENTA_NO_ENCONTRADA`: inexistente, de otro usuario o préstamo).
+ */
+export async function obtenerCuenta(id: string): Promise<Cuenta | null> {
+  const dto = await obtener<CuentaDto>(rutaCuenta(id));
+  return dto && aCuenta(dto);
 }
 
 /** `POST /cuentas`: la API la pone al final de su grupo. */

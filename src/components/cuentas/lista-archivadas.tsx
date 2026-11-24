@@ -8,6 +8,8 @@ import { EnlaceTexto } from "../enlace-texto";
 import { IconoCuenta, ROTULO_TIPO_CUENTA } from "../iconos";
 import { MensajeError } from "../mensaje-error";
 import { BloqueEliminar, DETALLE_ELIMINAR_CUENTA } from "../bloque-eliminar";
+import Link from "next/link";
+import { enlaceCuenta } from "./rutas";
 
 type Props = {
   cuentas: Cuenta[];
@@ -125,7 +127,10 @@ function FilaArchivada({ cuenta, restaurar, eliminar }: PropsFila) {
       </span>
 
       <div className="flex min-h-10 min-w-0 flex-col justify-center">
-        <div className="truncate text-cuerpo font-semibold">{cuenta.nombre}</div>
+        {/* El nombre abre su detalle en solo lectura (SPEC 13). */}
+        <Link href={enlaceCuenta(cuenta)} className="truncate text-cuerpo font-semibold hover:text-marca-texto">
+          {cuenta.nombre}
+        </Link>
         {!abierta && <div className="truncate text-etiqueta font-normal text-secundario">{subtitulo(cuenta)}</div>}
       </div>
 

@@ -8,6 +8,8 @@ type Props = {
   marcada: boolean;
   alCambiar: (marcada: boolean) => void;
   deshabilitado?: boolean;
+  /** Sin rótulo visible (casilla de selección de una fila): el rótulo queda para el lector de pantalla. */
+  rotuloOculto?: boolean;
 };
 
 /**
@@ -17,8 +19,35 @@ type Props = {
  * no está marcada) y descripción en `etiqueta` secundaria. A diferencia de
  * `OpcionUnica`, no es una elección exclusiva.
  */
-export function Casilla({ nombre, rotulo, descripcion, marcada, alCambiar, deshabilitado = false }: Props) {
+export function Casilla({ nombre, rotulo, descripcion, marcada, alCambiar, deshabilitado = false, rotuloOculto = false }: Props) {
   const idDescripcion = `${nombre}-descripcion`;
+  if (rotuloOculto) {
+    return (
+      <label
+        className={`flex size-11 items-center justify-center has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-marca ${
+          deshabilitado ? "cursor-not-allowed" : "cursor-pointer"
+        }`}
+      >
+        <input
+          id={nombre}
+          type="checkbox"
+          checked={marcada}
+          disabled={deshabilitado}
+          onChange={(e) => alCambiar(e.currentTarget.checked)}
+          aria-label={rotulo}
+          className="sr-only"
+        />
+        <span
+          aria-hidden
+          className={`flex size-[18px] items-center justify-center rounded-muestra border ${
+            marcada ? "border-texto bg-texto text-fondo" : "border-terciario"
+          }`}
+        >
+          {marcada && <Check size={14} strokeWidth={2} />}
+        </span>
+      </label>
+    );
+  }
   return (
     <label
       className={`grid min-h-11 grid-cols-[18px_minmax(0,1fr)] items-start gap-x-3 py-1 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-marca ${

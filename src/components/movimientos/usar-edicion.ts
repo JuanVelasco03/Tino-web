@@ -11,8 +11,8 @@ import type {
   MovimientoCuerpo,
   ResultadoGuardado,
   ResultadoSimple,
-  TipoMovimiento,
 } from "@/services/movimientos";
+import type { TipoCaptura as TipoMovimiento } from "@/domain/movimiento/cuerpo";
 import { PLAZO_AVISO_MS, type EstadoOferta } from "../captura/usar-captura";
 import { useFormulario } from "../captura/usar-formulario";
 

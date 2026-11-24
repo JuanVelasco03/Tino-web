@@ -1,5 +1,5 @@
 import { formatearDinero } from "@/domain/dinero/formato";
-import type { TipoMovimiento } from "@/domain/movimiento/cuerpo";
+import type { TipoCaptura as TipoMovimiento } from "@/domain/movimiento/cuerpo";
 import { importeEnPatrimonio } from "@/domain/movimiento/vista-previa";
 import type { Recurrente } from "@/domain/recurrente/tipos";
 

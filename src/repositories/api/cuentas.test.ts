@@ -42,7 +42,17 @@ const CON_CUENTAS: ListaCuentasDto = {
         detalle: "Visa ·· 1234",
         saldo: "1284300",
         saldoInicial: "1284300",
-        tarjeta: { cupo: "4000000", disponible: "2715700", porcentajeUsado: 32 },
+        tarjeta: {
+          cupo: "4000000",
+          disponible: "2715700",
+          porcentajeUsado: 32,
+          diaCorte: 15,
+          diaPago: 30,
+          tasaMensual: 198,
+          tasaEfectivaAnual: 2652,
+          cuotaManejo: "26990",
+          cuentaPago: { id: "b1", nombre: "Bancolombia" },
+        },
         inversion: null,
         archivadaEn: null,
       },
@@ -96,7 +106,17 @@ describe("aListaCuentas", () => {
             detalle: "Visa ·· 1234",
             saldo: 1284300n,
             saldoInicial: 1284300n,
-            tarjeta: { cupo: 4000000n, disponible: 2715700n, porcentajeUsado: 32 },
+            tarjeta: {
+              cupo: 4000000n,
+              disponible: 2715700n,
+              porcentajeUsado: 32,
+              diaCorte: 15,
+              diaPago: 30,
+              tasaMensual: 198,
+              tasaEfectivaAnual: 2652,
+              cuotaManejo: 26990n,
+              cuentaPago: { id: "b1", nombre: "Bancolombia" },
+            },
             inversion: null,
             archivadaEn: null,
           },
@@ -161,6 +181,42 @@ describe("aCuenta", () => {
 
   it("saldoInicial que excede 2^53 no pierde precisión", () => {
     expect(aCuenta({ ...ARCHIVADA, saldoInicial: "9007199254740993" }).saldoInicial).toBe(9007199254740993n);
+  });
+});
+
+describe("tarjeta con condiciones (SPEC 14)", () => {
+  const TARJETA = CON_CUENTAS.pasivos.cuentas[0];
+
+  it("tarjeta sin condiciones: días, tasas, cuota y cuenta de pago en null", () => {
+    const dto: CuentaDto = {
+      ...TARJETA,
+      tarjeta: {
+        cupo: "4000000",
+        disponible: "2715700",
+        porcentajeUsado: 32,
+        diaCorte: null,
+        diaPago: null,
+        tasaMensual: null,
+        tasaEfectivaAnual: null,
+        cuotaManejo: null,
+        cuentaPago: null,
+      },
+    };
+    expect(aCuenta(dto).tarjeta).toEqual({
+      cupo: 4000000n,
+      disponible: 2715700n,
+      porcentajeUsado: 32,
+      diaCorte: null,
+      diaPago: null,
+      tasaMensual: null,
+      tasaEfectivaAnual: null,
+      cuotaManejo: null,
+      cuentaPago: null,
+    });
+  });
+
+  it("la cuota de manejo pasa a bigint", () => {
+    expect(aCuenta(TARJETA).tarjeta?.cuotaManejo).toBe(26990n);
   });
 });
 

@@ -3,11 +3,17 @@
 import { createContext, use, useEffect, useEffectEvent, useSyncExternalStore, type ReactNode } from "react";
 import { HojaCaptura } from "./hoja-captura";
 import { PanelCaptura } from "./panel-captura";
+import type { InicialesCaptura } from "@/domain/movimiento/iniciales";
 import { useCaptura, type AccionesCaptura } from "./usar-captura";
 
+export type { InicialesCaptura };
+
 type ContextoCaptura = {
-  /** Abre la captura sobre la página actual, sin cambiar la URL. */
-  abrir: () => void;
+  /**
+   * Abre la captura sobre la página actual, sin cambiar la URL. Con
+   * `iniciales`, prellenada (una transferencia: «Registrar pago»).
+   */
+  abrir: (iniciales?: InicialesCaptura) => void;
   /** Id del recién registrado mientras dura su aviso (resaltado en `/movimientos`). */
   resaltadoId: string | null;
 };

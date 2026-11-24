@@ -11,7 +11,7 @@ import type {
   ResultadoPausa,
   ResultadoRecurrente,
 } from "@/services/recurrentes";
-import { esId, esTipo, RUTAS_AFECTADAS } from "../captura/entrada";
+import { esId, esTipo, RUTA_DETALLE_CUENTA, RUTAS_AFECTADAS } from "../captura/entrada";
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const MONTO = /^\d{1,19}$/;
@@ -37,8 +37,10 @@ function esIdOpcional(valor: unknown): valor is string | null | undefined {
   return valor === undefined || valor === null || esId(valor);
 }
 
+/** Lo que refresca `/cuentas` refresca también el detalle de cada cuenta (SPEC 13). */
 function revalidar(rutas: readonly string[]) {
   for (const ruta of rutas) revalidatePath(ruta);
+  if (rutas.includes("/cuentas")) revalidatePath(RUTA_DETALLE_CUENTA, "page");
 }
 
 /** Traduce el error de la API. Las redirecciones de Next (sesión vencida) se relanzan. */

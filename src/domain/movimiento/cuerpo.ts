@@ -10,7 +10,11 @@ import { errorPartes, type ValorParte } from "./partes";
 
 export type { ValorParte };
 
-export type TipoMovimiento = "gasto" | "ingreso" | "transferencia";
+/** `ajuste` (Tino-API SPEC 14): solo nace en `POST /cuentas/:id/ajustes`; se edita aparte. */
+export type TipoMovimiento = "gasto" | "ingreso" | "transferencia" | "ajuste";
+
+/** Lo que la captura, la edición común y los recurrentes registran: nunca un ajuste. */
+export type TipoCaptura = Exclude<TipoMovimiento, "ajuste">;
 
 /** `CategoriaDto` del contrato. La transferencia no tiene categorías (RN-05). */
 export type Categoria = { id: string; nombre: string; tipo: "gasto" | "ingreso" };
@@ -28,7 +32,7 @@ export type DecisionCategoria =
 
 /** Estado del formulario, en el cliente. */
 export type ValoresCaptura = {
-  tipo: TipoMovimiento;
+  tipo: TipoCaptura;
   /** Lo tecleado ya formateado, en la moneda del origen: `"15.000"`, `"2.000,00"`. */
   monto: string;
   /** «Llegó»: transferencia entre monedas, en la moneda del destino. `""` si no aplica. */
@@ -63,7 +67,7 @@ export type MonedasCaptura = { origen: Moneda; destino: Moneda | null };
 
 /** `MovimientoCuerpo` del contrato. */
 export type CuerpoMovimiento = {
-  tipo: TipoMovimiento;
+  tipo: TipoCaptura;
   /** `^\d{1,19}$`, > 0, en la moneda del origen. */
   monto: string;
   /** Solo en una transferencia entre monedas, en la moneda del destino. */

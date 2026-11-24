@@ -22,7 +22,7 @@ import {
   type ResultadoSimple,
   type TipoPrestamo,
 } from "@/services/prestamos";
-import { esId } from "../captura/entrada";
+import { esId, RUTA_DETALLE_CUENTA } from "../captura/entrada";
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const MONTO = /^\d{1,19}$/;
@@ -43,6 +43,8 @@ const RUTAS_DEUDAS = ["/deudas", "/movimientos", "/cuentas", "/resumen", "/aviso
 
 function revalidar() {
   for (const ruta of RUTAS_DEUDAS) revalidatePath(ruta);
+  // Un desembolso o un abono mueve el historial de su cuenta (SPEC 13).
+  revalidatePath(RUTA_DETALLE_CUENTA, "page");
 }
 
 /** Traduce el error de la API con el mapa de campos del formulario. Las redirecciones de Next se relanzan. */

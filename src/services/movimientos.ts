@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 import type { CampoCaptura, CuerpoMovimiento, ValoresCaptura } from "@/domain/movimiento/cuerpo";
 import { ErrorApi } from "@/repositories/api/cliente";
 import * as api from "@/repositories/api/movimientos";
-import type { ListaMovimientos, Movimiento, MovimientoCuerpo, Parte, Ref, TipoMovimiento } from "@/repositories/api/movimientos";
+import type { ListaMovimientos, Movimiento, MovimientoCuerpo, Parte, Ref, TipoCaptura, TipoMovimiento } from "@/repositories/api/movimientos";
 
-export type { CampoCaptura, CuerpoMovimiento, ListaMovimientos, Movimiento, MovimientoCuerpo, Parte, Ref, TipoMovimiento, ValoresCaptura };
+export type { CampoCaptura, CuerpoMovimiento, ListaMovimientos, Movimiento, MovimientoCuerpo, Parte, Ref, TipoCaptura, TipoMovimiento, ValoresCaptura };
 export { ErrorApi };
 
 /** Resultado de registrar. Nunca lanza al cliente. */

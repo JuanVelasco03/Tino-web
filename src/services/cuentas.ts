@@ -4,15 +4,29 @@ import { ErrorApi } from "@/repositories/api/cliente";
 import * as api from "@/repositories/api/cuentas";
 import type {
   AltaCuenta,
+  CondicionesTarjeta,
   Cuenta,
   EdicionCuenta,
   GrupoCuentas,
   ListaCuentas,
   Naturaleza,
+  Tarjeta,
   TipoCuenta,
 } from "@/repositories/api/cuentas";
 
-export type { AltaCuenta, CampoCuenta, Cuenta, EdicionCuenta, GrupoCuentas, ListaCuentas, Naturaleza, TipoCuenta, ValoresCuenta };
+export type {
+  AltaCuenta,
+  CampoCuenta,
+  CondicionesTarjeta,
+  Cuenta,
+  EdicionCuenta,
+  GrupoCuentas,
+  ListaCuentas,
+  Naturaleza,
+  Tarjeta,
+  TipoCuenta,
+  ValoresCuenta,
+};
 export { ErrorApi };
 
 /** Nuevo orden de un grupo. La server action recibe uno o dos, solo los que cambiaron. */
@@ -34,6 +48,13 @@ const CAMPO_FORMULARIO: Record<string, CampoCuenta> = {
   detalle: "detalle",
   saldoInicial: "saldo",
   cupo: "cupo",
+  // Condiciones de la tarjeta (SPEC 13): bajo su campo; `tarjeta`, bajo el rótulo del bloque.
+  tarjeta: "tarjeta",
+  "tarjeta.diaCorte": "diaCorte",
+  "tarjeta.diaPago": "diaPago",
+  "tarjeta.tasaMensual": "tasaMensual",
+  "tarjeta.cuotaManejo": "cuotaManejo",
+  "tarjeta.cuentaPagoId": "cuentaPagoId",
 };
 
 /**
@@ -61,6 +82,14 @@ async function conSesion<T>(llamada: () => Promise<T>): Promise<T> {
     if (error instanceof ErrorApi && error.estado === 401) redirect("/login");
     throw error;
   }
+}
+
+/**
+ * `GET /cuentas/:id`, también archivada. `null` si no existe, es de otro
+ * usuario o es un préstamo (`404 CUENTA_NO_ENCONTRADA`).
+ */
+export async function obtenerCuenta(id: string): Promise<Cuenta | null> {
+  return conSesion(() => api.obtenerCuenta(id));
 }
 
 /** Lista de cuentas no archivadas del usuario. */

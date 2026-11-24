@@ -17,7 +17,7 @@ import {
   type ResultadoMeta,
   type ResultadoSimple,
 } from "@/services/metas";
-import { esId, RUTAS_AFECTADAS } from "../captura/entrada";
+import { esId, revalidarAfectadas } from "../captura/entrada";
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const FECHA_META = /^\d{4}-\d{2}(-\d{2})?$/;
@@ -38,7 +38,7 @@ const ENTRADA_INVALIDA = {
  */
 function revalidar(conMovimientos: boolean) {
   for (const ruta of RUTAS_METAS) revalidatePath(ruta);
-  if (conMovimientos) for (const ruta of RUTAS_AFECTADAS) revalidatePath(ruta);
+  if (conMovimientos) revalidarAfectadas();
 }
 
 /** Traduce el error de la API con el mapa de campos del formulario. Las redirecciones de Next se relanzan. */

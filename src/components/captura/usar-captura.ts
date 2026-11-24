@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ofertaDeRegla, type Oferta } from "@/domain/categorizacion/oferta";
 import type { Sentido } from "@/domain/cuenta/naturaleza";
 import { cuerpoDesdeValores, type Categoria } from "@/domain/movimiento/cuerpo";
+import { esIniciales, valoresDesdeIniciales, type InicialesCaptura } from "@/domain/movimiento/iniciales";
 import { saldoResultante } from "@/domain/movimiento/vista-previa";
 import type { Cuenta, DatosCaptura, ResultadoCarga, ResultadoSugerencias } from "@/services/captura";
 import type {
@@ -11,9 +12,9 @@ import type {
   MovimientoCuerpo,
   ResultadoRegistro,
   ResultadoSimple,
-  TipoMovimiento,
   ValoresCaptura,
 } from "@/services/movimientos";
+import type { TipoCaptura as TipoMovimiento } from "@/domain/movimiento/cuerpo";
 import type { DatosAviso, DatosOferta } from "./aviso-registro";
 import { useFormulario, type RolCuenta } from "./usar-formulario";
 
@@ -122,7 +123,18 @@ export function useCaptura(acciones: AccionesCaptura) {
     });
   }
 
-  function abrir() {
+  /**
+   * Abre la captura. Con `iniciales` (SPEC 13, «Registrar pago»), prellenada:
+   * tipo «Transferencia», las cuentas y el monto puestos; la fecha, hoy. Una
+   * cuenta que no está entre las de la captura se ignora. Llega también como
+   * manejador de clic: un evento no son iniciales.
+   */
+  function abrir(iniciales?: InicialesCaptura) {
+    if (esIniciales(iniciales)) {
+      setValores((actual) => valoresDesdeIniciales(actual, iniciales, datos?.cuentas ?? null));
+      f.olvidarSugerencias();
+      f.limpiarErrores();
+    }
     setAbierto(true);
     void cargar();
   }
@@ -300,6 +312,8 @@ export function cuentaDe(movimiento: Pick<Movimiento, "tipo" | "cuentaOrigen" | 
   const origen = movimiento.cuentaOrigen?.nombre ?? "";
   const destino = movimiento.cuentaDestino?.nombre ?? "";
   if (movimiento.tipo === "transferencia") return `${origen} → ${destino}`;
+  // Un ajuste trae una sola cuenta, en el lado en que movió el saldo.
+  if (movimiento.tipo === "ajuste") return origen || destino;
   return movimiento.tipo === "gasto" ? origen : destino;
 }
 

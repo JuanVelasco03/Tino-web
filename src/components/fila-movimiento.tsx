@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatearDinero, type Dinero } from "@/domain/dinero/formato";
+import type { TipoMovimiento } from "@/domain/movimiento/cuerpo";
 import { importeEnPatrimonio } from "@/domain/movimiento/vista-previa";
 
 /** Parte de un movimiento dividido, ya con el nombre de su categoría. */
@@ -9,8 +10,10 @@ type Props = {
   /** Ya formateada, p. ej. "04 nov". Sin ella (agrupada bajo su día), la fila no lleva columna de fecha. */
   fecha?: string;
   concepto: string;
-  tipo: "gasto" | "ingreso" | "transferencia";
+  tipo: TipoMovimiento;
   monto: Dinero;
+  /** Solo en un ajuste: sube el saldo («+», verde) o lo baja («−», terracota). */
+  ajusteSube?: boolean;
   /** Gasto o ingreso: categoría («Dividido» si tiene partes), o `null` si aún no está clasificado. */
   categoria?: string | null;
   /** Gasto o ingreso: nombre de la cuenta. */
@@ -61,6 +64,7 @@ export function FilaMovimiento({
   concepto,
   tipo,
   monto,
+  ajusteSube,
   categoria,
   cuenta,
   transferencia,
@@ -71,7 +75,7 @@ export function FilaMovimiento({
   resaltada = false,
   href,
 }: Props) {
-  const efecto = importeEnPatrimonio(tipo, monto.monto);
+  const efecto = importeEnPatrimonio(tipo, monto.monto, ajusteSube);
   const cifra =
     efecto === null
       ? formatearDinero(monto, { omitirCOP })

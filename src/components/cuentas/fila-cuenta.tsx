@@ -1,9 +1,10 @@
 import type { DragEventHandler, ReactNode } from "react";
 import Link from "next/link";
-import { ArrowDown, ArrowUp, GripVertical } from "lucide-react";
+import { ArrowDown, ArrowUp, GripVertical, Pencil } from "lucide-react";
 import { formatearDinero, formatearTasa } from "@/domain/dinero/formato";
 import type { Cuenta } from "@/services/cuentas";
 import { IconoCuenta, ROTULO_TIPO_CUENTA } from "../iconos";
+import { enlaceCuenta } from "./rutas";
 
 /** Pesos sin «COP»: los saldos de la pantalla están en pesos (una inversión USD lleva su valor en dólares debajo). */
 export function pesos(monto: bigint): string {
@@ -117,9 +118,9 @@ const BOTON_ORDEN =
 /**
  * Fila de cuenta. Escritorio (md+): agarre · ícono · nombre y tipo · detalle · saldo.
  * Móvil: ícono · nombre y subtítulo · saldo, con la barra de la tarjeta debajo.
- * Fuera del modo «Ordenar», la fila es un enlace a su edición (`?cuenta=<id>`);
- * una inversión enlaza a su detalle en `/inversiones` (se edita desde ahí con
- * «Editar cuenta»). Una inversión USD muestra su saldo en COP, «US$ 7.750,00»
+ * Fuera del modo «Ordenar», la fila es un enlace a su detalle (`/cuentas/<id>`,
+ * SPEC 13); una inversión enlaza a su detalle en `/inversiones`. Ambas se
+ * editan desde ahí con «Editar cuenta». Una inversión USD muestra su saldo en COP, «US$ 7.750,00»
  * debajo y «US$ 7.750,00 × 4.120,00» de detalle (REGLAS §6).
  */
 export function FilaCuenta({ cuenta, orden }: Props) {
@@ -130,8 +131,11 @@ export function FilaCuenta({ cuenta, orden }: Props) {
 
   // El margen negativo lleva el fondo (hover, destino de arrastre) hasta el borde
   // de la hoja; el contenido conserva la sangría de la lista.
-  const rejilla = `-mx-4 grid min-h-16 items-center gap-3 px-4 py-3 md:-mx-6 md:grid-cols-[28px_24px_minmax(0,1.1fr)_minmax(0,1.6fr)_200px] md:px-6 ${
-    ordenando ? "grid-cols-[18px_20px_minmax(0,1fr)_auto]" : "grid-cols-[20px_minmax(0,1fr)_auto]"
+  // Fuera de «Ordenar» hay una columna más: «Editar» (44 px).
+  const rejilla = `-mx-4 grid min-h-16 items-center gap-3 px-4 py-3 md:-mx-6 md:px-6 ${
+    ordenando
+      ? "grid-cols-[18px_20px_minmax(0,1fr)_auto] md:grid-cols-[28px_24px_minmax(0,1.1fr)_minmax(0,1.6fr)_200px]"
+      : "grid-cols-[20px_minmax(0,1fr)_auto_44px] md:grid-cols-[28px_24px_minmax(0,1.1fr)_minmax(0,1.6fr)_200px_44px]"
   }`;
 
   const contenido = (
@@ -145,7 +149,14 @@ export function FilaCuenta({ cuenta, orden }: Props) {
       </span>
 
       <div className="min-w-0">
-        <div className="truncate text-cuerpo font-semibold">{cuenta.nombre}</div>
+        {ordenando ? (
+          <div className="truncate text-cuerpo font-semibold">{cuenta.nombre}</div>
+        ) : (
+          // El enlace al detalle se estira sobre toda la fila; «Editar» queda encima, como hermano.
+          <Link href={enlaceCuenta(cuenta)} className="enlace-fila block truncate text-cuerpo font-semibold outline-none after:absolute after:inset-0">
+            {cuenta.nombre}
+          </Link>
+        )}
         <div className="text-etiqueta font-normal text-secundario">
           <span className="hidden truncate md:block">{tipoEscritorio(cuenta)}</span>
           <span className="md:hidden">{subtituloMovil(cuenta)}</span>
@@ -216,18 +227,21 @@ export function FilaCuenta({ cuenta, orden }: Props) {
 
   if (!orden) {
     return (
-      <li>
-        <Link
-          href={
-            cuenta.tipo === "inversion"
-              ? `/inversiones?inversion=${encodeURIComponent(cuenta.id)}`
-              : `/cuentas?cuenta=${encodeURIComponent(cuenta.id)}`
-          }
-          scroll={cuenta.tipo === "inversion" ? undefined : false}
-          className={`${rejilla} hover:bg-hundido focus-visible:-outline-offset-2`}
+      <li className="relative">
+        <div
+          className={`${rejilla} hover:bg-hundido has-[.enlace-fila:focus-visible]:outline-2 has-[.enlace-fila:focus-visible]:-outline-offset-2 has-[.enlace-fila:focus-visible]:outline-marca`}
         >
           {contenido}
-        </Link>
+          <Link
+            href={`/cuentas?cuenta=${encodeURIComponent(cuenta.id)}`}
+            scroll={false}
+            aria-label={`Editar ${cuenta.nombre}`}
+            title="Editar cuenta"
+            className="relative z-10 row-start-1 flex size-11 items-center justify-center rounded-campo text-secundario hover:bg-fondo hover:text-texto col-start-4 row-start-1 md:col-start-6"
+          >
+            <Pencil size={18} strokeWidth={1.5} aria-hidden />
+          </Link>
+        </div>
       </li>
     );
   }

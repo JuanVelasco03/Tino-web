@@ -1,6 +1,6 @@
 # SPEC 13 — Detalle de cuenta y tarjeta con ciclo
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 03, SPEC 04, SPEC 05, SPEC 06, SPEC 07, SPEC 10, Tino-API SPEC 14
 > **Fecha:** 2026-11-24
 > **Objetivo:** Que cada cuenta de efectivo, banco o tarjeta tenga su pantalla en `/cuentas/[id]` (historial con saldo corrido, conciliación y ajuste de saldo; o ciclo de la tarjeta con «¿Puedo comprar esto?», condiciones y «Registrar pago»), con las condiciones de la tarjeta en el panel de cuenta y los ajustes visibles y editables en `/movimientos`.
@@ -12,7 +12,7 @@ La API (SPEC 14) da el detalle de una cuenta y el ciclo de la tarjeta, y vuelve 
 Fija estos patrones:
 
 - **Una ruta por cuenta.** `/cuentas/[id]` pide `GET /cuentas/:id` y pinta el historial (efectivo, banco) o el ciclo (tarjeta). La inversión sigue en `/inversiones`.
-- **La fila de Cuentas abre el detalle.** Editar pasa al detalle («Editar cuenta» → `?editar=1`, el mismo `PanelCuenta`).
+- **La fila de Cuentas abre el detalle.** Cada fila lleva además un lápiz que edita la cuenta sin salir de la lista (`/cuentas?cuenta=<id>`); en el detalle, «Editar cuenta» → `?editar=1`, el mismo `PanelCuenta`.
 - **Conciliar es optimista solo en el estado de la fila.** El ícono cambia al instante; saldo conciliado y pendientes salen de la API al revalidar.
 - **La captura se abre prellenada.** `abrir(iniciales?)` del proveedor de captura, usado por «Registrar pago».
 - **La web no calcula cifras.** Saldo corrido, conciliado, diferencia del ajuste, ciclo, compra y tasa E.A. llegan de la API. La web solo suma los `efecto` de la selección (N-23) y resta `saldoReal − saldoHoy` para la vista previa del ajuste (N-28), como manda el contrato; la API fija la diferencia al registrar.
@@ -337,7 +337,7 @@ Se paga desde · opcional  [Sin definir ✓] [🏦 Bancolombia] [💵 Efectivo] 
 **Fila de Cuentas y archivadas:**
 
 - `FilaCuenta` enlaza a `/cuentas/<id>` en efectivo, banco y tarjeta (scroll normal); la inversión sigue en `/inversiones?inversion=<id>`.
-- `/cuentas?cuenta=<id>` de una cuenta no inversión redirige a `/cuentas/<id>?editar=1` (enlaces viejos).
+- Cada fila lleva a la derecha un lápiz (botón de icono de 44 px, «Editar {nombre}») que abre `PanelCuenta` en `/cuentas?cuenta=<id>`, para cualquier tipo; cerrar vuelve a `/cuentas`. El lápiz queda por encima del enlace estirado de la fila (nunca enlace dentro de enlace). En «Ordenar» no aparece.
 - `ListaArchivadas`: el nombre enlaza a `/cuentas/<id>` (inversión, a `/inversiones?inversion=<id>`). El detalle de una archivada lleva «‹ Archivadas» en lugar de «‹ Cuentas» y su miga.
 
 **Captura prellenada:**
@@ -422,7 +422,7 @@ Se paga desde · opcional  [Sin definir ✓] [🏦 Bancolombia] [💵 Efectivo] 
 1. **Contrato y tipos.** `repositories/api/cuentas.ts` (`TarjetaDto`, `CondicionesTarjeta`, `obtenerCuenta`), `repositories/api/detalle-cuenta.ts` nuevo, `TipoMovimiento` con `"ajuste"` en repositorio y dominio. Pruebas de mapeo. El resto compila con el tipo nuevo (casos `ajuste` en los `switch`).
 2. **Ajustes en `/movimientos`:** libro, fila, edición y filtros; captura sin el tipo. Pruebas de dominio.
 3. **Condiciones en `PanelCuenta`:** `ValoresTarjeta`, `validarTarjeta`, `cambiosTarjeta`, `tasaACentesimas` con pruebas; `CamposTarjeta`; acciones de cuentas envían `tarjeta`. El alta de tarjeta vuelve a funcionar.
-4. **Ruta `/cuentas/[id]`** con carga, error, `notFound`, redirect de inversión, `CabeceraCuenta` y `?editar=1` con `PanelCuenta`. `FilaCuenta`, `ListaArchivadas` y la redirección de `/cuentas?cuenta=<id>`.
+4. **Ruta `/cuentas/[id]`** con carga, error, `notFound`, redirect de inversión, `CabeceraCuenta` y `?editar=1` con `PanelCuenta`. `FilaCuenta` (con el lápiz de editar) y `ListaArchivadas`.
 5. **Dominio del detalle** (`domain/cuenta/detalle.ts`) con pruebas sobre los datos de Efectivo del diseño.
 6. **Historial:** servicio, `CifrasCuenta`, `RangoHistorial`, `TablaHistorial` (escritorio y móvil), rango vacío, archivada.
 7. **Conciliación:** server action, `useOptimistic`, `BarraSeleccion`, modo selección móvil, lotes de 500.
@@ -439,7 +439,7 @@ Se paga desde · opcional  [Sin definir ✓] [🏦 Bancolombia] [💵 Efectivo] 
 
 - [ ] En `/cuentas`, tocar Efectivo, un banco o la tarjeta abre `/cuentas/<id>`; tocar una inversión abre `/inversiones?inversion=<id>`.
 - [ ] `/cuentas/<id>` de un préstamo o de un id inexistente muestra la página 404; el de una inversión redirige a `/inversiones?inversion=<id>`.
-- [ ] `/cuentas?cuenta=<id>` de un banco redirige a `/cuentas/<id>?editar=1`; el de una inversión sigue abriendo el panel en `/cuentas`.
+- [ ] El lápiz de una fila de `/cuentas` abre el panel de edición sin salir de la lista, y cerrarlo vuelve a `/cuentas`.
 - [ ] Con los datos de Efectivo del diseño y hoy 11 nov, el detalle muestra «45.000», conciliado «148.100» con «al 31 oct · 9 sin conciliar», «+100.000», «−177.200», 16 filas con la más reciente arriba y el pie «Saldo al 11 oct  122.200».
 - [ ] La ficha «Noviembre» navega a `?desde=2026-11-01`, muestra 9 filas y «Saldo al 31 oct  148.100»; «Octubre» navega con `desde` y `hasta` del mes anterior.
 - [ ] El rango libre con «Hasta» anterior a «Desde» muestra «La fecha final no puede ser anterior a la inicial.» sin navegar.
@@ -468,7 +468,7 @@ Se paga desde · opcional  [Sin definir ✓] [🏦 Bancolombia] [💵 Efectivo] 
 
 - **Sí:** un solo spec. Decisión del autor: el alta de tarjeta y `/movimientos` quedarían rotos entre specs. **No:** partir en detalle de cuenta y tarjeta.
 - **Sí:** una ruta `/cuentas/[id]` que elige historial o ciclo por tipo. **No:** dos rutas, ni maestro-detalle en `/cuentas` (choca con el panel de edición).
-- **Sí:** la fila abre el detalle y «Editar cuenta» abre `PanelCuenta` con `?editar=1` en el detalle. **No:** volver a `/cuentas?cuenta=<id>` para editar. Esa URL se conserva para la inversión y redirige en las demás.
+- **Sí:** la fila abre el detalle y «Editar cuenta» abre `PanelCuenta` con `?editar=1` en el detalle. Además, un lápiz en cada fila edita desde la lista (`/cuentas?cuenta=<id>`), para no tener que entrar al detalle (decisión del autor, 2026-11-24). **No:** redirigir `/cuentas?cuenta=<id>` al detalle.
 - **Sí:** «Registrar pago» abre la captura con `abrir(iniciales?)`. **No:** panel de pago propio, que duplica la captura.
 - **Sí:** ajustes en `/movimientos` (ver, editar, borrar) dentro de este spec. **No:** dejarlos sin soporte, con la API ya enviándolos.
 - **Sí:** rango libre con dos `date` nativos desplegados desde el botón del rango, solo en escritorio. **No:** campos siempre visibles.

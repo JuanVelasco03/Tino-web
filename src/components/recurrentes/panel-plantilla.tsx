@@ -16,7 +16,7 @@ import {
 } from "@/domain/recurrente/formulario";
 import { PERIODICIDADES, type Periodicidad, type Recurrente, type RecurrenteCuerpo, type Ref } from "@/domain/recurrente/tipos";
 import { diaDeVencimiento, formatearCada, notaVencimiento } from "@/domain/recurrente/vencimiento";
-import type { TipoMovimiento } from "@/domain/movimiento/cuerpo";
+import type { TipoCaptura as TipoMovimiento } from "@/domain/movimiento/cuerpo";
 import type { DatosCaptura } from "@/services/captura";
 import { BloqueEliminar } from "../bloque-eliminar";
 import { Boton } from "../boton";

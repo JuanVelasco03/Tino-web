@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut, Moon, Plus, Sun } from "lucide-react";
@@ -20,9 +20,25 @@ type Props = {
 
 const FILA = "flex h-10 items-center gap-3 rounded-campo px-2 text-cuerpo";
 
-/** Menú de escritorio (md+): barra lateral de 232 px. */
-export function MenuLateral({ salir, trm, avisos }: Props) {
-  const ruta = usePathname();
+/**
+ * Menú de escritorio (md+): barra lateral de 232 px. Con `cacheComponents`,
+ * `usePathname` se suspende bajo una ruta con parámetro dinámico
+ * (`/cuentas/[id]`): solo la lectura de la ruta va en `<Suspense>`; mientras
+ * tanto, el mismo menú sin entrada activa.
+ */
+export function MenuLateral(props: Props) {
+  return (
+    <Suspense fallback={<VistaMenuLateral {...props} ruta="" />}>
+      <MenuLateralConRuta {...props} />
+    </Suspense>
+  );
+}
+
+function MenuLateralConRuta(props: Props) {
+  return <VistaMenuLateral {...props} ruta={usePathname()} />;
+}
+
+function VistaMenuLateral({ salir, trm, avisos, ruta }: Props & { ruta: string }) {
   const { abrir } = useContextoCaptura();
 
   return (
@@ -31,7 +47,7 @@ export function MenuLateral({ salir, trm, avisos }: Props) {
 
       <button
         type="button"
-        onClick={abrir}
+        onClick={() => abrir()}
         aria-keyshortcuts="N"
         className="flex h-11 shrink-0 items-center justify-center gap-2 rounded-campo bg-texto text-cuerpo font-semibold text-fondo"
       >

@@ -32,6 +32,7 @@ export type Movimiento = {
  * sin categoría, como quitada: abrir la edición no aplica una regla sola.
  */
 export function valoresDesdeMovimiento(m: Movimiento): ValoresCaptura {
+  if (m.tipo === "ajuste") throw new Error("Un ajuste se edita con su propio formulario.");
   const esTransferencia = m.tipo === "transferencia";
   const moneda = m.moneda ?? "COP";
   // Entre monedas, el destino usa la otra: solo hay COP y USD.

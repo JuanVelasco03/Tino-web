@@ -2,11 +2,14 @@ import { enviar, ErrorApi, obtener } from "./cliente";
 import { tasaEnCentesimas } from "./trm";
 
 /*
- * Contrato de Tino API (docs/api/movimientos.md, Tino-API SPEC 04 y 10). Se
- * copia, no se redefine. Montos como string con un entero en unidades menores
- * de su moneda.
+ * Contrato de Tino API (docs/api/movimientos.md, Tino-API SPEC 04, 10 y 14).
+ * Se copia, no se redefine. Montos como string con un entero en unidades
+ * menores de su moneda.
  */
-export type TipoMovimiento = "gasto" | "ingreso" | "transferencia";
+/** `ajuste` (SPEC 14): una sola cuenta y la categoría «Ajuste»; solo nace en `POST /cuentas/:id/ajustes`. */
+export type TipoMovimiento = "gasto" | "ingreso" | "transferencia" | "ajuste";
+/** Lo que se registra con `POST /movimientos` (captura, recurrentes): nunca un ajuste. */
+export type TipoCaptura = Exclude<TipoMovimiento, "ajuste">;
 export type Moneda = "COP" | "USD";
 
 export type Ref = { id: string; nombre: string };

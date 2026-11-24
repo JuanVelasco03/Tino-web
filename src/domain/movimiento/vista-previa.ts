@@ -18,9 +18,10 @@ export function saldoResultante(cuenta: { tipo: TipoCuenta; saldo: bigint }, sen
  * Importe con signo leído desde el patrimonio: gasto negativo, ingreso
  * positivo; transferencia `null` (sin signo, no cambia el patrimonio). Coincide
  * con `efectoEnPatrimonio` para cualquier tipo de cuenta, así que la fila no
- * necesita saber de qué cuenta sale.
+ * necesita saber de qué cuenta sale. Un ajuste (solo efectivo o banco, SPEC
+ * 14) sube si trae `cuentaDestino` (`ajusteSube`) y baja si trae `cuentaOrigen`.
  */
-export function importeEnPatrimonio(tipo: TipoMovimiento, monto: bigint): bigint | null {
+export function importeEnPatrimonio(tipo: TipoMovimiento, monto: bigint, ajusteSube = false): bigint | null {
   switch (tipo) {
     case "gasto":
       return -monto;
@@ -28,6 +29,8 @@ export function importeEnPatrimonio(tipo: TipoMovimiento, monto: bigint): bigint
       return monto;
     case "transferencia":
       return null;
+    case "ajuste":
+      return ajusteSube ? monto : -monto;
   }
 }
 

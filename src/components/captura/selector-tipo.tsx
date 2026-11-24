@@ -1,4 +1,4 @@
-import type { TipoMovimiento } from "@/domain/movimiento/cuerpo";
+import type { TipoCaptura as TipoMovimiento } from "@/domain/movimiento/cuerpo";
 
 type Props = {
   valor: TipoMovimiento;

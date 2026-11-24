@@ -18,7 +18,7 @@ import {
   type ResultadoPrecio,
   type ResultadoSimple,
 } from "@/services/inversiones";
-import { esId } from "../captura/entrada";
+import { esId, RUTA_DETALLE_CUENTA } from "../captura/entrada";
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const MONTO = /^\d{1,19}$/;
@@ -40,6 +40,8 @@ const RUTAS_INVERSIONES = ["/inversiones", "/cuentas", "/resumen", "/avisos", "/
 
 function revalidar() {
   for (const ruta of RUTAS_INVERSIONES) revalidatePath(ruta);
+  // Fondear o retirar mueve el historial del banco de origen (SPEC 13).
+  revalidatePath(RUTA_DETALLE_CUENTA, "page");
 }
 
 /** Traduce el error de la API con el mapa de campos del formulario. Las redirecciones de Next se relanzan. */

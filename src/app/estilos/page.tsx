@@ -27,6 +27,7 @@ import type { TipoCuenta } from "@/domain/cuenta/naturaleza";
 import { formatearEquivalencia } from "@/domain/dinero/formato";
 import { AlternarTema } from "./alternar-tema";
 import { MuestraAvisos } from "./muestras-avisos";
+import { MuestraCuentas } from "./muestras-cuentas";
 import { MuestraDeudas } from "./muestras-deudas";
 import { MuestraInversiones } from "./muestras-inversiones";
 import { MuestraMetas } from "./muestras-metas";
@@ -348,6 +349,7 @@ function Componentes({ modo }: { modo: "light" | "dark" }) {
           />
           <FilaMovimiento fecha="17 nov" concepto="Taxi · como enlace a su edición" tipo="gasto" monto={{ monto: 12_000n, moneda: "COP" }} categoria="Transporte" cuenta="Efectivo" omitirCOP href="#" />
           <FilaMovimiento fecha="01 nov" concepto="Nómina octubre" tipo="ingreso" monto={{ monto: 4_850_000n, moneda: "COP" }} categoria="Salario" cuenta="Bancolombia" omitirCOP />
+          <FilaMovimiento fecha="11 nov" concepto="Ajuste de saldo · baja" tipo="ajuste" monto={{ monto: 3_500n, moneda: "COP" }} categoria="Ajuste" cuenta="Efectivo" omitirCOP />
           <FilaMovimiento fecha="01 nov" concepto="Compra VOO" tipo="transferencia" transferencia={{ origen: "Bancolombia", destino: "Interactive Brokers" }} monto={{ monto: 50_000n, moneda: "USD" }} equivalenteCOP={2_050_000n} omitirCOP />
         </div>
       </div>
@@ -754,6 +756,20 @@ export default function Estilos() {
           {(["light", "dark"] as const).map((modo) => (
             <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
               <MuestraMetas sufijo={modo} />
+            </Panel>
+          ))}
+        </div>
+      </Seccion>
+
+      <Seccion
+        numero="12"
+        titulo="Detalle de cuenta y tarjeta"
+        nota="Historial con saldo corrido y conciliación; ciclo de la tarjeta. Tabla y cabecera cambian en 768 px; ciclo y condiciones lado a lado desde 1280 px"
+      >
+        <div className="grid grid-cols-1 gap-6">
+          {(["light", "dark"] as const).map((modo) => (
+            <Panel key={modo} modo={modo} titulo={modo === "light" ? "Claro · papel" : "Oscuro · tinta"} hex={modo === "light" ? "#FAF8F3" : "#12141A"}>
+              <MuestraCuentas sufijo={modo} />
             </Panel>
           ))}
         </div>

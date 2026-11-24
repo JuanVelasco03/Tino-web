@@ -5,7 +5,7 @@ import { unstable_rethrow } from "next/navigation";
 import * as avisos from "@/services/avisos";
 import type { ConfigCuerpo, ResultadoAviso, ResultadoConfig, TipoAviso } from "@/services/avisos";
 import * as recurrentes from "@/services/recurrentes";
-import { esId, RUTAS_AFECTADAS } from "../captura/entrada";
+import { esId, RUTA_DETALLE_CUENTA, RUTAS_AFECTADAS } from "../captura/entrada";
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const MONTO = /^\d{1,19}$/;
@@ -25,8 +25,10 @@ const SOLO_AVISOS = ["/avisos"] as const;
 /** Confirmar crea un movimiento: cambia también el libro, los saldos, el resumen, los recurrentes y los avisos. */
 const CON_MOVIMIENTO = RUTAS_AFECTADAS;
 
+/** Lo que refresca `/cuentas` refresca también el detalle de cada cuenta (SPEC 13). */
 function revalidar(rutas: readonly string[]) {
   for (const ruta of rutas) revalidatePath(ruta);
+  if (rutas.includes("/cuentas")) revalidatePath(RUTA_DETALLE_CUENTA, "page");
 }
 
 function esTipo(valor: unknown): valor is TipoAviso {

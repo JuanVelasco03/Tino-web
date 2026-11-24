@@ -3,9 +3,10 @@
  * (docs/api/recurrentes.md, Tino-API SPEC 07). El dominio no importa
  * `repositories/`: `Recurrente` y `Ocurrencia` del repositorio cumplen estos.
  */
-import type { TipoMovimiento } from "../movimiento/cuerpo";
+import type { TipoCaptura } from "../movimiento/cuerpo";
 
-export type { TipoMovimiento };
+/** Un recurrente nunca es un ajuste. */
+export type TipoMovimiento = TipoCaptura;
 
 export type Ref = { id: string; nombre: string };
 

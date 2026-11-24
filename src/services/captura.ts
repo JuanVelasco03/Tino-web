@@ -5,7 +5,7 @@ import * as apiCaptura from "@/repositories/api/captura";
 import type { Captura, Categoria, Sugerencias } from "@/repositories/api/captura";
 import { ErrorApi } from "@/repositories/api/cliente";
 import { listarCuentas, type Cuenta, type Trm } from "@/repositories/api/cuentas";
-import type { TipoMovimiento } from "@/repositories/api/movimientos";
+import type { TipoCaptura as TipoMovimiento } from "@/repositories/api/movimientos";
 import * as apiReglas from "@/repositories/api/reglas";
 
 export type { Captura, Categoria, Cuenta, Oferta, Propuesta, Sugerencias, Trm };

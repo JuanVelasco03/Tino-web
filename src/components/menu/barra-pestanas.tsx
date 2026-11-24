@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRight, Ellipsis, LogOut, Moon, Sun } from "lucide-react";
@@ -47,7 +47,7 @@ function Pestana({ entrada, ruta, hojaAbierta }: { entrada: EntradaMenu; ruta: s
   if (esRegistrar) {
     // No navega: abre la captura a pantalla completa sobre la página actual.
     return (
-      <button type="button" onClick={abrir} className={`${PESTANA} font-normal text-secundario`}>
+      <button type="button" onClick={() => abrir()} className={`${PESTANA} font-normal text-secundario`}>
         {icono}
         <span>{entrada.rotulo}</span>
       </button>
@@ -80,9 +80,24 @@ function Pestana({ entrada, ruta, hojaAbierta }: { entrada: EntradaMenu; ruta: s
   );
 }
 
-/** Menú móvil (< md): cinco pestañas fijas abajo y hoja «Más» con el resto. */
-export function BarraPestanas({ salir, trm, avisos, puntoAvisos }: Props) {
-  const ruta = usePathname();
+/**
+ * Menú móvil (< md): cinco pestañas fijas abajo y hoja «Más» con el resto.
+ * Como `MenuLateral`: solo la lectura de la ruta va en `<Suspense>`
+ * (`usePathname` se suspende bajo `/cuentas/[id]` con `cacheComponents`).
+ */
+export function BarraPestanas(props: Props) {
+  return (
+    <Suspense fallback={<VistaBarraPestanas {...props} ruta="" />}>
+      <BarraPestanasConRuta {...props} />
+    </Suspense>
+  );
+}
+
+function BarraPestanasConRuta(props: Props) {
+  return <VistaBarraPestanas {...props} ruta={usePathname()} />;
+}
+
+function VistaBarraPestanas({ salir, trm, avisos, puntoAvisos, ruta }: Props & { ruta: string }) {
   const [abierta, setAbierta] = useState(false);
   const idHoja = useId();
   const botonMas = useRef<HTMLButtonElement>(null);

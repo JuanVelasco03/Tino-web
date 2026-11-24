@@ -1,5 +1,5 @@
 import { ErrorApi, obtener } from "./cliente";
-import type { TipoMovimiento } from "./movimientos";
+import type { TipoCaptura as TipoMovimiento } from "./movimientos";
 
 /*
  * Contrato de Tino API (docs/api/captura.md, Tino-API SPEC 04). Se copia, no

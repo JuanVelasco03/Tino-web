@@ -17,6 +17,8 @@ type Props = {
   href?: string;
   /** Cifra tras el rótulo, en mono cifra-xs secundaria («US$ 7.750,00»). */
   detalle?: string;
+  /** Solo presenta, sin control: un `<span>` neutro (la categoría «Ajuste» en el libro). */
+  estatico?: boolean;
 };
 
 const BASE = "inline-flex h-11 shrink-0 items-center rounded-campo border px-3 text-cuerpo whitespace-nowrap disabled:cursor-not-allowed md:h-9";
@@ -25,7 +27,11 @@ const BASE = "inline-flex h-11 shrink-0 items-center rounded-campo border px-3 t
  * C5 · Chip de categoría. En móvil crece a 44 px de alto. Con `onClick` es un
  * interruptor: `aria-pressed` dice si está marcado (elegido o sugerido).
  */
-export function ChipCategoria({ etiqueta, estado = "normal", seleccionada = false, onClick, deshabilitado = false, href, detalle }: Props) {
+export function ChipCategoria({ etiqueta, estado = "normal", seleccionada = false, onClick, deshabilitado = false, href, detalle, estatico = false }: Props) {
+  if (estatico) {
+    return <span className={`${BASE} border-linea bg-superficie`}>{etiqueta}</span>;
+  }
+
   if (href) {
     return (
       <Link

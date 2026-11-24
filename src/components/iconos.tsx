@@ -81,8 +81,8 @@ export function IconoNavegacion({ destino }: { destino: DestinoNavegacion }) {
   return <Icono size={20} strokeWidth={1.5} aria-hidden />;
 }
 
-/** 20 px; 16 px donde acompaña a una `etiqueta` (cuenta de una meta). */
-export function IconoCuenta({ tipo, tamano = 20 }: { tipo: TipoCuenta; tamano?: 16 | 20 }) {
+/** 20 px; 16 px donde acompaña a una `etiqueta` (cuenta de una meta); 22 px junto al título del detalle de una cuenta. */
+export function IconoCuenta({ tipo, tamano = 20 }: { tipo: TipoCuenta; tamano?: 16 | 20 | 22 }) {
   const Icono = ICONO_CUENTA[tipo];
   return <Icono size={tamano} strokeWidth={1.5} aria-hidden />;
 }

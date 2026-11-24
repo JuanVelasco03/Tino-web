@@ -13,7 +13,7 @@ import {
   type Categoria,
   type DecisionCategoria,
   type Propuesta,
-  type TipoMovimiento,
+  type TipoCaptura as TipoMovimiento,
   type ValoresCaptura,
   type ValorParte,
 } from "@/domain/movimiento/cuerpo";

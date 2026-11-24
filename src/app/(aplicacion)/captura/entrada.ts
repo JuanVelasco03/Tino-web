@@ -3,12 +3,13 @@
  * edición). Sin "use server": son utilidades, no acciones.
  */
 import { unstable_rethrow } from "next/navigation";
-import { ErrorApi, type CampoCaptura, type MovimientoCuerpo, type TipoMovimiento } from "@/services/movimientos";
+import { revalidatePath } from "next/cache";
+import { ErrorApi, type CampoCaptura, type MovimientoCuerpo, type TipoCaptura, type TipoMovimiento } from "@/services/movimientos";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MONTO = /^\d{1,19}$/;
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
-const TIPOS: readonly TipoMovimiento[] = ["gasto", "ingreso", "transferencia"];
+const TIPOS: readonly TipoCaptura[] = ["gasto", "ingreso", "transferencia"];
 
 export const MENSAJE_SIN_CONEXION = "No pudimos conectar. Intenta de nuevo.";
 const MENSAJE_ENTRADA = "No pudimos procesar los datos. Intenta de nuevo.";
@@ -19,9 +20,20 @@ const MENSAJE_ENTRADA = "No pudimos procesar los datos. Intenta de nuevo.";
  * la bandeja y el estimado), las deudas (editar o borrar un movimiento de
  * préstamo cambia su capital), las inversiones (un fondeo o un retiro cambia
  * su efectivo), los avisos (resolver un recurrente o un préstamo) y las metas
- * (el saldo de la cuenta mueve el avance y el saldo libre).
+ * (el saldo de la cuenta mueve el avance y el saldo libre). El detalle de
+ * una cuenta (`/cuentas/[id]`, historial o ciclo) se revalida como ruta en
+ * `revalidarAfectadas`: un pago o un gasto lo cambia (SPEC 13).
  */
 export const RUTAS_AFECTADAS = ["/movimientos", "/cuentas", "/resumen", "/recurrentes", "/deudas", "/inversiones", "/avisos", "/metas"] as const;
+
+/** Detalle de cualquier cuenta: `revalidatePath(RUTA_DETALLE_CUENTA, "page")`. */
+export const RUTA_DETALLE_CUENTA = "/cuentas/[id]";
+
+/** Revalida `RUTAS_AFECTADAS` y todos los detalles de cuenta. */
+export function revalidarAfectadas(): void {
+  for (const ruta of RUTAS_AFECTADAS) revalidatePath(ruta);
+  revalidatePath(RUTA_DETALLE_CUENTA, "page");
+}
 
 export type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoCaptura };
 
@@ -65,7 +77,8 @@ export function fallo(error: unknown, tipo: TipoMovimiento | null = null, sinCon
     : { ok: false, codigo: error.codigo, mensaje: error.message };
 }
 
-export function esTipo(valor: unknown): valor is TipoMovimiento {
+/** Tipo que se registra o se programa: nunca un ajuste (`TIPO_MOVIMIENTO_INVALIDO`). */
+export function esTipo(valor: unknown): valor is TipoCaptura {
   return typeof valor === "string" && (TIPOS as readonly string[]).includes(valor);
 }
 
@@ -95,12 +108,17 @@ function partesValidas(valor: unknown): { categoriaId: string; monto: string }[]
   return partes;
 }
 
-/** Valida la forma del cuerpo (viene del navegador). El contenido lo valida la API. */
-export function cuerpoValido(entrada: unknown): MovimientoCuerpo | null {
+/**
+ * Valida la forma del cuerpo (viene del navegador). El contenido lo valida la
+ * API. `admiteAjuste`: solo la edición (`PUT`) acepta `tipo: "ajuste"`; un
+ * ajuste nunca nace en `POST /movimientos`.
+ */
+export function cuerpoValido(entrada: unknown, admiteAjuste = false): MovimientoCuerpo | null {
   if (!entrada || typeof entrada !== "object") return null;
   const { tipo, monto, montoDestino, fecha, descripcion, nota, cuentaOrigenId, cuentaDestinoId, categoriaId, partes } =
     entrada as Record<string, unknown>;
-  if (!esTipo(tipo) || typeof monto !== "string" || !MONTO.test(monto)) return null;
+  const tipoValido = esTipo(tipo) || (admiteAjuste && tipo === "ajuste");
+  if (!tipoValido || typeof monto !== "string" || !MONTO.test(monto)) return null;
   if (montoDestino !== undefined && montoDestino !== null && (typeof montoDestino !== "string" || !MONTO.test(montoDestino))) return null;
   if (fecha !== undefined && (typeof fecha !== "string" || !FECHA.test(fecha))) return null;
   if (!esTextoOpcional(descripcion) || !esTextoOpcional(nota)) return null;
@@ -109,7 +127,7 @@ export function cuerpoValido(entrada: unknown): MovimientoCuerpo | null {
   if (partesCopiadas === false) return null;
 
   // Se copian solo los campos conocidos.
-  const cuerpo: MovimientoCuerpo = { tipo, monto, descripcion, nota };
+  const cuerpo: MovimientoCuerpo = { tipo: tipo as TipoMovimiento, monto, descripcion, nota };
   if (typeof montoDestino === "string") cuerpo.montoDestino = montoDestino;
   if (fecha !== undefined) cuerpo.fecha = fecha;
   if (cuentaOrigenId !== undefined) cuerpo.cuentaOrigenId = cuentaOrigenId;
