@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check, ChevronDown, Search } from "lucide-react";
+import { Check, ChevronDown, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 /** Una opción de un filtro. Con `href`, elegirla navega (la fecha cambia de mes por URL). */
@@ -38,7 +38,7 @@ const activo = (f: DefinicionFiltro) => !f.fijo && f.valor !== null;
 /** Lista de opciones. Escritorio: 36 px por opción, bajo su botón; móvil: 44 px, bajo la fila. */
 function Panel({ filtro, id, alCerrar, className }: { filtro: DefinicionFiltro; id: string; alCerrar: () => void; className: string }) {
   return (
-    <ul id={id} aria-label={filtro.rotulo} className={`z-10 min-w-[200px] rounded-campo border border-raya bg-superficie py-1 ${className}`}>
+    <ul id={id} aria-label={filtro.rotulo} className={`asentar z-10 min-w-[200px] rounded-campo border border-raya bg-superficie py-1 ${className}`}>
       {filtro.opciones.map((o) => {
         const elegida = o.valor === filtro.valor;
         const clase = `flex h-11 w-full items-center justify-between gap-3 px-3 text-left text-cuerpo hover:bg-hundido md:h-9 ${
@@ -111,7 +111,8 @@ export function FiltrosMovimientos({ texto, alCambiarTexto, filtros, activos, al
   return (
     <div ref={raiz} className="flex flex-col gap-2">
       <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center">
-        <label className="flex h-11 items-center gap-2 rounded-campo border border-linea bg-superficie px-3 focus-within:border-raya md:h-9 md:w-[300px]">
+        {/* El contorno de foco rodea la caja entera, como en `CampoMonto`, no solo el texto. */}
+        <label className="flex h-11 items-center gap-2 rounded-campo border border-linea bg-superficie pl-3 focus-within:border-raya has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-marca md:h-9 md:w-[300px]">
           <Search size={18} strokeWidth={1.5} aria-hidden className="shrink-0 text-secundario" />
           <span className="sr-only">Buscar</span>
           <input
@@ -119,8 +120,21 @@ export function FiltrosMovimientos({ texto, alCambiarTexto, filtros, activos, al
             value={texto}
             onChange={(e) => alCambiarTexto(e.target.value)}
             placeholder="Buscar concepto, cuenta o categoría"
-            className="min-w-0 flex-1 bg-transparent text-cuerpo outline-none placeholder:text-terciario"
+            className="min-w-0 flex-1 bg-transparent text-cuerpo outline-none! placeholder:text-secundario [&::-webkit-search-cancel-button]:appearance-none"
           />
+          {/* La «×» nativa no sigue la paleta: esta borra la búsqueda en un objetivo de 44 px (36 en escritorio). */}
+          {texto !== "" ? (
+            <button
+              type="button"
+              aria-label="Borrar búsqueda"
+              onClick={() => alCambiarTexto("")}
+              className="flex h-full w-11 shrink-0 items-center justify-center text-secundario hover:text-texto md:w-9"
+            >
+              <X size={16} strokeWidth={1.5} aria-hidden />
+            </button>
+          ) : (
+            <span aria-hidden className="w-3 shrink-0" />
+          )}
         </label>
 
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
@@ -135,14 +149,21 @@ export function FiltrosMovimientos({ texto, alCambiarTexto, filtros, activos, al
                   aria-expanded={abierto === f.clave}
                   aria-controls={`filtro-${f.clave}`}
                   onClick={() => setAbierto(abierto === f.clave ? null : f.clave)}
-                  className={`flex h-11 items-center gap-2 rounded-campo border bg-superficie px-3 text-cuerpo md:h-9 md:text-etiqueta ${
-                    esActivo ? "border-texto" : "border-linea"
+                  className={`presion flex h-11 items-center gap-2 rounded-campo border bg-superficie px-3 text-cuerpo md:h-9 md:text-etiqueta ${
+                    esActivo ? "border-texto" : "border-linea hover:border-secundario"
                   }`}
                 >
                   <span className="hidden font-normal text-secundario md:inline">{f.rotulo}</span>
                   <span className={`md:hidden ${esActivo ? "font-semibold" : ""}`}>{esActivo || f.fijo ? valor : f.rotulo}</span>
                   <span className={`hidden md:inline ${esActivo ? "font-semibold" : ""}`}>{valor}</span>
-                  <ChevronDown size={16} strokeWidth={1.5} aria-hidden className="text-secundario" />
+                  <ChevronDown
+                    size={16}
+                    strokeWidth={1.5}
+                    aria-hidden
+                    className={`text-secundario motion-safe:transition-transform motion-safe:duration-150 motion-safe:ease-llegada ${
+                      abierto === f.clave ? "rotate-180" : ""
+                    }`}
+                  />
                 </button>
                 {abierto === f.clave && (
                   <Panel filtro={f} id={`filtro-${f.clave}`} alCerrar={cerrar} className="absolute left-0 top-full mt-1 hidden md:block" />

@@ -24,6 +24,7 @@ import { CampoSubrayado } from "../campo-subrayado";
 import { MensajeError } from "../mensaje-error";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { RUTA_DEUDAS, rutaPrestamo } from "./rutas";
+import { CampoFecha } from "../campo-fecha";
 
 type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoAbono };
 
@@ -270,15 +271,11 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
             />
           </div>
 
-          <CampoSubrayado
+          <CampoFecha
             etiqueta="Fecha"
-            name="fecha"
-            type="date"
-            required
-            value={valores.fecha}
-            onChange={(e) => {
-              const fecha = e.target.value;
-              if (fecha === "") return;
+            hoy={prestamo.fechaHoy}
+            valor={valores.fecha}
+            alCambiar={(fecha) => {
               cambiar("fecha", fecha);
               pedirPropuesta(valores.total, fecha);
             }}

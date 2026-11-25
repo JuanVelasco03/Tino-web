@@ -19,6 +19,7 @@ import {
 } from "@/components/iconos";
 import { CambioDelMes } from "@/components/resumen/cambio-del-mes";
 import { CifrasMes } from "@/components/resumen/cifras-mes";
+import { EsqueletoMovimientos } from "@/components/movimientos/esqueleto-movimientos";
 import { EsqueletoResumen } from "@/components/resumen/esqueleto-resumen";
 import { GastoCategorias } from "@/components/resumen/gasto-categorias";
 import { GraficaPatrimonio, PatrimonioNeto } from "@/components/resumen/grafica-patrimonio";
@@ -41,6 +42,8 @@ import {
   MuestraEstadoVacioBoton,
   MuestraFichasCuenta,
   MuestraFiltrosMovimientos,
+  MuestraCalendario,
+  MuestraCampoFecha,
   MuestraMontoEditable,
   MuestraOpcionUnica,
   MuestraPanelLateral,
@@ -357,12 +360,26 @@ function Componentes({ modo }: { modo: "light" | "dark" }) {
           <FilaMovimiento fecha="01 nov" concepto="Nómina octubre" tipo="ingreso" monto={{ monto: 4_850_000n, moneda: "COP" }} categoria="Salario" cuenta="Bancolombia" omitirCOP />
           <FilaMovimiento fecha="11 nov" concepto="Ajuste de saldo · baja" tipo="ajuste" monto={{ monto: 3_500n, moneda: "COP" }} categoria="Ajuste" cuenta="Efectivo" omitirCOP />
           <FilaMovimiento fecha="01 nov" concepto="Compra VOO" tipo="transferencia" transferencia={{ origen: "Bancolombia", destino: "Interactive Brokers" }} monto={{ monto: 50_000n, moneda: "USD" }} equivalenteCOP={2_050_000n} omitirCOP />
+          <FilaMovimiento
+            fecha="10 nov"
+            concepto="Cambio a dólares · entre monedas, con «US$ · TRM» en mono"
+            tipo="transferencia"
+            transferencia={{ origen: "Bancolombia", destino: "Interactive Brokers" }}
+            monto={{ monto: 8_240_000n, moneda: "COP" }}
+            detalleImporte="US$ 2.000,00 · TRM 4.120,00"
+            omitirCOP
+          />
         </div>
       </div>
 
       <div>
         <Etiqueta>Filtros de movimientos · buscador y desplegables (activo: borde en tinta y «Limpiar filtros»)</Etiqueta>
         <MuestraFiltrosMovimientos />
+      </div>
+
+      <div>
+        <Etiqueta>Esqueleto del libro de movimientos · al entrar y al cambiar de mes (forma real: filtros, rótulos y renglones)</Etiqueta>
+        <EsqueletoMovimientos />
       </div>
 
       <div>
@@ -501,6 +518,16 @@ function Componentes({ modo }: { modo: "light" | "dark" }) {
       <div>
         <Etiqueta>Editor de partes · dividir entre categorías</Etiqueta>
         <MuestraEditorPartes sufijo={modo} />
+      </div>
+
+      <div>
+        <Etiqueta>Calendario · «Otra fecha» en la captura y la edición (hoy en latón, la elegida en tinta)</Etiqueta>
+        <MuestraCalendario />
+      </div>
+
+      <div>
+        <Etiqueta>Campo de fecha · con valor, con máximo, vacío opcional, con error y por mes (abre el calendario debajo)</Etiqueta>
+        <MuestraCampoFecha />
       </div>
 
       <div>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { accionesMeta, type AccionMeta } from "@/domain/meta/presentacion";
 import type { MetaDetalle } from "@/domain/meta/tipos";
-import { BloqueEliminar } from "../bloque-eliminar";
+import { BloqueEliminar, PedirEliminar } from "../bloque-eliminar";
 import { Boton } from "../boton";
 import { BOTON_ENLACE } from "../deudas/rutas";
 import { rutaInversion } from "../inversiones/rutas";
@@ -156,14 +156,9 @@ export function AccionesMeta({ meta: m, acciones, alNavegar }: Props) {
             error={errorBorrado}
           />
         ) : (
-          <button
-            type="button"
-            onClick={() => setConfirmando(true)}
-            disabled={pendiente}
-            className="self-start py-2 text-etiqueta font-normal text-secundario hover:text-texto disabled:cursor-not-allowed"
-          >
+          <PedirEliminar onClick={() => setConfirmando(true)} disabled={pendiente}>
             Eliminar meta…
-          </button>
+          </PedirEliminar>
         ))}
     </div>
   );

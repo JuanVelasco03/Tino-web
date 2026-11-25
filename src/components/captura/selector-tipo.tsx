@@ -17,7 +17,11 @@ const ROTULOS: Record<"segmentado" | "pestanas", Record<TipoMovimiento, string>>
   pestanas: { gasto: "Gasto", ingreso: "Ingreso", transferencia: "Transferir" },
 };
 
-/** Selector del tipo de movimiento. Cada opción es un interruptor (`aria-pressed`). */
+/**
+ * Selector del tipo de movimiento. Cada opción es un interruptor (`aria-pressed`).
+ * Deshabilitado (un `fieldset`, como en la edición de un préstamo), las inactivas
+ * pasan a `terciario`: se ve que el tipo no cambia.
+ */
 export function SelectorTipo({ valor, alCambiar, variante = "segmentado" }: Props) {
   if (variante === "pestanas") {
     return (
@@ -31,7 +35,7 @@ export function SelectorTipo({ valor, alCambiar, variante = "segmentado" }: Prop
               aria-pressed={activo}
               onClick={() => alCambiar(tipo)}
               className={`h-11 shrink-0 border-b text-cuerpo ${
-                activo ? "border-raya font-semibold text-texto" : "border-transparent text-secundario"
+                activo ? "border-raya font-semibold text-texto" : "border-transparent text-secundario disabled:cursor-not-allowed disabled:text-terciario"
               }`}
             >
               {ROTULOS.pestanas[tipo]}
@@ -53,7 +57,7 @@ export function SelectorTipo({ valor, alCambiar, variante = "segmentado" }: Prop
             aria-pressed={activo}
             onClick={() => alCambiar(tipo)}
             className={`h-10 text-cuerpo ${i > 0 ? "border-l border-linea" : ""} ${
-              activo ? "bg-texto font-semibold text-fondo" : "bg-superficie text-secundario hover:text-texto"
+              activo ? "bg-texto font-semibold text-fondo" : "bg-superficie text-secundario hover:text-texto disabled:cursor-not-allowed disabled:text-terciario disabled:hover:text-terciario"
             }`}
           >
             {ROTULOS.segmentado[tipo]}

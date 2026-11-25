@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { EsqueletoMovimientos } from "@/components/movimientos/esqueleto-movimientos";
 import { LibroMovimientos } from "@/components/movimientos/libro-movimientos";
 import type { AccionesEdicion } from "@/components/movimientos/usar-edicion";
 import { esMes, mesEnZona } from "@/domain/fecha/formato";
@@ -34,11 +36,30 @@ type Parametros = Record<string, string | string[] | undefined>;
  * usuario); `?movimiento=<id>` abre su edición. Un mes mal formado vuelve a
  * la ruta sin parámetros; un id que no está en el mes, a `?mes=`.
  */
-export async function PaginaLibro({ parametros, sinClasificar }: { parametros: Parametros; sinClasificar: boolean }) {
-  const ruta = rutaLibro(sinClasificar);
+export function PaginaLibro({ parametros, sinClasificar }: { parametros: Parametros; sinClasificar: boolean }) {
   const mesPedido = texto(parametros.mes);
-  const idPedido = texto(parametros.movimiento);
-  if (mesPedido !== undefined && !esMes(mesPedido)) redirect(ruta);
+  if (mesPedido !== undefined && !esMes(mesPedido)) redirect(rutaLibro(sinClasificar));
+
+  // Cambiar solo `?mes=` no vuelve a mostrar `loading.tsx`: la `key` remonta el
+  // límite y muestra el esqueleto en vez de dejar el mes anterior quieto. Abrir
+  // una edición (`?movimiento=`) no cambia la key: el libro sigue a la vista.
+  return (
+    <Suspense key={mesPedido ?? "actual"} fallback={<EsqueletoMovimientos sinClasificar={sinClasificar} />}>
+      <ContenidoLibro mesPedido={mesPedido} idPedido={texto(parametros.movimiento)} sinClasificar={sinClasificar} />
+    </Suspense>
+  );
+}
+
+async function ContenidoLibro({
+  mesPedido,
+  idPedido,
+  sinClasificar,
+}: {
+  mesPedido: string | undefined;
+  idPedido: string | undefined;
+  sinClasificar: boolean;
+}) {
+  const ruta = rutaLibro(sinClasificar);
 
   // Los préstamos dan la persona de cada movimiento: su cuenta no está entre las activas.
   const [{ mes, movimientos }, perfil, { prestamos }] = await Promise.all([
@@ -60,7 +81,7 @@ export async function PaginaLibro({ parametros, sinClasificar }: { parametros: P
   const listados = sinClasificar ? movimientos.filter(esSinClasificar) : movimientos;
 
   return (
-    <div className="flex flex-col gap-4 md:gap-6">
+    <div className="asentar flex flex-col gap-4 md:gap-6">
       <LibroMovimientos
         mes={mes}
         actual={actual}

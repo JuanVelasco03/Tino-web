@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+import { Trash2 } from "lucide-react";
 import { Boton } from "./boton";
 import { MensajeError } from "./mensaje-error";
 
@@ -14,6 +16,36 @@ type Props = {
   pendiente: boolean;
   error?: string | null;
 };
+
+/**
+ * Vínculo que abre la confirmación de borrado: papelera de 16 px y el texto
+ * terminado en «…» («Eliminar movimiento…»), en `etiqueta` 500 secundaria; al
+ * pasar el cursor, terracota (`salida-texto`), porque lo que sigue es irreversible.
+ * 44 px de alto. Es el único modo de pedir un borrado.
+ */
+export function PedirEliminar({
+  children,
+  onClick,
+  disabled = false,
+  className = "",
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex min-h-11 items-center gap-2 self-start text-etiqueta font-medium text-secundario transition-colors duration-150 hover:text-salida-texto disabled:cursor-not-allowed disabled:text-terciario ${className}`}
+    >
+      <Trash2 size={16} strokeWidth={1.5} aria-hidden className="shrink-0" />
+      {children}
+    </button>
+  );
+}
 
 /**
  * C26 · Confirmación de borrado en la misma página, sin modal. Reemplaza al

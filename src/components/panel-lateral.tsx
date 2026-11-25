@@ -1,5 +1,6 @@
 "use client";
 
+import { X } from "lucide-react";
 import {
   useEffect,
   useId,
@@ -87,6 +88,11 @@ export function PanelLateral({ titulo, alSolicitarCierre, children, ancho = "nor
     const el = dialogo.current;
     if (!el) return;
     if (!el.open) el.showModal();
+    // `showModal` enfoca el primer control («Cerrar») y, con teclado, le pinta el
+    // anillo. El foco va al diálogo mismo: el lector anuncia el título y el
+    // siguiente Tab llega a «Cerrar». Quien lo usa puede llevarlo a su primer
+    // campo en su propio efecto, que corre después de este (la edición, al monto).
+    el.focus({ preventScroll: true });
 
     const { hoja, entrada } = recorrido();
     const animaciones = [
@@ -143,21 +149,28 @@ export function PanelLateral({ titulo, alSolicitarCierre, children, ancho = "nor
     <dialog
       ref={dialogo}
       aria-labelledby={idTitulo}
+      tabIndex={-1}
       onCancel={alCancelar}
       onClick={alPulsar}
-      className={`fixed inset-x-0 top-auto bottom-0 m-0 max-h-[90dvh] w-full max-w-none overflow-hidden rounded-t-hoja border-0 border-t border-raya bg-superficie p-0 text-texto backdrop:bg-fondo/60 md:inset-y-0 md:right-0 md:left-auto md:h-dvh md:max-h-none md:rounded-none md:border-t-0 md:border-l ${ANCHOS[ancho]}`}
+      className={`fixed inset-x-0 top-auto bottom-0 m-0 outline-none! max-h-[90dvh] w-full max-w-none overflow-hidden rounded-t-hoja border-0 border-t border-raya bg-superficie p-0 text-texto backdrop:bg-fondo/60 md:inset-y-0 md:right-0 md:left-auto md:h-dvh md:max-h-none md:rounded-none md:border-t-0 md:border-l ${ANCHOS[ancho]}`}
     >
       <div className="flex max-h-[90dvh] flex-col md:h-dvh md:max-h-none">
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-raya px-4 md:px-6">
           <h2 id={idTitulo} className="text-rotulo uppercase text-secundario">
             {titulo}
           </h2>
-          <button type="button" onClick={alSolicitarCierre} className="-mr-1 h-11 px-1 text-cuerpo text-secundario">
+          {/* Un botón que se lee como tal: ✕ de 18 px y el rótulo en tinta, con fondo hundido al pasar el cursor. */}
+          <button
+            type="button"
+            onClick={alSolicitarCierre}
+            className="-mr-2 inline-flex h-11 items-center gap-2 rounded-campo px-2 text-cuerpo font-medium text-texto transition-colors duration-150 hover:bg-hundido"
+          >
+            <X size={18} strokeWidth={1.5} aria-hidden />
             {rotuloCerrar}
           </button>
         </div>
         <div
-          className={`min-h-0 flex-1 overflow-y-auto px-4 pt-6 md:px-6 ${pie ? "pb-6" : "pb-[max(24px,env(safe-area-inset-bottom))]"}`}
+          className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-6 md:px-6 ${pie ? "pb-6" : "pb-[max(24px,env(safe-area-inset-bottom))]"}`}
         >
           {children}
         </div>

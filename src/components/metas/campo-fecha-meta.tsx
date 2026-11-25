@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { Precision } from "@/domain/meta/formulario";
 import { MensajeError } from "../mensaje-error";
 import { OpcionUnica } from "../opcion-unica";
+import { CampoFecha } from "../campo-fecha";
 
 /**
  * Campo dependiente (DESIGN.md → Movimiento): se despliega en su lugar, la
@@ -49,16 +50,13 @@ type Props = {
   deshabilitado?: boolean;
 };
 
-const INPUT =
-  "h-11 w-full rounded-none border-0 border-b bg-transparent p-0 font-mono text-[17px] tabular-nums text-texto placeholder:text-terciario disabled:text-terciario";
 
 /**
  * Fecha meta: «Sin fecha» / «Un día» / «Un mes» (`OpcionUnica`) y, según la
- * precisión, un `<input type="date">` o `type="month"` nativo que se despliega
- * debajo. No se elige un día pasado ni un mes anterior al actual.
+ * precisión, un `CampoFecha` (calendario del libro, o la cuadrícula de meses)
+ * que se despliega debajo. No se elige un día pasado ni un mes anterior al actual.
  */
 export function CampoFechaMeta({ precision, valor, alCambiar, fechaHoy, error, deshabilitado = false }: Props) {
-  const borde = error ? "border-salida" : "border-linea focus:border-raya";
   return (
     <div className="flex flex-col gap-1">
       <OpcionUnica
@@ -70,30 +68,29 @@ export function CampoFechaMeta({ precision, valor, alCambiar, fechaHoy, error, d
         deshabilitado={deshabilitado}
       />
       <Despliegue abierto={precision === "dia"}>
-        <input
-          type="date"
-          aria-label="Fecha meta: día"
-          name="fechaMeta-dia"
+        <CampoFecha
+          etiqueta="Día"
+          hoy={fechaHoy}
           min={fechaHoy}
-          value={precision === "dia" ? valor : ""}
-          onChange={(e) => alCambiar("dia", e.target.value)}
-          disabled={deshabilitado}
-          aria-invalid={error && precision === "dia" ? true : undefined}
-          className={`${INPUT} ${borde}`}
+          valor={precision === "dia" ? valor : ""}
+          alCambiar={(fecha) => alCambiar("dia", fecha)}
+          deshabilitado={deshabilitado}
+          invalido={Boolean(error) && precision === "dia"}
+          enLinea
         />
       </Despliegue>
       <Despliegue abierto={precision === "mes"}>
-        <input
-          type="month"
-          aria-label="Fecha meta: mes"
-          name="fechaMeta-mes"
+        <CampoFecha
+          etiqueta="Mes"
+          modo="mes"
+          hoy={fechaHoy}
           min={fechaHoy.slice(0, 7)}
-          placeholder="AAAA-MM"
-          value={precision === "mes" ? valor : ""}
-          onChange={(e) => alCambiar("mes", e.target.value)}
-          disabled={deshabilitado}
-          aria-invalid={error && precision === "mes" ? true : undefined}
-          className={`${INPUT} ${borde}`}
+          valor={precision === "mes" ? valor : ""}
+          vacio="Elegir mes"
+          alCambiar={(mes) => alCambiar("mes", mes)}
+          deshabilitado={deshabilitado}
+          invalido={Boolean(error) && precision === "mes"}
+          enLinea
         />
       </Despliegue>
       {error && <MensajeError mensaje={error} />}

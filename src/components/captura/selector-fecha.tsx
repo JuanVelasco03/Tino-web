@@ -1,7 +1,9 @@
 "use client";
 
+import { CalendarDays } from "lucide-react";
 import { useState } from "react";
 import { formatearDiaSemana, sumarDias } from "@/domain/fecha/formato";
+import { Calendario } from "../calendario";
 import { ChipCategoria } from "../chip-categoria";
 import { MensajeError } from "../mensaje-error";
 
@@ -34,7 +36,7 @@ type Props = {
 /**
  * Fecha del movimiento en el panel de escritorio: una fila con la elegida y
  * «Cambiar», que despliega Hoy · Ayer · Anteayer · Otra fecha. «Otra fecha»
- * es un `<input type="date">` y acepta cualquier día, también futuro.
+ * abre el `Calendario` del libro y acepta cualquier día, también futuro.
  */
 export function SelectorFecha({ fechaHoy, valor, alCambiar, error }: Props) {
   const [abierto, setAbierto] = useState(false);
@@ -53,8 +55,9 @@ export function SelectorFecha({ fechaHoy, valor, alCambiar, error }: Props) {
             aria-expanded={abierto}
             onClick={() => setAbierto((a) => !a)}
             disabled={!fechaHoy}
-            className="h-11 text-etiqueta font-semibold text-marca-texto disabled:text-terciario"
+            className="inline-flex h-9 items-center gap-2 rounded-campo border border-linea bg-superficie px-3 text-etiqueta font-semibold text-texto transition-colors duration-150 hover:border-secundario disabled:text-terciario"
           >
+            <CalendarDays size={16} strokeWidth={1.5} aria-hidden className="text-secundario" />
             Cambiar
           </button>
         </span>
@@ -76,15 +79,10 @@ export function SelectorFecha({ fechaHoy, valor, alCambiar, error }: Props) {
             <ChipCategoria etiqueta="Otra fecha" seleccionada={otra} onClick={() => setOtra(true)} />
           </div>
           {otra && (
-            <input
-              type="date"
-              aria-label="Otra fecha"
-              value={valor}
-              onChange={(e) => {
-                if (e.target.value !== "") alCambiar(e.target.value);
-              }}
-              className="h-11 rounded-none border-0 border-b border-linea bg-transparent p-0 text-cuerpo text-texto focus:border-raya"
-            />
+            // El calendario del libro, en una hoja bajo los chips (no el selector nativo del navegador).
+            <div className="asentar rounded-campo border border-linea bg-superficie px-3 pt-1 pb-3">
+              <Calendario etiqueta="Otra fecha" valor={valor} hoy={fechaHoy} alElegir={alCambiar} />
+            </div>
           )}
         </div>
       )}

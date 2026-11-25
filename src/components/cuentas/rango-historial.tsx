@@ -7,8 +7,8 @@ import { Calendar } from "lucide-react";
 import { atajoActivo, rangoDeAtajo, textoRango, validarRango, type Atajo } from "@/domain/cuenta/detalle";
 import { formatearNombreMes, sumarMeses } from "@/domain/fecha/formato";
 import { Boton } from "../boton";
-import { CampoSubrayado } from "../campo-subrayado";
 import { rutaCuenta } from "./rutas";
+import { CampoFecha } from "../campo-fecha";
 
 type Props = {
   cuentaId: string;
@@ -99,32 +99,29 @@ export function RangoHistorial({ cuentaId, pedido, historial, extra }: Props) {
       {abierto && (
         <form onSubmit={aplicar} noValidate className="hidden items-start gap-6 md:flex">
           <div className="w-44">
-            <CampoSubrayado
+            <CampoFecha
               etiqueta="Desde"
-              name="desde"
-              type="date"
-              required
+              hoy={fechaHoy}
               max={fechaHoy}
-              value={desde}
-              onChange={(e) => {
-                setDesde(e.target.value);
+              valor={desde}
+              alCambiar={(fecha) => {
+                setDesde(fecha);
                 setError(null);
               }}
-              className="font-mono tabular-nums"
             />
           </div>
           <div className="w-44">
-            <CampoSubrayado
+            <CampoFecha
               etiqueta="Hasta · opcional"
-              name="hasta"
-              type="date"
-              value={hasta}
-              onChange={(e) => {
-                setHasta(e.target.value);
+              hoy={fechaHoy}
+              min={desde || undefined}
+              valor={hasta}
+              vacio="Hasta hoy"
+              alCambiar={(fecha) => {
+                setHasta(fecha);
                 setError(null);
               }}
               error={error ?? undefined}
-              className="font-mono tabular-nums"
             />
           </div>
           <Boton type="submit" variante="secundario" disabled={desde === ""} className="mt-3">

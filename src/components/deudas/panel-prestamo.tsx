@@ -23,6 +23,7 @@ import { MensajeError } from "../mensaje-error";
 import { OpcionUnica } from "../opcion-unica";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { rutaPrestamo } from "./rutas";
+import { CampoFecha } from "../campo-fecha";
 
 type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoAlta };
 type Resultado = { ok: true; id: string } | Fallo;
@@ -212,17 +213,7 @@ export function PanelPrestamo({ tipoInicial, fechaHoy, prestamos, formulario, ac
             {errores.cuentaId && <MensajeError mensaje={errores.cuentaId} />}
           </div>
 
-          <CampoSubrayado
-            etiqueta="Fecha"
-            name="fecha"
-            type="date"
-            required
-            value={valores.fecha}
-            onChange={(e) => {
-              if (e.target.value !== "") cambiar("fecha", e.target.value);
-            }}
-            error={errores.fecha}
-          />
+          <CampoFecha etiqueta="Fecha" hoy={fechaHoy} valor={valores.fecha} alCambiar={(fecha) => cambiar("fecha", fecha)} error={errores.fecha} />
 
           {!existente && (
             <>
@@ -241,14 +232,14 @@ export function PanelPrestamo({ tipoInicial, fechaHoy, prestamos, formulario, ac
                 {!errores.tasaMensual && <p className="text-etiqueta font-normal text-secundario">% mensual · vacío = sin intereses</p>}
               </div>
 
-              <CampoSubrayado
+              <CampoFecha
                 etiqueta="Fecha acordada"
                 extra={<span>Opcional</span>}
-                name="fechaAcordada"
-                type="date"
-                min={valores.fecha}
-                value={valores.fechaAcordada}
-                onChange={(e) => cambiar("fechaAcordada", e.target.value)}
+                hoy={fechaHoy}
+                min={valores.fecha || undefined}
+                valor={valores.fechaAcordada}
+                vacio="Sin fecha acordada"
+                alCambiar={(fecha) => cambiar("fechaAcordada", fecha)}
                 error={errores.fechaAcordada}
               />
             </>

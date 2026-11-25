@@ -29,7 +29,7 @@ export function TecladoNumerico({ valor, alCambiar, moneda = "COP", deshabilitad
           disabled={deshabilitado}
           aria-label={tecla === "borrar" ? "Borrar" : tecla === "," ? "Coma decimal" : undefined}
           onClick={() => alCambiar(aplicarTecla(valor, tecla, moneda))}
-          className="flex h-14 items-center justify-center rounded-fila bg-fondo font-mono text-cifra-m font-normal text-texto active:bg-hundido disabled:text-terciario"
+          className="presion flex h-14 items-center justify-center rounded-fila bg-fondo font-mono text-cifra-m font-normal text-texto active:bg-hundido disabled:text-terciario"
         >
           {tecla === "borrar" ? <Delete size={20} strokeWidth={1.5} aria-hidden /> : tecla}
         </button>

@@ -8,7 +8,7 @@ import type { CuentaDePrestamo } from "@/domain/movimiento/edicion";
 import { importeEnPatrimonio } from "@/domain/movimiento/vista-previa";
 import type { Cuenta } from "@/services/captura";
 import type { TipoMovimiento } from "@/services/movimientos";
-import { BloqueEliminar } from "../bloque-eliminar";
+import { BloqueEliminar, PedirEliminar } from "../bloque-eliminar";
 import { Boton } from "../boton";
 import { CampoMonto } from "../campo-monto";
 import { ChipCategoria } from "../chip-categoria";
@@ -50,11 +50,17 @@ export function conceptoDe(movimiento: { tipo: TipoMovimiento; descripcion: stri
   return movimiento.descripcion ?? ROTULO_TIPO[movimiento.tipo];
 }
 
-/** Frase del bloque de borrado de un movimiento: «El saldo de Nequi vuelve a como estaba. No se puede deshacer.». */
+/**
+ * Frase del bloque de borrado de un movimiento: «El saldo de Nequi vuelve a
+ * como estaba. No se puede deshacer.»; en una transferencia, «Los saldos de
+ * Nequi y Nu vuelven a como estaban. …».
+ */
 export function detalleEliminar(c: EstadoEdicion): string {
   const { cuentaOrigen, cuentaDestino } = c.movimiento;
   const cuentas = [cuentaOrigen, cuentaDestino].filter((cu) => cu !== null).map((cu) => cu.nombre);
-  return `El saldo de ${cuentas.join(" y ")} vuelve a como estaba. No se puede deshacer.`;
+  const frase =
+    cuentas.length > 1 ? `Los saldos de ${cuentas.join(" y ")} vuelven a como estaban.` : `El saldo de ${cuentas[0] ?? "la cuenta"} vuelve a como estaba.`;
+  return `${frase} No se puede deshacer.`;
 }
 
 /** Pesos sin «COP»: todo el formulario está en pesos. */
@@ -334,25 +340,22 @@ function PieEdicion({ c, alCerrarYa }: { c: EstadoEdicion; alCerrarYa: () => Pro
         </Boton>
       )}
       {c.errorGeneral && <MensajeError mensaje={c.errorGeneral} />}
-      <div className="mt-2 border-t border-linea pt-4">
+      <div className="mt-2 border-t border-linea pt-2">
         {c.confirmandoBorrado ? (
-          <BloqueEliminar
-            nombre={concepto}
-            detalle={detalleEliminar(c)}
-            alConfirmar={() => void c.eliminar().then((ok) => (ok ? alCerrarYa() : undefined))}
-            alCancelar={c.cancelarBorrado}
-            pendiente={c.eliminando}
-            error={c.errorBorrado}
-          />
+          <div className="pt-2">
+            <BloqueEliminar
+              nombre={concepto}
+              detalle={detalleEliminar(c)}
+              alConfirmar={() => void c.eliminar().then((ok) => (ok ? alCerrarYa() : undefined))}
+              alCancelar={c.cancelarBorrado}
+              pendiente={c.eliminando}
+              error={c.errorBorrado}
+            />
+          </div>
         ) : (
-          <button
-            type="button"
-            onClick={c.pedirBorrado}
-            disabled={c.enviando}
-            className="py-2 text-etiqueta font-normal text-secundario hover:text-texto disabled:cursor-not-allowed"
-          >
+          <PedirEliminar onClick={c.pedirBorrado} disabled={c.enviando}>
             Eliminar movimiento…
-          </button>
+          </PedirEliminar>
         )}
       </div>
     </div>

@@ -1,7 +1,9 @@
 "use client";
 
+import { CampoFecha } from "@/components/campo-fecha";
+import { Calendario } from "@/components/calendario";
 import { useRef, useState, type ReactNode } from "react";
-import { BloqueEliminar } from "@/components/bloque-eliminar";
+import { BloqueEliminar, PedirEliminar } from "@/components/bloque-eliminar";
 import { Boton } from "@/components/boton";
 import { CampoMonto } from "@/components/campo-monto";
 import { AvisoRegistro } from "@/components/captura/aviso-registro";
@@ -269,13 +271,38 @@ export function MuestraEditorPartes({ sufijo }: { sufijo: string }) {
 }
 
 /** C26 con el texto de un movimiento: el bloque reemplaza al vínculo que lo abre. */
+/** Calendario del libro: hoy (24 nov) en latón y la elegida en tinta llena. */
+export function MuestraCalendario() {
+  const [fecha, setFecha] = useState("2026-11-18");
+  return (
+    <div className="max-w-[400px] rounded-campo border border-linea bg-superficie px-3 pt-1 pb-3">
+      <Calendario etiqueta="Otra fecha" valor={fecha} hoy="2026-11-24" alElegir={setFecha} />
+    </div>
+  );
+}
+
+/** Campo de fecha: con valor, con límite (máx. hoy), vacío opcional, con error y por mes. */
+export function MuestraCampoFecha() {
+  const [fecha, setFecha] = useState("2026-11-18");
+  const [tope, setTope] = useState("2026-11-24");
+  const [acordada, setAcordada] = useState("");
+  const [mes, setMes] = useState("2027-03");
+  return (
+    <div className="grid max-w-[720px] gap-6 md:grid-cols-2">
+      <CampoFecha etiqueta="Fecha" hoy="2026-11-24" valor={fecha} alCambiar={setFecha} />
+      <CampoFecha etiqueta="Fecha · máx. hoy" hoy="2026-11-24" max="2026-11-24" valor={tope} alCambiar={setTope} />
+      <CampoFecha etiqueta="Fecha acordada" extra={<span>Opcional</span>} hoy="2026-11-24" min="2026-11-24" valor={acordada} vacio="Sin fecha acordada" alCambiar={setAcordada} />
+      <CampoFecha etiqueta="Primer vencimiento" hoy="2026-11-24" valor="" alCambiar={() => {}} error="Elige el primer vencimiento." />
+      <CampoFecha etiqueta="Mes" modo="mes" hoy="2026-11-24" min="2026-11" valor={mes} vacio="Elegir mes" alCambiar={setMes} />
+    </div>
+  );
+}
+
 export function MuestraBloqueEliminar() {
   const [abierto, setAbierto] = useState(false);
   if (!abierto) {
     return (
-      <button type="button" onClick={() => setAbierto(true)} className="py-2 text-etiqueta font-normal text-secundario hover:text-texto">
-        Eliminar movimiento…
-      </button>
+      <PedirEliminar onClick={() => setAbierto(true)}>Eliminar movimiento…</PedirEliminar>
     );
   }
   return (

@@ -10,6 +10,7 @@ import { ConfirmarDescarte } from "../captura/panel-captura";
 import { MensajeError } from "../mensaje-error";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { RUTA_DEUDAS, rutaPrestamo } from "./rutas";
+import { CampoFecha } from "../campo-fecha";
 
 type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoEdicion };
 
@@ -17,7 +18,7 @@ type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoEdicion 
 export type AccionEditarPrestamo = (id: string, cambio: PrestamoCambio) => Promise<{ ok: true } | Fallo>;
 
 type Props = {
-  prestamo: Pick<PrestamoDetalle, "id" | "nombre" | "fechaAcordada">;
+  prestamo: Pick<PrestamoDetalle, "id" | "nombre" | "fechaAcordada" | "fechaHoy">;
   editar: AccionEditarPrestamo;
   /** Tras la salida de la hoja; por defecto navega. En `/estilos`, cierra la muestra. */
   alCerrar?: (destino: string) => void;
@@ -110,12 +111,12 @@ export function PanelEdicionPrestamo({ prestamo, editar, alCerrar }: Props) {
         />
         <div className="flex flex-col items-start gap-1">
           <div className="w-full">
-            <CampoSubrayado
+            <CampoFecha
               etiqueta="Fecha acordada"
-              name="fechaAcordada"
-              type="date"
-              value={valores.fechaAcordada}
-              onChange={(e) => cambiar("fechaAcordada", e.target.value)}
+              hoy={prestamo.fechaHoy}
+              valor={valores.fechaAcordada}
+              vacio="Sin fecha acordada"
+              alCambiar={(fecha) => cambiar("fechaAcordada", fecha)}
               error={errores.fechaAcordada}
             />
           </div>

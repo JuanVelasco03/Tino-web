@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode, type SyntheticEvent } from "react";
-import { Check, X } from "lucide-react";
+import { Check, Lock, X } from "lucide-react";
 import { formatearEntrada } from "@/domain/dinero/entrada";
 import { formatearDinero, type Moneda } from "@/domain/dinero/formato";
 import { formatearDiaSemana, formatearFechaSinAnio } from "@/domain/fecha/formato";
 import type { Cuenta } from "@/services/captura";
-import { BloqueEliminar } from "../bloque-eliminar";
+import { BloqueEliminar, PedirEliminar } from "../bloque-eliminar";
 import { Boton } from "../boton";
+import { Calendario } from "../calendario";
 import { ChipCategoria } from "../chip-categoria";
 import { IconoCuenta, ROTULO_TIPO_CUENTA } from "../iconos";
 import { MensajeError } from "../mensaje-error";
@@ -30,9 +31,9 @@ import { opcionesFecha } from "./selector-fecha";
 import { SelectorTipo } from "./selector-tipo";
 import { TecladoNumerico } from "./teclado-numerico";
 import { datosAviso, datosOferta } from "./usar-captura";
-import { MAX_DESCRIPCION, type RolCuenta } from "./usar-formulario";
+import { MAX_DESCRIPCION, MAX_NOTA, type RolCuenta } from "./usar-formulario";
 
-type Hoja = "categoria" | "cuenta" | "destino" | "fecha";
+type Hoja = "categoria" | "cuenta" | "destino" | "fecha" | "nota";
 
 /** Pesos sin «COP». */
 function pesos(monto: bigint): string {
@@ -58,11 +59,22 @@ function recorrido(): { cuadros: Keyframe[]; entrada: number; salida: number } {
 }
 
 /** Hoja inferior dentro de la captura (categoría, cuenta, fecha), con velo y «Listo». */
-function HojaInferior({ titulo, alCerrar, children }: { titulo: string; alCerrar: () => void; children: ReactNode }) {
+function HojaInferior({
+  titulo,
+  alCerrar,
+  enfocarListo = true,
+  children,
+}: {
+  titulo: string;
+  alCerrar: () => void;
+  /** `false` cuando el contenido toma el foco (la nota abre con el cursor en el texto). */
+  enfocarListo?: boolean;
+  children: ReactNode;
+}) {
   const listo = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    listo.current?.focus();
-  }, []);
+    if (enfocarListo) listo.current?.focus();
+  }, [enfocarListo]);
 
   return (
     <>
@@ -79,7 +91,7 @@ function HojaInferior({ titulo, alCerrar, children }: { titulo: string; alCerrar
             Listo
           </button>
         </div>
-        <div className="min-h-0 overflow-y-auto">{children}</div>
+        <div className="min-h-0 overflow-y-auto overscroll-contain">{children}</div>
       </div>
     </>
   );
@@ -148,11 +160,14 @@ function Celda({
       type="button"
       onClick={alPulsar}
       disabled={fija}
-      className={`flex h-14 min-w-0 flex-col items-start justify-center pl-4 text-left ${primera ? "" : "border-l border-linea"}`}
+      title={fija ? "La cuenta del préstamo no se cambia aquí" : undefined}
+      className={`flex h-14 min-w-0 flex-col items-start justify-center pl-4 text-left disabled:cursor-not-allowed ${primera ? "" : "border-l border-linea"}`}
     >
       <span className="text-rotulo uppercase text-secundario">{rotulo}</span>
-      <span className="flex max-w-full items-baseline gap-2 text-cuerpo font-medium">
+      <span className="flex max-w-full items-center gap-2 text-cuerpo font-medium">
         <span className={`truncate ${vacio ? "punteada text-secundario" : ""}`}>{valor}</span>
+        {/* Fija: candado de 16 px en secundario, porque la celda no abre su hoja. */}
+        {fija && <Lock size={16} strokeWidth={1.5} aria-hidden className="shrink-0 text-secundario" />}
         {etiqueta && <span className="font-mono text-rotulo font-normal text-marca-texto">{etiqueta}</span>}
       </span>
     </button>
@@ -184,6 +199,9 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
     const el = dialogo.current;
     if (!el) return;
     if (!el.open) el.showModal();
+    // Como `PanelLateral`: el foco va a la hoja, no a la ✕ con anillo. El monto
+    // se escribe con el teclado propio, así que no hay campo al que llevarlo.
+    el.focus({ preventScroll: true });
     const { cuadros, entrada } = recorrido();
     const animacion = el.animate(cuadros, { duration: entrada, easing: curva("llegada") });
     return () => {
@@ -230,9 +248,11 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
   const errorCarga = c.estadoCarga === "error" && c.captura === null;
   const listo = c.captura !== null;
 
-  // Monto: «0» tenue vacío; cifra-campo si pasa de 9 caracteres.
+  // Monto: «0» tenue vacío. Baja de tamaño para caber en 390 px sin cortar dígitos:
+  // cifra-xl hasta 9 caracteres, cifra-campo hasta 11, cifra-l hasta 15 y cifra-m después (19 dígitos).
   const montoTexto = valores.monto === "" ? "0" : valores.monto;
-  const tamano = montoTexto.length > 9 ? "text-cifra-campo" : "text-cifra-xl";
+  const largo = montoTexto.length;
+  const tamano = largo > 15 ? "text-cifra-m" : largo > 11 ? "text-cifra-l" : largo > 9 ? "text-cifra-campo" : "text-cifra-xl";
   const signo = valores.monto === "" ? "" : valores.tipo === "gasto" ? "−" : valores.tipo === "ingreso" ? "+" : "";
 
   const propuestaActiva = valores.categoria.modo === "propuesta" ? c.propuesta : null;
@@ -254,7 +274,6 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
     c.errores.cuenta,
     c.errores.destino,
     c.errores.fecha,
-    c.errores.nota,
     c.errorGeneral,
     registro?.errorPredeterminada,
   ].filter((e): e is string => Boolean(e));
@@ -316,14 +335,9 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
           </Boton>
         )}
         {edicion && !edicion.confirmandoDescarte && (
-          <button
-            type="button"
-            onClick={edicion.pedirBorrado}
-            disabled={edicion.enviando}
-            className="mt-1 h-11 text-etiqueta font-normal text-secundario disabled:cursor-not-allowed"
-          >
+          <PedirEliminar onClick={edicion.pedirBorrado} disabled={edicion.enviando}>
             Eliminar movimiento…
-          </button>
+          </PedirEliminar>
         )}
       </>
     );
@@ -333,8 +347,9 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
     <dialog
       ref={dialogo}
       aria-label={edicion ? "Editar movimiento" : "Registrar"}
+      tabIndex={-1}
       onCancel={alCancelar}
-      className="fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none overflow-hidden border-0 bg-fondo p-0 text-texto backdrop:bg-fondo"
+      className="fixed inset-0 m-0 h-dvh max-h-none outline-none! w-full max-w-none overflow-hidden border-0 bg-fondo p-0 text-texto backdrop:bg-fondo"
     >
       <form onSubmit={(e) => void enviar(e)} noValidate className="relative flex h-dvh flex-col">
         <header className="flex h-14 shrink-0 items-center gap-2 pr-4 pl-1">
@@ -344,6 +359,8 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
           <fieldset disabled={soloLectura !== null || cuentaFija !== null} className="m-0 flex min-w-0 border-0 p-0">
             <SelectorTipo variante="pestanas" valor={valores.tipo} alCambiar={c.cambiarTipo} />
           </fieldset>
+          {/* En la edición, el título ocupa el lugar de «Hoy −X»: que no se confunda con registrar uno nuevo. */}
+          {edicion && <span className="ml-auto shrink-0 text-rotulo uppercase text-secundario">Editar</span>}
           {gastosHoy > 0n && (
             <div className="ml-auto shrink-0 text-right">
               <div className="text-rotulo uppercase text-secundario">Hoy</div>
@@ -362,11 +379,11 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
               <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 px-6">
                 <div role="group" aria-label="Monto" className="flex max-w-full items-baseline gap-2">
                   {signo && (
-                    <span aria-hidden className={`font-mono text-cifra-l ${valores.tipo === "gasto" ? "text-salida" : "text-entrada"}`}>
+                    <span aria-hidden className={`font-mono ${largo > 15 ? "text-cifra-m" : "text-cifra-l"} ${valores.tipo === "gasto" ? "text-salida" : "text-entrada"}`}>
                       {signo}
                     </span>
                   )}
-                  <output aria-live="polite" className={`truncate font-mono tabular-nums ${tamano} ${valores.monto === "" ? "text-terciario" : ""}`}>
+                  <output aria-live="polite" className={`min-w-0 truncate font-mono tabular-nums ${tamano} ${valores.monto === "" ? "text-terciario" : ""}`}>
                     {montoTexto}
                   </output>
                   <span className="text-etiqueta text-secundario">{c.monedaMonto}</span>
@@ -396,6 +413,24 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
                     )
                   )}
                 </div>
+                {/* Nota: plegada en una línea (como «Más opciones» en escritorio); la hoja la escribe. */}
+                <button
+                  type="button"
+                  onClick={() => setHoja("nota")}
+                  className={`flex h-11 max-w-[280px] items-center gap-1 text-etiqueta ${
+                    valores.nota.trim() === "" ? "font-semibold text-marca-texto disabled:hidden" : "font-normal text-secundario"
+                  }`}
+                >
+                  {valores.nota.trim() === "" ? (
+                    "+ Nota"
+                  ) : (
+                    <>
+                      <span className="shrink-0">Nota ·</span>
+                      <span className="truncate">{valores.nota}</span>
+                    </>
+                  )}
+                </button>
+                {c.errores.nota && <MensajeError mensaje={c.errores.nota} />}
               </div>
 
               <div className="flex h-14 shrink-0 items-start gap-2 overflow-x-auto px-4 [scrollbar-width:none]">
@@ -541,6 +576,27 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
         </HojaInferior>
       )}
 
+      {hoja === "nota" && (
+        <HojaInferior titulo="Nota" alCerrar={() => setHoja(null)} enfocarListo={false}>
+          <label className="flex flex-col gap-1 border-t border-linea pt-4 pb-2">
+            <span className="sr-only">Nota</span>
+            <textarea
+              autoFocus
+              value={valores.nota}
+              onChange={(e) => c.cambiar("nota", e.target.value)}
+              maxLength={MAX_NOTA}
+              rows={4}
+              placeholder="Lo que quieras recordar de este movimiento"
+              aria-invalid={c.errores.nota ? true : undefined}
+              className={`resize-none rounded-none border-0 border-b bg-transparent p-0 py-2 text-cuerpo text-texto placeholder:text-terciario ${
+                c.errores.nota ? "border-salida" : "border-linea focus:border-raya"
+              }`}
+            />
+            {c.errores.nota && <MensajeError mensaje={c.errores.nota} />}
+          </label>
+        </HojaInferior>
+      )}
+
       {hoja === "fecha" && fechaHoy && (
         <HojaInferior titulo="Fecha" alCerrar={() => setHoja(null)}>
           <div className="border-t border-linea">
@@ -556,17 +612,19 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
                 }}
               />
             ))}
-            <label className="flex min-h-14 flex-col justify-center gap-1 border-b border-linea px-1">
+            {/* Otra fecha: el calendario del libro, no el selector nativo. Elegir cierra la hoja. */}
+            <div className="flex flex-col gap-2 border-b border-linea px-1 pt-4 pb-4">
               <span className="text-etiqueta text-secundario">Otra fecha</span>
-              <input
-                type="date"
-                value={valores.fecha}
-                onChange={(e) => {
-                  if (e.target.value !== "") c.cambiar("fecha", e.target.value);
+              <Calendario
+                etiqueta="Otra fecha"
+                valor={valores.fecha}
+                hoy={fechaHoy}
+                alElegir={(fecha) => {
+                  c.cambiar("fecha", fecha);
+                  setHoja(null);
                 }}
-                className="h-11 rounded-none border-0 bg-transparent p-0 text-cuerpo text-texto"
               />
-            </label>
+            </div>
           </div>
         </HojaInferior>
       )}

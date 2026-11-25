@@ -30,7 +30,7 @@ import type {
   OperacionCambio,
   OperacionCuerpo,
 } from "@/domain/inversion/tipos";
-import { BloqueEliminar } from "../bloque-eliminar";
+import { BloqueEliminar, PedirEliminar } from "../bloque-eliminar";
 import { Boton } from "../boton";
 import { CampoMonto } from "../campo-monto";
 import { CampoSubrayado } from "../campo-subrayado";
@@ -41,6 +41,7 @@ import { OpcionUnica } from "../opcion-unica";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { ROTULO_CLASE } from "./lista-operaciones";
 import { rutaInversion } from "./rutas";
+import { CampoFecha } from "../campo-fecha";
 
 type Fallo<C extends string = never> = { ok: false; codigo: string; mensaje: string; campo?: C };
 
@@ -304,14 +305,9 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
               error={errorBorrado}
             />
           ) : (
-            <button
-              type="button"
-              onClick={() => setConfirmandoBorrado(true)}
-              disabled={pendiente}
-              className="py-2 text-etiqueta font-normal text-secundario hover:text-texto disabled:cursor-not-allowed"
-            >
+            <PedirEliminar onClick={() => setConfirmandoBorrado(true)} disabled={pendiente}>
               Eliminar operación…
-            </button>
+            </PedirEliminar>
           )}
         </div>
       )}
@@ -423,17 +419,14 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
           }}
         />
 
-        <CampoSubrayado
+        <CampoFecha
           etiqueta="Fecha"
-          name="fecha"
-          type="date"
-          required
+          hoy={detalle.fechaHoy}
           max={detalle.fechaHoy}
-          value={valoresCifras.fecha}
-          onChange={(e) => {
-            if (e.target.value === "") return;
-            if (esEdicion) cambiarEdicion("fecha", e.target.value);
-            else cambiarAlta("fecha", e.target.value);
+          valor={valoresCifras.fecha}
+          alCambiar={(fecha) => {
+            if (esEdicion) cambiarEdicion("fecha", fecha);
+            else cambiarAlta("fecha", fecha);
           }}
           error={errores.fecha}
         />

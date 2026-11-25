@@ -54,6 +54,23 @@ export function SubRenglones({ partes, omitirCOP = true, className = "" }: { par
 }
 
 /**
+ * «US$ 2.000,00 · TRM 4.120,00» bajo una cifra en COP: cifras en mono cifra-xs
+ * secundaria (Mono-Money). Parte en el «·» si no cabe, nunca dentro de una cifra.
+ */
+export function LineaCambio({ texto }: { texto: string }) {
+  return (
+    <span className="flex flex-wrap justify-end gap-x-1 text-right font-mono text-cifra-xs tabular-nums text-secundario">
+      {texto.split(" · ").map((parte, i) => (
+        <span key={parte} className="whitespace-nowrap">
+          {i > 0 && "· "}
+          {parte}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
  * C2 · Fila de movimiento, lista general. Sin icono.
  * Cada cifra se lee desde el patrimonio: gasto −, terracota; ingreso +, verde;
  * transferencia en tinta, sin signo. El signo sale del tipo
@@ -124,7 +141,7 @@ export function FilaMovimiento({
             ≈ {formatearDinero({ monto: equivalenteCOP, moneda: "COP" }, { omitirCOP: true })}
           </div>
         )}
-        {detalleImporte && <div className="whitespace-nowrap text-etiqueta text-secundario">{detalleImporte}</div>}
+        {detalleImporte && <LineaCambio texto={detalleImporte} />}
       </div>
       {partes.length > 0 && (
         <SubRenglones partes={partes} omitirCOP={omitirCOP} className={`col-span-2 pt-1 ${fecha === undefined ? "col-start-1" : "col-start-2"}`} />

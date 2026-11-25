@@ -10,13 +10,14 @@ import { importeEnPatrimonio, importeMostrado } from "@/domain/movimiento/vista-
 import type { DatosCaptura } from "@/services/captura";
 import type { Movimiento } from "@/services/movimientos";
 import { AvisoRegistro, type DatosAviso } from "../captura/aviso-registro";
+import { Boton } from "../boton";
 import { ChipCategoria } from "../chip-categoria";
 import { conceptoDe } from "../captura/panel-captura";
 import { useContextoCaptura } from "../captura/proveedor-captura";
 import { cuentaDe, datosDeOferta } from "../captura/usar-captura";
 import { EnlaceTexto } from "../enlace-texto";
 import { EstadoVacio } from "../estado-vacio";
-import { FilaMovimiento, SubRenglones, type ParteFila } from "../fila-movimiento";
+import { FilaMovimiento, LineaCambio, SubRenglones, type ParteFila } from "../fila-movimiento";
 import { EdicionAjuste } from "./edicion-ajuste";
 import { EdicionMovimiento } from "./edicion-movimiento";
 import { FiltrosMovimientos, type DefinicionFiltro, type OpcionFiltro } from "./filtros-movimientos";
@@ -66,7 +67,7 @@ function Importe({ m, peso }: { m: Movimiento; peso: string }) {
   return (
     <span className="flex flex-col items-end">
       <span className={`text-right font-mono text-cifra-s tabular-nums ${color} ${peso}`}>{cifra}</span>
-      {linea && <span className="whitespace-nowrap text-etiqueta text-secundario">{linea}</span>}
+      {linea && <LineaCambio texto={linea} />}
     </span>
   );
 }
@@ -146,6 +147,14 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
   const enlace = (m: Movimiento) => `${ruta}?mes=${mes}&movimiento=${m.id}`;
   const resaltada = (m: Movimiento) => m.id === registrado || m.id === aviso.resaltadoId;
 
+  // Abrir una edición espera al servidor (`?movimiento=` no muestra `loading.tsx`):
+  // mientras tanto la fila pulsada late. Se apaga sola cuando llegan datos nuevos
+  // (otra lista) o la edición ya está abierta.
+  const [abriendo, setAbriendo] = useState<{ id: string; lista: Movimiento[] } | null>(null);
+  const marcarAbriendo = (m: Movimiento) => setAbriendo({ id: m.id, lista: movimientos });
+  const pendiente = (m: Movimiento) => abriendo?.id === m.id && abriendo.lista === movimientos && edicion?.movimiento.id !== m.id;
+  const ESPERA = "bg-hundido cursor-progress motion-safe:animate-pulse";
+
   const datosAviso = datosAvisoEdicion(aviso.aviso);
   const datosOferta = datosDeOferta(aviso.oferta, (acepta) => void aviso.responderOferta(acepta));
 
@@ -178,7 +187,8 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
         )}
         <span className="text-etiqueta font-normal text-secundario">
           <span className="font-mono tabular-nums text-texto">{cantidad}</span>
-          <span className="max-md:hidden"> {cantidad === 1 ? "movimiento" : "movimientos"}</span>
+          {/* En móvil solo se ve la cifra; el lector de pantalla oye «72 movimientos». */}
+          <span className="max-md:sr-only"> {cantidad === 1 ? "movimiento" : "movimientos"}</span>
         </span>
       </header>
 
@@ -222,16 +232,20 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
                 Monto
               </span>
             </div>
-            {dias.map((dia) =>
+            {dias.map((dia, d) =>
               dia.movimientos.map((m, i) => {
                 const destacada = resaltada(m);
+                // Corte de día: el primer renglón de cada día (salvo el primero) lleva arriba una división en `terciario`.
+                const corte = i === 0 && d > 0 ? "border-t border-t-terciario" : "";
                 const peso = destacada ? "font-semibold" : "";
+                const espera = pendiente(m);
                 return (
                   <div
                     key={m.id}
                     role="row"
-                    className={`relative grid ${COLUMNAS} items-baseline gap-x-3 border-b border-linea py-3 ${
-                      destacada ? "bg-hundido" : "hover:bg-hundido"
+                    aria-busy={espera || undefined}
+                    className={`relative grid ${COLUMNAS} items-baseline gap-x-3 border-b border-linea py-3 ${corte} ${
+                      espera ? ESPERA : destacada ? "bg-hundido" : "hover:bg-hundido"
                     }`}
                   >
                     <span role="cell" className="font-mono text-cifra-xs text-secundario">
@@ -240,7 +254,12 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
                     </span>
                     <span role="cell" className="min-w-0">
                       {/* El enlace se estira sobre toda la fila: un solo objetivo, nombrado por el concepto. */}
-                      <Link href={enlace(m)} scroll={false} className={`block truncate text-cuerpo after:absolute after:inset-0 ${peso}`}>
+                      <Link
+                        href={enlace(m)}
+                        scroll={false}
+                        onClick={() => marcarAbriendo(m)}
+                        className={`block truncate text-cuerpo after:absolute after:inset-0 ${peso}`}
+                      >
                         {conceptoDe(m)}
                       </Link>
                     </span>
@@ -256,7 +275,12 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
                     <span role="cell" className="text-right">
                       <Importe m={m} peso={peso} />
                     </span>
-                    {m.partes.length > 0 && <SubRenglones partes={partesDe(m)} className="col-[2/-1] pt-1" />}
+                    {m.partes.length > 0 && (
+                      // Dentro de `role="row"` solo caben celdas: las partes van en una que cubre de Concepto a Monto.
+                      <div role="cell" className="col-[2/-1] pt-1">
+                        <SubRenglones partes={partesDe(m)} />
+                      </div>
+                    )}
                   </div>
                 );
               }),
@@ -269,23 +293,32 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
               <section key={dia.fecha} aria-label={formatearDiaSemana(dia.fecha)} className="pt-6 first:pt-0">
                 <h2 className="border-b border-raya pb-2 text-rotulo uppercase">{formatearDiaSemana(dia.fecha)}</h2>
                 {dia.movimientos.map((m) => (
-                  <FilaMovimiento
+                  // La fila C2 lleva su propio enlace: el clic se escucha aquí para marcar la espera.
+                  <div
                     key={m.id}
-                    concepto={conceptoDe(m)}
-                    tipo={m.tipo}
-                    ajusteSube={ajusteSube(m)}
-                    monto={importeMostrado(m).dinero}
-                    detalleImporte={importeMostrado(m).linea}
-                    categoria={categoria(m)}
-                    cuenta={m.tipo === "transferencia" ? undefined : cuentaDe(m)}
-                    transferencia={
-                      m.tipo === "transferencia" ? { origen: m.cuentaOrigen?.nombre ?? "", destino: m.cuentaDestino?.nombre ?? "" } : undefined
-                    }
-                    partes={partesDe(m)}
-                    omitirCOP
-                    resaltada={resaltada(m)}
-                    href={enlace(m)}
-                  />
+                    onClickCapture={() => marcarAbriendo(m)}
+                    aria-busy={pendiente(m) || undefined}
+                    className={pendiente(m) ? ESPERA : ""}
+                  >
+                    <FilaMovimiento
+                      concepto={conceptoDe(m)}
+                      tipo={m.tipo}
+                      ajusteSube={ajusteSube(m)}
+                      monto={importeMostrado(m).dinero}
+                      detalleImporte={importeMostrado(m).linea}
+                      categoria={categoria(m)}
+                      cuenta={m.tipo === "transferencia" ? undefined : cuentaDe(m)}
+                      transferencia={
+                        m.tipo === "transferencia"
+                          ? { origen: m.cuentaOrigen?.nombre ?? "", destino: m.cuentaDestino?.nombre ?? "" }
+                          : undefined
+                      }
+                      partes={partesDe(m)}
+                      omitirCOP
+                      resaltada={resaltada(m)}
+                      href={enlace(m)}
+                    />
+                  </div>
                 ))}
               </section>
             ))}
@@ -295,6 +328,9 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
             <div className="flex flex-col gap-1 border-b border-linea py-8 max-md:border-t max-md:border-t-raya">
               <p className="text-cuerpo font-semibold">Nada con estos filtros.</p>
               <p className="text-etiqueta font-normal text-secundario">Prueba otro mes o limpia los filtros.</p>
+              <Boton variante="texto" onClick={() => setFiltros(SIN_FILTROS)} className="-ml-1 self-start">
+                Limpiar filtros
+              </Boton>
             </div>
           )}
         </section>

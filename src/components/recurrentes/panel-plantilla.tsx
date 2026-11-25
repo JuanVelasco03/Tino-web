@@ -18,7 +18,7 @@ import { PERIODICIDADES, type Periodicidad, type Recurrente, type RecurrenteCuer
 import { diaDeVencimiento, formatearCada, notaVencimiento } from "@/domain/recurrente/vencimiento";
 import type { TipoCaptura as TipoMovimiento } from "@/domain/movimiento/cuerpo";
 import type { DatosCaptura } from "@/services/captura";
-import { BloqueEliminar } from "../bloque-eliminar";
+import { BloqueEliminar, PedirEliminar } from "../bloque-eliminar";
 import { Boton } from "../boton";
 import { CampoMonto } from "../campo-monto";
 import { CampoSubrayado } from "../campo-subrayado";
@@ -28,6 +28,7 @@ import { ChipCategoria } from "../chip-categoria";
 import { MensajeError } from "../mensaje-error";
 import { OpcionUnica } from "../opcion-unica";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
+import { CampoFecha } from "../campo-fecha";
 
 type Fallo = { ok: false; codigo: string; mensaje: string };
 
@@ -244,14 +245,9 @@ export function PanelPlantilla({ recurrente, fechaHoy, formulario, acciones, alC
               <span aria-hidden className="text-terciario">
                 ·
               </span>
-              <button
-                type="button"
-                onClick={() => setConfirmandoBorrado(true)}
-                disabled={pendiente}
-                className="h-11 px-1 text-etiqueta font-normal text-secundario hover:text-texto disabled:cursor-not-allowed"
-              >
+              <PedirEliminar onClick={() => setConfirmandoBorrado(true)} disabled={pendiente}>
                 Eliminar plantilla…
-              </button>
+              </PedirEliminar>
             </div>
           )}
           {errorPausa && <MensajeError mensaje={errorPausa} />}
@@ -330,14 +326,12 @@ export function PanelPlantilla({ recurrente, fechaHoy, formulario, acciones, alC
           />
 
           <div className="flex flex-col gap-2">
-            <CampoSubrayado
+            <CampoFecha
               etiqueta="Primer vencimiento"
-              name="primerVencimiento"
-              type="date"
-              required
+              hoy={fechaHoy}
               min={esAlta ? fechaHoy : undefined}
-              value={valores.primerVencimiento}
-              onChange={(e) => cambiar("primerVencimiento", e.target.value)}
+              valor={valores.primerVencimiento}
+              alCambiar={(fecha) => cambiar("primerVencimiento", fecha)}
               error={errores.primerVencimiento}
             />
             {fechaValida && !permiteUltimoDia(valores.periodicidad) && (

@@ -17,11 +17,11 @@ type Props = {
   href?: string;
   /** Cifra tras el rótulo, en mono cifra-xs secundaria («US$ 7.750,00»). */
   detalle?: string;
-  /** Solo presenta, sin control: un `<span>` neutro (la categoría «Ajuste» en el libro). */
+  /** Solo presenta, sin control: un `<span>` neutro y compacto (la categoría «Ajuste» en el libro). */
   estatico?: boolean;
 };
 
-const BASE = "inline-flex h-11 shrink-0 items-center rounded-campo border px-3 text-cuerpo whitespace-nowrap disabled:cursor-not-allowed md:h-9";
+const BASE = "presion inline-flex h-11 shrink-0 items-center rounded-campo border px-3 text-cuerpo whitespace-nowrap disabled:cursor-not-allowed md:h-9";
 
 /**
  * C5 · Chip de categoría. En móvil crece a 44 px de alto. Con `onClick` es un
@@ -29,7 +29,10 @@ const BASE = "inline-flex h-11 shrink-0 items-center rounded-campo border px-3 t
  */
 export function ChipCategoria({ etiqueta, estado = "normal", seleccionada = false, onClick, deshabilitado = false, href, detalle, estatico = false }: Props) {
   if (estatico) {
-    return <span className={`${BASE} border-linea bg-superficie`}>{etiqueta}</span>;
+    // Al alto del renglón (20 + 2 de borde = 22 px, como el cuerpo): no engrosa la fila del libro.
+    return (
+      <span className="inline-flex shrink-0 items-center rounded-campo border border-linea bg-superficie px-2 text-etiqueta whitespace-nowrap">{etiqueta}</span>
+    );
   }
 
   if (href) {
@@ -68,7 +71,7 @@ export function ChipCategoria({ etiqueta, estado = "normal", seleccionada = fals
       aria-pressed={marcada}
       onClick={onClick}
       disabled={deshabilitado}
-      className={`${BASE} gap-2 bg-superficie ${marcada ? "border-texto font-medium" : "border-linea"}`}
+      className={`${BASE} gap-2 bg-superficie ${marcada ? "border-texto font-medium" : "border-linea hover:border-secundario disabled:hover:border-linea"}`}
     >
       {marcada && <Check size={16} strokeWidth={1.5} aria-hidden />}
       {etiqueta}

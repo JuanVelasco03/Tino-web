@@ -24,7 +24,7 @@ import { MensajeError } from "../mensaje-error";
 import { IconoCuenta, ROTULO_TIPO_CUENTA } from "../iconos";
 import { OpcionUnica, type Opcion } from "../opcion-unica";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
-import { BloqueEliminar, DETALLE_ELIMINAR_CUENTA } from "../bloque-eliminar";
+import { BloqueEliminar, PedirEliminar, DETALLE_ELIMINAR_CUENTA } from "../bloque-eliminar";
 import { CamposTarjeta, type CuentaPago } from "./campos-tarjeta";
 
 export type { CuentaPago };
@@ -375,14 +375,9 @@ export function PanelCuenta({ cuenta, acciones, cuentasPago = [], rutaCierre = "
               />
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => setConfirmandoBorrado(true)}
-              disabled={pendiente}
-              className="self-start py-2 text-etiqueta font-normal text-secundario hover:text-texto disabled:cursor-not-allowed"
-            >
+            <PedirEliminar onClick={() => setConfirmandoBorrado(true)} disabled={pendiente}>
               Eliminar cuenta…
-            </button>
+            </PedirEliminar>
           )}
         </div>
       )}

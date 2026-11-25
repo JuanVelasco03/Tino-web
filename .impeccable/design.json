@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-25T01:02:29+00:00",
+  "generatedAt": "2026-11-25T03:27:03+00:00",
   "title": "Design System: Tino",
   "extensions": {
     "colorMeta": {
@@ -428,7 +428,7 @@
       },
       "cifra-xs": {
         "displayName": "Cifra XS",
-        "purpose": "Fechas, equivalencias en COP, TRM."
+        "purpose": "Fechas, equivalencias en COP, TRM (13/18; subió de 12/16 para tablas densas)."
       },
       "titulo-1": {
         "displayName": "Título 1",
@@ -444,11 +444,11 @@
       },
       "etiqueta": {
         "displayName": "Etiqueta",
-        "purpose": "Rótulos de campo y subtítulos."
+        "purpose": "Rótulos de campo y subtítulos (14/20; con font-normal en ayudas y errores)."
       },
       "rotulo": {
         "displayName": "Rótulo",
-        "purpose": "Encabezados de sección, panel y grupo, en mayúsculas."
+        "purpose": "Encabezados de sección, panel y grupo, en mayúsculas (12/16, +0.08em): el piso de la interfaz."
       }
     },
     "shadows": [],
@@ -501,6 +501,36 @@
         "name": "reducido",
         "value": "opacity",
         "purpose": "Con prefers-reduced-motion: sin desplazamiento. Panel solo opacidad (150 / 120 ms); el campo cambia de alto de golpe y conserva el fundido."
+      },
+      {
+        "name": "asentar",
+        "value": "animation: asentar 220ms var(--llegada) both",
+        "purpose": "Fundido sin desplazamiento cuando el contenido reemplaza a un esqueleto: resumen al cambiar de mes, libro de movimientos y la lista de un filtro al abrir. Utilidad asentar."
+      },
+      {
+        "name": "trazo",
+        "value": "animation: trazar 520ms var(--llegada) var(--retraso, 0ms) both",
+        "purpose": "Barras de gasto por categoría trazadas desde la izquierda con scaleX, escalonadas 40 ms (tope 200 ms). Con movimiento reducido, solo fundido de 150 ms. Utilidad trazo."
+      },
+      {
+        "name": "presion",
+        "value": "transform: scale(0.98)",
+        "purpose": "Botones del día uno ceden a 0,98 al pulsar (75 ms) y vuelven en 150 ms. Sin efecto con movimiento reducido."
+      },
+      {
+        "name": "flechas-mes",
+        "value": "translateX(±2px) 150ms var(--llegada)",
+        "purpose": "El chevrón de la navegación de meses se corre 2 px hacia su destino al pasar el cursor."
+      },
+      {
+        "name": "filtro-desplegable",
+        "value": "rotate(180deg) 150ms var(--llegada)",
+        "purpose": "El chevrón de un filtro de movimientos gira al abrir sus opciones; con movimiento reducido gira sin transición."
+      },
+      {
+        "name": "fila-abriendo",
+        "value": "background: var(--hundido); animate-pulse (motion-safe)",
+        "purpose": "La fila pulsada del libro late con aria-busy mientras llega la edición por URL; con movimiento reducido, solo el fondo."
       }
     ],
     "breakpoints": [
@@ -554,7 +584,7 @@
       "refersTo": "campo-monto",
       "description": "C4. Sin caja: raya inferior, cifra 44/52 en mono, moneda a la derecha, cursor de latón.",
       "html": "<label class=\"ds-monto\"><span class=\"ds-monto-et\">Monto</span><span class=\"ds-monto-fila\"><input class=\"ds-monto-in\" inputmode=\"numeric\" placeholder=\"0\" value=\"18.500\"><span class=\"ds-monto-et\">COP</span></span></label>",
-      "css": ".ds-monto{display:block;padding:8px 0 12px;border-bottom:1px solid var(--raya);font-family:var(--font-interfaz), system-ui, sans-serif}.ds-monto-et{font-size:13px;line-height:18px;font-weight:500;color:var(--secundario)}.ds-monto-fila{display:flex;align-items:baseline;gap:8px;margin-top:4px}.ds-monto-in{flex:1;min-width:0;border:0;background:transparent;padding:0;font-family:var(--font-cifras), ui-monospace, monospace;font-size:44px;line-height:52px;font-weight:500;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;color:var(--texto);caret-color:var(--marca);outline:none}.ds-monto-in::placeholder{color:var(--terciario)}.ds-monto:has(:focus-visible){outline:2px solid var(--marca);outline-offset:2px}.ds-monto:has(:focus){border-bottom-color:var(--marca)}"
+      "css": ".ds-monto{display:block;padding:8px 0 12px;border-bottom:1px solid var(--raya);font-family:var(--font-interfaz), system-ui, sans-serif}.ds-monto-et{font-size:14px;line-height:20px;font-weight:500;color:var(--secundario)}.ds-monto-fila{display:flex;align-items:baseline;gap:8px;margin-top:4px}.ds-monto-in{flex:1;min-width:0;border:0;background:transparent;padding:0;font-family:var(--font-cifras), ui-monospace, monospace;font-size:44px;line-height:52px;font-weight:500;letter-spacing:-0.02em;font-variant-numeric:tabular-nums;color:var(--texto);caret-color:var(--marca);outline:none}.ds-monto-in::placeholder{color:var(--terciario)}.ds-monto:has(:focus-visible){outline:2px solid var(--marca);outline-offset:2px}.ds-monto:has(:focus){border-bottom-color:var(--marca)}"
     },
     {
       "name": "Chip de categoría",
@@ -562,7 +592,7 @@
       "refersTo": "chip-categoria",
       "description": "C5. Sugerida (borde tinta, check y «auto» en latón), normal y sin clasificar (punteado).",
       "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip-on\">&#10003; Mercado <span class=\"ds-chip-auto\">auto</span></button><button class=\"ds-chip\">Transporte</button><button class=\"ds-chip ds-chip-sin\">Sin clasificar</button></div>",
-      "css": ".ds-chips{display:flex;gap:8px;flex-wrap:wrap}.ds-chip{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px;border:1px solid var(--linea);border-radius:4px;background:var(--superficie);color:var(--texto);font-family:var(--font-interfaz), system-ui, sans-serif;font-size:15px;line-height:22px;cursor:pointer}.ds-chip:focus-visible{outline:2px solid var(--marca);outline-offset:2px}.ds-chip-on{border-color:var(--texto);font-weight:500}.ds-chip-sin{border-style:dashed;border-color:var(--terciario);color:var(--secundario);background:transparent}.ds-chip-auto{font-family:var(--font-cifras), ui-monospace, monospace;font-size:11px;line-height:14px;letter-spacing:0.08em;font-weight:400;color:var(--marca-texto)}"
+      "css": ".ds-chips{display:flex;gap:8px;flex-wrap:wrap}.ds-chip{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 12px;border:1px solid var(--linea);border-radius:4px;background:var(--superficie);color:var(--texto);font-family:var(--font-interfaz), system-ui, sans-serif;font-size:15px;line-height:22px;cursor:pointer}.ds-chip:focus-visible{outline:2px solid var(--marca);outline-offset:2px}.ds-chip-on{border-color:var(--texto);font-weight:500}.ds-chip-sin{border-style:dashed;border-color:var(--terciario);color:var(--secundario);background:transparent}.ds-chip-auto{font-family:var(--font-cifras), ui-monospace, monospace;font-size:12px;line-height:16px;letter-spacing:0.08em;font-weight:400;color:var(--marca-texto)}"
     },
     {
       "name": "Sección con filas de movimiento",
@@ -570,7 +600,7 @@
       "refersTo": "fila-movimiento",
       "description": "C1 + C2. Rótulo y total sobre raya; filas sin icono, signo y color leídos desde el patrimonio.",
       "html": "<section class=\"ds-sec\"><div class=\"ds-sec-enc\"><h2>Movimientos · noviembre</h2><span class=\"ds-sec-total\">3.631.500</span></div><div class=\"ds-mov\"><span class=\"ds-mov-f\">04 nov</span><div><div>Almuerzo</div><div class=\"ds-mov-sub\">Comida · Nequi</div></div><span class=\"ds-mov-m ds-out\">&#8722;18.500</span></div><div class=\"ds-mov\"><span class=\"ds-mov-f\">03 nov</span><div><div>Salario</div><div class=\"ds-mov-sub\">Ingreso · Bancolombia</div></div><span class=\"ds-mov-m ds-in\">+4.850.000</span></div><div class=\"ds-mov\"><span class=\"ds-mov-f\">02 nov</span><div><div>Pago tarjeta</div><div class=\"ds-mov-sub\">Transferencia · Bancolombia &#8594; Visa</div></div><span class=\"ds-mov-m\">1.200.000</span></div></section>",
-      "css": ".ds-sec{font-family:var(--font-interfaz), system-ui, sans-serif;color:var(--texto)}.ds-sec-enc{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px;border-bottom:1px solid var(--raya)}.ds-sec-enc h2{margin:0;font-size:11px;line-height:14px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase}.ds-sec-total{font-family:var(--font-cifras), ui-monospace, monospace;font-size:15px;line-height:22px;font-weight:500;font-variant-numeric:tabular-nums}.ds-mov{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--linea);font-size:15px;line-height:22px}.ds-mov-f{font-family:var(--font-cifras), ui-monospace, monospace;font-size:12px;line-height:16px;color:var(--secundario)}.ds-mov-sub{font-size:13px;line-height:18px;font-weight:500;color:var(--secundario)}.ds-mov-m{font-family:var(--font-cifras), ui-monospace, monospace;font-weight:500;font-variant-numeric:tabular-nums;text-align:right}.ds-out{color:var(--salida-texto)}.ds-in{color:var(--entrada-texto)}"
+      "css": ".ds-sec{font-family:var(--font-interfaz), system-ui, sans-serif;color:var(--texto)}.ds-sec-enc{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:8px;border-bottom:1px solid var(--raya)}.ds-sec-enc h2{margin:0;font-size:12px;line-height:16px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase}.ds-sec-total{font-family:var(--font-cifras), ui-monospace, monospace;font-size:15px;line-height:22px;font-weight:500;font-variant-numeric:tabular-nums}.ds-mov{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--linea);font-size:15px;line-height:22px}.ds-mov-f{font-family:var(--font-cifras), ui-monospace, monospace;font-size:13px;line-height:18px;color:var(--secundario)}.ds-mov-sub{font-size:14px;line-height:20px;font-weight:500;color:var(--secundario)}.ds-mov-m{font-family:var(--font-cifras), ui-monospace, monospace;font-weight:500;font-variant-numeric:tabular-nums;text-align:right}.ds-out{color:var(--salida-texto)}.ds-in{color:var(--entrada-texto)}"
     },
     {
       "name": "Tarjeta de cuenta (activo en USD)",
@@ -578,7 +608,7 @@
       "refersTo": "tarjeta-activo",
       "description": "C3. Hoja con borde renglón y radio 6; cifra-m a la derecha con equivalencia y TRM.",
       "html": "<article class=\"ds-tarjeta\"><div><div class=\"ds-tarjeta-nom\">Cuenta USD</div><div class=\"ds-tarjeta-sub\">Banco · activo en USD</div></div><div class=\"ds-tarjeta-der\"><div class=\"ds-tarjeta-cifra\">US$ 7.750,00</div><div class=\"ds-tarjeta-xs\">&#8776; 31.775.000 COP</div><div class=\"ds-tarjeta-xs\">TRM 4.100,00 · hoy</div></div></article>",
-      "css": ".ds-tarjeta{display:flex;justify-content:space-between;gap:12px;padding:16px;border:1px solid var(--linea);border-radius:6px;background:var(--superficie);font-family:var(--font-interfaz), system-ui, sans-serif;color:var(--texto)}.ds-tarjeta-nom{font-size:15px;line-height:22px;font-weight:600}.ds-tarjeta-sub{font-size:13px;line-height:18px;font-weight:500;color:var(--secundario)}.ds-tarjeta-der{text-align:right}.ds-tarjeta-cifra{font-family:var(--font-cifras), ui-monospace, monospace;font-size:20px;line-height:28px;font-weight:500;font-variant-numeric:tabular-nums}.ds-tarjeta-xs{font-family:var(--font-cifras), ui-monospace, monospace;font-size:12px;line-height:16px;color:var(--secundario);font-variant-numeric:tabular-nums}"
+      "css": ".ds-tarjeta{display:flex;justify-content:space-between;gap:12px;padding:16px;border:1px solid var(--linea);border-radius:6px;background:var(--superficie);font-family:var(--font-interfaz), system-ui, sans-serif;color:var(--texto)}.ds-tarjeta-nom{font-size:15px;line-height:22px;font-weight:600}.ds-tarjeta-sub{font-size:14px;line-height:20px;font-weight:500;color:var(--secundario)}.ds-tarjeta-der{text-align:right}.ds-tarjeta-cifra{font-family:var(--font-cifras), ui-monospace, monospace;font-size:20px;line-height:28px;font-weight:500;font-variant-numeric:tabular-nums}.ds-tarjeta-xs{font-family:var(--font-cifras), ui-monospace, monospace;font-size:13px;line-height:18px;color:var(--secundario);font-variant-numeric:tabular-nums}"
     },
     {
       "name": "Navegación lateral",
@@ -602,7 +632,7 @@
       "refersTo": "campo-subrayado",
       "description": "Texto sobre un renglón; con error la línea pasa a terracota y el mensaje va debajo.",
       "html": "<label class=\"ds-sub\"><span class=\"ds-sub-et\">Nombre</span><input class=\"ds-sub-in ds-sub-in--error\" value=\"Nequi\" aria-invalid=\"true\"></label><p class=\"ds-error\" role=\"alert\">Ya tienes una cuenta con ese nombre.</p>",
-      "css": ".ds-sub{display:flex;flex-direction:column;gap:4px;font-family:var(--font-interfaz), system-ui, sans-serif}.ds-sub-et{font-size:13px;line-height:18px;color:var(--secundario)}.ds-sub-in{height:44px;border:0;border-bottom:1px solid var(--linea);background:transparent;padding:0;font-size:17px;color:var(--texto)}.ds-sub-in:focus{border-bottom-color:var(--raya)}.ds-sub-in::placeholder{color:var(--terciario)}.ds-sub-in--error{border-bottom-color:var(--salida)}.ds-error{margin:4px 0 0;font-size:13px;line-height:18px;color:var(--salida-texto)}"
+      "css": ".ds-sub{display:flex;flex-direction:column;gap:4px;font-family:var(--font-interfaz), system-ui, sans-serif}.ds-sub-et{font-size:14px;line-height:20px;color:var(--secundario)}.ds-sub-in{height:44px;border:0;border-bottom:1px solid var(--linea);background:transparent;padding:0;font-size:17px;color:var(--texto)}.ds-sub-in:focus{border-bottom-color:var(--raya)}.ds-sub-in::placeholder{color:var(--terciario)}.ds-sub-in--error{border-bottom-color:var(--salida)}.ds-error{margin:4px 0 0;font-size:14px;line-height:20px;color:var(--salida-texto)}"
     }
   ],
   "narrative": {

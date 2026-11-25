@@ -37,7 +37,7 @@ export function FichaCuenta({ cuenta, elegida, resultante = null, sinSaldo = fal
       type="button"
       aria-pressed={elegida}
       onClick={alPulsar}
-      className={`grid min-h-12 grid-cols-[20px_minmax(0,1fr)] items-center gap-2 rounded-campo border bg-superficie px-3 py-2 text-left ${
+      className={`presion grid min-h-12 grid-cols-[20px_minmax(0,1fr)] items-center gap-2 rounded-campo border bg-superficie px-3 py-2 text-left ${
         elegida ? "border-texto" : "border-linea hover:border-secundario"
       }`}
     >

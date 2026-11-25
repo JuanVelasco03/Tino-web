@@ -7,7 +7,7 @@ import { cuentasOrigen, validarAporte, type CampoAporte, type ValoresAporte } fr
 import { pesos } from "@/domain/meta/presentacion";
 import type { AporteCambio, AporteCuerpo, FilaAporte, MetaDetalle } from "@/domain/meta/tipos";
 import type { Cuenta } from "@/services/cuentas";
-import { BloqueEliminar } from "../bloque-eliminar";
+import { BloqueEliminar, PedirEliminar } from "../bloque-eliminar";
 import { Boton } from "../boton";
 import { CampoMonto } from "../campo-monto";
 import { CampoSubrayado } from "../campo-subrayado";
@@ -17,6 +17,7 @@ import { MensajeError } from "../mensaje-error";
 import { OpcionUnica } from "../opcion-unica";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { rutaMeta } from "./rutas";
+import { CampoFecha } from "../campo-fecha";
 
 type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoAporte };
 type Resultado = { ok: true } | Fallo;
@@ -206,14 +207,9 @@ export function PanelAporte({ meta, fechaHoy, tipoInicial = "aporte", aporte, cu
               error={errorBorrado}
             />
           ) : (
-            <button
-              type="button"
-              onClick={() => setConfirmandoBorrado(true)}
-              disabled={pendiente}
-              className="py-2 text-etiqueta font-normal text-secundario hover:text-texto disabled:cursor-not-allowed"
-            >
+            <PedirEliminar onClick={() => setConfirmandoBorrado(true)} disabled={pendiente}>
               {aporte.tipo === "retiro" ? "Eliminar retiro…" : "Eliminar aporte…"}
-            </button>
+            </PedirEliminar>
           )}
         </div>
       )}
@@ -244,15 +240,13 @@ export function PanelAporte({ meta, fechaHoy, tipoInicial = "aporte", aporte, cu
           editable={{ nombre: "aporte-monto", alCambiar: (v) => cambiar("monto", v, "monto"), error: errores.monto }}
         />
 
-        <CampoSubrayado
+        <CampoFecha
           etiqueta="Fecha"
-          name="fecha"
-          type="date"
-          required
+          hoy={fechaHoy}
           min={meta.creadaEl}
           max={fechaHoy}
-          value={valores.fecha}
-          onChange={(e) => cambiar("fecha", e.target.value, "fecha")}
+          valor={valores.fecha}
+          alCambiar={(fecha) => cambiar("fecha", fecha, "fecha")}
           error={errores.fecha}
         />
 

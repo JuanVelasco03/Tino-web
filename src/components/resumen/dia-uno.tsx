@@ -11,7 +11,7 @@ import { EnlaceTexto } from "../enlace-texto";
 import { GraficaPatrimonio } from "./grafica-patrimonio";
 
 /** Respuesta al pulsar: el botón cede apenas (0,98) y vuelve. Con movimiento reducido, solo el color. */
-const PRESION = "transition-[transform,border-color] duration-150 ease-llegada active:scale-98 active:duration-75 motion-reduce:active:scale-100";
+const PRESION = "presion";
 
 type Props = {
   /** Cuentas no archivadas: «tus 3 cuentas», «tu cuenta» o la invitación a crear una (N-55). */

@@ -1,18 +1,19 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { cuerpoAjuste, hayCambiosAjuste, ladoAjuste, valoresAjusteDesde, type ValoresAjuste } from "@/domain/movimiento/ajuste";
 import { mesDeFecha } from "@/domain/fecha/formato";
 import { cuentaArchivada } from "@/domain/movimiento/edicion";
 import type { DatosCaptura } from "@/services/captura";
 import type { CampoCaptura, Movimiento } from "@/services/movimientos";
-import { BloqueEliminar } from "../bloque-eliminar";
+import { BloqueEliminar, PedirEliminar } from "../bloque-eliminar";
 import { Boton } from "../boton";
 import { CampoMonto } from "../campo-monto";
 import { CampoSubrayado } from "../campo-subrayado";
-import { EnlaceTexto } from "../enlace-texto";
 import { FichaCuenta } from "../captura/ficha-cuenta";
+import { SelectorFecha } from "../captura/selector-fecha";
+import { AvisoSoloLectura, ConfirmarDescarte } from "../captura/panel-captura";
 import { MAX_DESCRIPCION, MAX_NOTA } from "../captura/usar-formulario";
 import { MensajeError } from "../mensaje-error";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
@@ -30,6 +31,9 @@ type Props = {
   acciones: Pick<AccionesEdicion, "guardar" | "eliminar">;
   alTerminar: (resultado: ResultadoEdicion) => void;
 };
+
+const ID_FORMULARIO = "ajuste-formulario";
+const ID_MONTO = "ajuste-monto";
 
 type Errores = Partial<Record<"monto" | "fecha" | "cuenta" | "descripcion" | "nota", string>>;
 
@@ -69,6 +73,13 @@ export function EdicionAjuste({ movimiento, datos, mes, sinClasificar = false, a
   const cuerpo = cuerpoAjuste(movimiento, valores);
   const ocupado = accion !== null;
   const nombreCuenta = (movimiento.cuentaDestino ?? movimiento.cuentaOrigen)?.nombre ?? "";
+
+  // Como la edición común: al abrir, el foco va al monto (salvo en solo lectura).
+  // La dependencia es un booleano: `soloLectura` es un objeto nuevo en cada render y robaría el foco al escribir.
+  const editable = soloLectura === null;
+  useEffect(() => {
+    if (editable) document.getElementById(ID_MONTO)?.focus();
+  }, [editable]);
 
   async function cerrar() {
     await panel.current?.cerrar();
@@ -132,9 +143,51 @@ export function EdicionAjuste({ movimiento, datos, mes, sinClasificar = false, a
 
   const guardando = accion === "guardar";
 
+  // Como en la edición común: guardar (o descartar) y el borrado van en el pie fijo,
+  // a la vista aunque el formulario se desplace en la hoja móvil.
+  const pie = soloLectura ? undefined : (
+    <div className="flex flex-col gap-2">
+      {confirmandoDescarte ? (
+        <ConfirmarDescarte alDescartar={() => void cerrar()} alSeguir={() => setConfirmandoDescarte(false)} />
+      ) : (
+        <Boton type="submit" form={ID_FORMULARIO} disabled={ocupado || cuerpo === null} className="w-full justify-center">
+          {guardando ? "Guardando…" : "Guardar cambios"}
+        </Boton>
+      )}
+      {errorGeneral && <MensajeError mensaje={errorGeneral} />}
+      <div className="mt-2 border-t border-linea pt-2">
+        {confirmandoBorrado ? (
+          <div className="pt-2">
+            <BloqueEliminar
+              nombre={movimiento.descripcion ?? "Ajuste"}
+              detalle={`El saldo de ${nombreCuenta} vuelve a como estaba. No se puede deshacer.`}
+              alConfirmar={() => void eliminar()}
+              alCancelar={() => {
+                setConfirmandoBorrado(false);
+                setErrorBorrado(null);
+              }}
+              pendiente={accion === "eliminar"}
+              error={errorBorrado}
+            />
+          </div>
+        ) : (
+          <PedirEliminar
+            onClick={() => {
+              setConfirmandoDescarte(false);
+              setConfirmandoBorrado(true);
+            }}
+            disabled={ocupado}
+          >
+            Eliminar movimiento…
+          </PedirEliminar>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <PanelLateral ref={panel} titulo="Editar movimiento" alSolicitarCierre={solicitarCierre}>
-      <form onSubmit={guardar} noValidate className="flex flex-col gap-6">
+    <PanelLateral ref={panel} titulo="Editar movimiento" alSolicitarCierre={solicitarCierre} pie={pie}>
+      <form id={ID_FORMULARIO} onSubmit={guardar} noValidate className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <p className="text-cuerpo font-semibold">Ajuste de saldo</p>
           <p className="text-etiqueta font-normal text-secundario">
@@ -142,34 +195,22 @@ export function EdicionAjuste({ movimiento, datos, mes, sinClasificar = false, a
           </p>
         </div>
 
-        {soloLectura && (
-          <div className="flex flex-col items-start gap-1">
-            <p className="text-etiqueta font-normal text-secundario">
-              La cuenta {soloLectura.nombre} está archivada. Restáurala para modificar este movimiento.
-            </p>
-            <EnlaceTexto href="/cuentas/archivadas">Ver archivadas</EnlaceTexto>
-          </div>
-        )}
+        {soloLectura && <AvisoSoloLectura cuenta={soloLectura.nombre} />}
 
         <fieldset disabled={soloLectura !== null || ocupado} className="flex min-w-0 flex-col gap-6">
           <CampoMonto
             valor={valores.monto}
             moneda="COP"
             signo={sube ? "entrada" : "salida"}
-            editable={{ nombre: "ajuste-monto", alCambiar: (v) => cambiar("monto", v), error: errores.monto }}
+            editable={{ nombre: ID_MONTO, alCambiar: (v) => cambiar("monto", v), error: errores.monto }}
           />
 
-          <CampoSubrayado
-            etiqueta="Fecha"
-            name="fecha"
-            type="date"
-            required
-            value={valores.fecha}
-            onChange={(e) => {
-              if (e.target.value !== "") cambiar("fecha", e.target.value);
-            }}
+          {/* La misma fila de fecha que la edición común: Hoy · Ayer · Anteayer · Otra fecha (calendario). */}
+          <SelectorFecha
+            fechaHoy={datos.captura.fechaHoy}
+            valor={valores.fecha}
+            alCambiar={(fecha) => cambiar("fecha", fecha)}
             error={errores.fecha}
-            className="font-mono tabular-nums"
           />
 
           <div role="group" aria-label="Cuenta" className="flex flex-col gap-2">
@@ -202,58 +243,7 @@ export function EdicionAjuste({ movimiento, datos, mes, sinClasificar = false, a
             error={errores.nota}
           />
         </fieldset>
-
-        {!soloLectura && (
-          <div className="flex flex-col gap-3">
-            {confirmandoDescarte ? (
-              <div role="group" aria-label="Descartar los cambios" className="flex flex-col gap-3">
-                <p className="text-cuerpo font-semibold">¿Descartar los cambios?</p>
-                <div className="flex flex-wrap items-center gap-3">
-                  <Boton onClick={() => void cerrar()}>Descartar</Boton>
-                  <Boton variante="texto" onClick={() => setConfirmandoDescarte(false)}>
-                    Seguir editando
-                  </Boton>
-                </div>
-              </div>
-            ) : (
-              <Boton type="submit" disabled={ocupado || cuerpo === null} className="w-full justify-center">
-                {guardando ? "Guardando…" : "Guardar cambios"}
-              </Boton>
-            )}
-            {errorGeneral && <MensajeError mensaje={errorGeneral} />}
-          </div>
-        )}
       </form>
-
-      {!soloLectura && (
-        <div className="mt-6 border-t border-linea pt-6">
-          {confirmandoBorrado ? (
-            <BloqueEliminar
-              nombre={movimiento.descripcion ?? "Ajuste"}
-              detalle={`El saldo de ${nombreCuenta} vuelve a como estaba. No se puede deshacer.`}
-              alConfirmar={() => void eliminar()}
-              alCancelar={() => {
-                setConfirmandoBorrado(false);
-                setErrorBorrado(null);
-              }}
-              pendiente={accion === "eliminar"}
-              error={errorBorrado}
-            />
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setConfirmandoDescarte(false);
-                setConfirmandoBorrado(true);
-              }}
-              disabled={ocupado}
-              className="py-2 text-etiqueta font-normal text-secundario hover:text-texto disabled:cursor-not-allowed"
-            >
-              Eliminar movimiento…
-            </button>
-          )}
-        </div>
-      )}
     </PanelLateral>
   );
 }
