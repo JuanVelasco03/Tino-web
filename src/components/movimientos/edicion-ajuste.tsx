@@ -17,6 +17,7 @@ import { MAX_DESCRIPCION, MAX_NOTA } from "../captura/usar-formulario";
 import { MensajeError } from "../mensaje-error";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import type { AccionesEdicion, ResultadoEdicion } from "./usar-edicion";
+import { rutaLibro } from "@/domain/movimiento/sin-clasificar";
 
 type Props = {
   /** Un movimiento de tipo `ajuste`. */
@@ -71,7 +72,7 @@ export function EdicionAjuste({ movimiento, datos, mes, sinClasificar = false, a
 
   async function cerrar() {
     await panel.current?.cerrar();
-    router.replace(`/movimientos?mes=${mes}${sinClasificar ? "&sinClasificar=1" : ""}`, { scroll: false });
+    router.replace(`${rutaLibro(sinClasificar)}?mes=${mes}`, { scroll: false });
   }
 
   function solicitarCierre() {

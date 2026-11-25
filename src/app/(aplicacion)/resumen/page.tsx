@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { NavegacionMes } from "@/components/movimientos/navegacion-mes";
 import { CambioDelMes } from "@/components/resumen/cambio-del-mes";
 import { CifrasMes } from "@/components/resumen/cifras-mes";
 import { DiaUno } from "@/components/resumen/dia-uno";
+import { EsqueletoResumen } from "@/components/resumen/esqueleto-resumen";
 import { GastoCategorias } from "@/components/resumen/gasto-categorias";
 import { PatrimonioNeto } from "@/components/resumen/grafica-patrimonio";
 import { esMes, formatearMes, formatearNombreMes, formatearRango } from "@/domain/fecha/formato";
@@ -26,11 +28,21 @@ export default async function PaginaResumen({ searchParams }: PageProps<"/resume
   const mesPedido = texto((await searchParams).mes);
   if (mesPedido !== undefined && !esMes(mesPedido)) redirect("/resumen");
 
+  // La `key` por mes hace que cambiar de mes (misma ruta, otro `?mes=`) vuelva
+  // a mostrar el esqueleto en vez de dejar el mes anterior quieto hasta que llegue la API.
+  return (
+    <Suspense key={mesPedido ?? "actual"} fallback={<EsqueletoResumen mes={mesPedido} />}>
+      <ContenidoResumen mesPedido={mesPedido} />
+    </Suspense>
+  );
+}
+
+async function ContenidoResumen({ mesPedido }: { mesPedido: string | undefined }) {
   const r = await obtenerResumen(mesPedido);
 
   if (!r.tieneMovimientos) {
     return (
-      <div className="flex flex-col gap-6 md:gap-8">
+      <div className="flex max-w-[1440px] flex-col gap-6 md:gap-8">
         <header className="flex flex-col gap-1">
           {ROTULO}
           <h1 className="text-titulo-1">{formatearMes(r.mes)}</h1>
@@ -44,7 +56,8 @@ export default async function PaginaResumen({ searchParams }: PageProps<"/resume
   const movimientos = r.cantidadMovimientos === 1 ? "movimiento" : "movimientos";
 
   return (
-    <div className="flex flex-col gap-8 md:gap-12">
+    // Tope de 1440 px: en pantallas muy anchas, el rótulo y su cifra no se separan más de lo que se puede comparar.
+    <div className="asentar flex max-w-[1440px] flex-col gap-8 md:gap-12">
       <header className="flex flex-col gap-1 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
         <div className="flex flex-col gap-1">
           {ROTULO}

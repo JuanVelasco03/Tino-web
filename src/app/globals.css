@@ -159,8 +159,8 @@
   --text-cifra-s: 15px;
   --text-cifra-s--line-height: 22px;
   --text-cifra-s--font-weight: 500;
-  --text-cifra-xs: 12px;
-  --text-cifra-xs--line-height: 16px;
+  --text-cifra-xs: 13px;
+  --text-cifra-xs--line-height: 18px;
   --text-cifra-xs--font-weight: 400;
   /* Solo el campo de monto (C4 del documento): 44/52. */
   --text-cifra-campo: 44px;
@@ -179,11 +179,11 @@
   --text-cuerpo: 15px;
   --text-cuerpo--line-height: 22px;
   --text-cuerpo--font-weight: 400;
-  --text-etiqueta: 13px;
-  --text-etiqueta--line-height: 18px;
+  --text-etiqueta: 14px;
+  --text-etiqueta--line-height: 20px;
   --text-etiqueta--font-weight: 500;
-  --text-rotulo: 11px;
-  --text-rotulo--line-height: 14px;
+  --text-rotulo: 12px;
+  --text-rotulo--line-height: 16px;
   --text-rotulo--font-weight: 600;
   --text-rotulo--letter-spacing: 0.08em;
 }
@@ -195,8 +195,43 @@
   border-bottom: 3px double var(--raya);
 }
 
+/* Doble raya en renglón: el cierre de una tabla vacía (día uno), sin la tinta de la raya. */
+@utility doble-renglon {
+  border-bottom: 3px double var(--linea);
+}
+
 @utility punteada {
   border-bottom: 1px dashed var(--terciario);
+}
+
+/* ── Movimiento del resumen ──────────────────────────────────────────── */
+/* `asentar`: el contenido de un mes entra con un fundido, en vez de saltar
+   desde el esqueleto. `trazo`: una barra se traza desde la izquierda, como un
+   renglón; `--retraso` escalona la lista. Con movimiento reducido, solo el
+   fundido. El estado por defecto es visible: sin animación, nada se oculta. */
+@keyframes asentar {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes trazar {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@utility asentar {
+  animation: asentar 220ms var(--llegada) both;
+}
+
+@utility trazo {
+  transform-origin: left center;
+  animation: trazar 520ms var(--llegada) var(--retraso, 0ms) both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: asentar 150ms var(--llegada) both;
+  }
 }
 
 /* ── Base ────────────────────────────────────────────────────────────── */

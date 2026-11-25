@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { formatearDinero } from "@/domain/dinero/formato";
 import { formatearDiaSemana, formatearFechaSinAnio, formatearMes, formatearNombreMes, sumarMeses } from "@/domain/fecha/formato";
 import { agruparPorDia, filtrar, hayFiltros, opcionesDe, personaDe, SIN_FILTROS, type Filtros, type Personas } from "@/domain/movimiento/filtros";
+import { rutaLibro } from "@/domain/movimiento/sin-clasificar";
 import { importeEnPatrimonio, importeMostrado } from "@/domain/movimiento/vista-previa";
 import type { DatosCaptura } from "@/services/captura";
 import type { Movimiento } from "@/services/movimientos";
@@ -30,7 +31,7 @@ type Props = {
   personas: readonly { id: string; nombre: string }[];
   /** En el orden de la API: fecha desc, el último registrado primero. Con el filtro, ya filtrados. */
   movimientos: Movimiento[];
-  /** `?sinClasificar=1`: solo los gastos sin clasificar, con su rótulo, su vacío y «Ver todos». */
+  /** `/movimientos/sin-clasificar`: solo los gastos sin clasificar, con «← Movimientos» y su vacío. */
   sinClasificar?: boolean;
   /** `?movimiento=<id>`: el movimiento y lo que su formulario necesita, cargados con la página. */
   edicion: { movimiento: Movimiento; datos: DatosCaptura; prestamos?: readonly PrestamoDeEdicion[] } | null;
@@ -87,13 +88,13 @@ function datosAvisoEdicion(resultado: ResultadoEdicion | null): DatosAviso | nul
 }
 
 /** Meses del filtro de fecha: el actual y los 11 anteriores, más el listado si cae fuera (un mes futuro). */
-function opcionesFecha(mes: string, actual: string): OpcionFiltro[] {
+function opcionesFecha(mes: string, actual: string, ruta: string): OpcionFiltro[] {
   const meses = Array.from({ length: 12 }, (_, i) => sumarMeses(actual, -i));
   if (!meses.includes(mes)) meses.unshift(mes);
   const anio = actual.slice(0, 4);
   return meses.map((m) => {
     const nombre = formatearMes(m);
-    return { valor: m, etiqueta: m.startsWith(anio) ? nombre.split(" ")[0] : nombre, href: `/movimientos?mes=${m}` };
+    return { valor: m, etiqueta: m.startsWith(anio) ? nombre.split(" ")[0] : nombre, href: `${ruta}?mes=${m}` };
   });
 }
 
@@ -126,8 +127,8 @@ function CeldaCategoria({ m }: { m: Movimiento }) {
  * día; en móvil, un encabezado por día con filas C2. Cada fila es un enlace a
  * su edición (`?movimiento=<id>`); un movimiento dividido muestra sus partes
  * como sub-renglones. Tras registrar, guardar o eliminar, el aviso va arriba
- * de la lista y la fila se resalta. Con el filtro de gastos sin clasificar,
- * los enlaces lo conservan y al clasificar uno la fila sale de la lista.
+ * de la lista y la fila se resalta. En la subruta de gastos sin clasificar,
+ * los enlaces se quedan en ella y al clasificar uno la fila sale de la lista.
  */
 export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos, sinClasificar = false, edicion, acciones }: Props) {
   const { abrir, resaltadoId: registrado } = useContextoCaptura();
@@ -140,9 +141,9 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
 
   const esActual = mes === actual;
   const nombreMes = formatearNombreMes(mes);
-  const filtro = sinClasificar ? "&sinClasificar=1" : "";
+  const ruta = rutaLibro(sinClasificar);
   const verTodos = `/movimientos?mes=${mes}`;
-  const enlace = (m: Movimiento) => `/movimientos?mes=${mes}${filtro}&movimiento=${m.id}`;
+  const enlace = (m: Movimiento) => `${ruta}?mes=${mes}&movimiento=${m.id}`;
   const resaltada = (m: Movimiento) => m.id === registrado || m.id === aviso.resaltadoId;
 
   const datosAviso = datosAvisoEdicion(aviso.aviso);
@@ -150,7 +151,7 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
 
   const cambiar = (clave: "cuentaId" | "categoriaId" | "persona") => (valor: string | null) => setFiltros((f) => ({ ...f, [clave]: valor }));
   const definiciones: DefinicionFiltro[] = [
-    { clave: "fecha", rotulo: "Fecha", valor: mes, opciones: opcionesFecha(mes, actual), fijo: true },
+    { clave: "fecha", rotulo: "Fecha", valor: mes, opciones: opcionesFecha(mes, actual, ruta), fijo: true },
     { clave: "cuenta", rotulo: "Cuenta", valor: filtros.cuentaId, opciones: todas(opciones.cuentas), alElegir: cambiar("cuentaId") },
     { clave: "categoria", rotulo: "Categoría", valor: filtros.categoriaId, opciones: todas(opciones.categorias), alElegir: cambiar("categoriaId") },
     {
@@ -166,8 +167,15 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
 
   return (
     <>
-      <header className="flex items-baseline justify-between gap-6">
-        <h1 className="text-titulo-1">Movimientos</h1>
+      <header className="flex items-end justify-between gap-6">
+        {sinClasificar ? (
+          <div className="flex flex-col items-start gap-1">
+            <EnlaceTexto href={verTodos}>← Movimientos</EnlaceTexto>
+            <h1 className="text-titulo-1">Gastos sin clasificar</h1>
+          </div>
+        ) : (
+          <h1 className="text-titulo-1">Movimientos</h1>
+        )}
         <span className="text-etiqueta font-normal text-secundario">
           <span className="font-mono tabular-nums text-texto">{cantidad}</span>
           <span className="max-md:hidden"> {cantidad === 1 ? "movimiento" : "movimientos"}</span>
@@ -183,13 +191,6 @@ export function LibroMovimientos({ mes, actual, personas: prestamos, movimientos
       />
 
       <AvisoRegistro aviso={datosAviso} oferta={datosOferta} />
-
-      {sinClasificar && movimientos.length > 0 && (
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-rotulo uppercase">Gastos sin clasificar · {movimientos.length}</h2>
-          <EnlaceTexto href={verTodos}>Ver todos</EnlaceTexto>
-        </div>
-      )}
 
       {sinClasificar && movimientos.length === 0 ? (
         <EstadoVacio

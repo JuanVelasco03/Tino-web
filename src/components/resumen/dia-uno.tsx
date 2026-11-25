@@ -10,6 +10,9 @@ import { useContextoCaptura } from "../captura/proveedor-captura";
 import { EnlaceTexto } from "../enlace-texto";
 import { GraficaPatrimonio } from "./grafica-patrimonio";
 
+/** Respuesta al pulsar: el botón cede apenas (0,98) y vuelve. Con movimiento reducido, solo el color. */
+const PRESION = "transition-[transform,border-color] duration-150 ease-llegada active:scale-98 active:duration-75 motion-reduce:active:scale-100";
+
 type Props = {
   /** Cuentas no archivadas: «tus 3 cuentas», «tu cuenta» o la invitación a crear una (N-55). */
   cuentasActivas: number;
@@ -56,7 +59,7 @@ export function VistaDiaUno({ cuentasActivas, inicio, fechaHoy, patrimonioHoy, a
     <div className="flex flex-col gap-8 md:gap-12">
       {/* Mensaje y acciones */}
       <div className="flex flex-col gap-4 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-12 md:border-b md:border-linea md:pb-6">
-        <div className="flex max-w-[620px] flex-col gap-1">
+        <div className="flex max-w-prose flex-col gap-1">
           <p className="text-titulo-2">Hoy es tu primer día.</p>
           {sinCuentas ? (
             <p className="text-cuerpo text-secundario">Empieza por crear una cuenta: el resumen se arma con lo que registres en ella.</p>
@@ -79,10 +82,12 @@ export function VistaDiaUno({ cuentasActivas, inicio, fechaHoy, patrimonioHoy, a
           </EnlaceTexto>
         ) : (
           <div className="hidden gap-2 md:flex">
-            <Boton onClick={alRegistrar}>Registrar el primer gasto</Boton>
+            <Boton onClick={alRegistrar} className={PRESION}>
+              Registrar el primer gasto
+            </Boton>
             <Link
               href={NUEVA_CUENTA}
-              className="inline-flex h-12 items-center rounded-campo border border-linea bg-superficie px-6 text-cuerpo font-medium"
+              className={`inline-flex h-12 items-center rounded-campo border border-linea bg-superficie px-6 text-cuerpo font-medium hover:border-secundario ${PRESION}`}
             >
               Agregar otra cuenta
             </Link>
@@ -96,7 +101,7 @@ export function VistaDiaUno({ cuentasActivas, inicio, fechaHoy, patrimonioHoy, a
           {CIFRAS.map((c, i) => (
             <div key={c.rotulo} className={`flex flex-col gap-3 pt-6 ${i > 0 ? "border-l border-linea pl-6" : ""} ${i < 2 ? "pr-6" : ""}`}>
               <h2 className="text-rotulo uppercase">{c.rotulo}</h2>
-              <span className="font-mono text-cifra-l tabular-nums text-terciario">0</span>
+              <span className="font-mono text-cifra-l tabular-nums text-secundario">0</span>
               <span className="text-etiqueta font-normal text-secundario">{c.detalle}</span>
             </div>
           ))}
@@ -110,7 +115,7 @@ export function VistaDiaUno({ cuentasActivas, inicio, fechaHoy, patrimonioHoy, a
                 className={`flex items-baseline justify-between gap-3 py-3 ${esResultado ? "doble-raya border-t border-raya" : "border-b border-linea"}`}
               >
                 <dt className={`text-cuerpo ${esResultado ? "font-semibold" : ""}`}>{c.rotulo}</dt>
-                <dd className={`font-mono tabular-nums text-terciario ${esResultado ? "text-cifra-l" : "text-cifra-m"}`}>0</dd>
+                <dd className={`font-mono tabular-nums text-secundario ${esResultado ? "text-cifra-l" : "text-cifra-m"}`}>0</dd>
               </div>
             );
           })}
@@ -127,7 +132,7 @@ export function VistaDiaUno({ cuentasActivas, inicio, fechaHoy, patrimonioHoy, a
             <div className="h-11 border-b border-linea" />
             <div className="h-11 border-b border-linea" />
             <div className="h-11 border-b border-linea" />
-            <div className="h-11 border-b-[3px] border-double border-linea" />
+            <div className="doble-renglon h-11" />
           </div>
           <p className="pt-4 text-etiqueta font-normal text-secundario">
             Cuando registres gastos aparecen aquí, de mayor a menor, con su parte del total.
@@ -156,7 +161,7 @@ export function VistaDiaUno({ cuentasActivas, inicio, fechaHoy, patrimonioHoy, a
       </div>
 
       {!sinCuentas && (
-        <Boton onClick={alRegistrar} className="w-full justify-center md:hidden">
+        <Boton onClick={alRegistrar} className={`w-full justify-center md:hidden ${PRESION}`}>
           Registrar el primer gasto
         </Boton>
       )}

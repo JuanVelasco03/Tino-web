@@ -24,7 +24,7 @@ const MENSAJE_ENTRADA = "No pudimos procesar los datos. Intenta de nuevo.";
  * una cuenta (`/cuentas/[id]`, historial o ciclo) se revalida como ruta en
  * `revalidarAfectadas`: un pago o un gasto lo cambia (SPEC 13).
  */
-export const RUTAS_AFECTADAS = ["/movimientos", "/cuentas", "/resumen", "/recurrentes", "/deudas", "/inversiones", "/avisos", "/metas"] as const;
+export const RUTAS_AFECTADAS = ["/movimientos", "/movimientos/sin-clasificar", "/cuentas", "/resumen", "/recurrentes", "/deudas", "/inversiones", "/avisos", "/metas"] as const;
 
 /** Detalle de cualquier cuenta: `revalidatePath(RUTA_DETALLE_CUENTA, "page")`. */
 export const RUTA_DETALLE_CUENTA = "/cuentas/[id]";

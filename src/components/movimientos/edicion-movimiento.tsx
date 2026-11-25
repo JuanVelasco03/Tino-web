@@ -7,6 +7,7 @@ import { HojaCaptura } from "../captura/hoja-captura";
 import { PanelCaptura } from "../captura/panel-captura";
 import { useEscritorio } from "../captura/proveedor-captura";
 import { useEdicion, type AccionesEdicion, type PrestamoDeEdicion, type ResultadoEdicion } from "./usar-edicion";
+import { rutaLibro } from "@/domain/movimiento/sin-clasificar";
 
 type Props = {
   movimiento: Movimiento;
@@ -15,7 +16,7 @@ type Props = {
   mes: string;
   /** Los préstamos: la cuenta de uno queda fija y el tipo, bloqueado. */
   prestamos?: readonly PrestamoDeEdicion[];
-  /** Abierta desde el filtro de gastos sin clasificar: cerrar vuelve a él. */
+  /** Abierta desde `/movimientos/sin-clasificar`: cerrar vuelve ahí. */
   sinClasificar?: boolean;
   acciones: AccionesEdicion;
   alTerminar: (resultado: ResultadoEdicion) => void;
@@ -36,7 +37,7 @@ export function EdicionMovimiento({ movimiento, datos, mes, prestamos, sinClasif
     prestamos,
     acciones,
     alTerminar,
-    alCerrar: () => router.replace(`/movimientos?mes=${mes}${sinClasificar ? "&sinClasificar=1" : ""}`, { scroll: false }),
+    alCerrar: () => router.replace(`${rutaLibro(sinClasificar)}?mes=${mes}`, { scroll: false }),
   });
   return escritorio ? <PanelCaptura c={edicion} /> : <HojaCaptura c={edicion} />;
 }

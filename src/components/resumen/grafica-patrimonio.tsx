@@ -14,7 +14,7 @@ type Props =
 /**
  * `viewBox` fijo por formato: los tamaños del texto están pensados para cada
  * ancho. Se elige por el ancho del bloque (container query), no de la
- * ventana, para que el SVG estirado no lleve el texto lejos de 12 px:
+ * ventana, para que el SVG estirado no lleve el texto lejos de 13 px:
  * móvil hasta 448 px, medio hasta 576, escritorio desde ahí.
  */
 const LIENZOS = {
@@ -34,7 +34,7 @@ const LIENZOS_PARTIDA = {
   movil: { ancho: 358, alto: 96 },
 } as const satisfies Record<string, Lienzo>;
 
-/** Cifra-xs (12/16 · 400) dentro del SVG: el texto toma la familia mono de la página. */
+/** Cifra-xs (13/18 · 400) dentro del SVG: el texto toma la familia mono de la página. */
 const TEXTO = "font-mono text-cifra-xs";
 
 function pesos(monto: bigint): string {
@@ -47,7 +47,7 @@ function baseDe(lienzo: Lienzo) {
   return { yBase, yMeses: lienzo.alto - 4, xFin: lienzo.ancho - MARGEN.derecha + 8 };
 }
 
-/** En móvil, 12 meses de 3 letras no caben a 12 px: se rotula uno de cada dos, contando desde hoy. */
+/** En móvil, 12 meses de 3 letras no caben a 13 px: se rotula uno de cada dos, contando desde hoy. */
 type Alternas = { alternas?: boolean };
 
 function SvgSerie({
@@ -72,10 +72,10 @@ function SvgSerie({
         </g>
       ))}
       <line x1={0} x2={xFin} y1={yBase} y2={yBase} className="stroke-raya" strokeWidth={1} />
-      {/* Meses antes del inicio, en tenue: la escala de 12 casillas no se estira. Alternas cuentan desde hoy (casilla 11). */}
+      {/* Meses antes del inicio, sin punto: la escala de 12 casillas no se estira. En secundario, no en tenue: son texto y deben cumplir contraste. Alternas cuentan desde hoy (casilla 11). */}
       {vacias.map((c, i) =>
         alternas && (CASILLAS - 1 - i) % 2 !== 0 ? null : (
-          <text key={c.x} x={c.x} y={yMeses} textAnchor="middle" className={`${TEXTO} fill-terciario`}>
+          <text key={c.x} x={c.x} y={yMeses} textAnchor="middle" className={`${TEXTO} fill-secundario`}>
             {c.etiqueta}
           </text>
         ),
@@ -137,7 +137,7 @@ function SvgPuntoDePartida({ fechaHoy, lienzo, className, alternas }: { fechaHoy
       <circle cx={casillas[0].x} cy={yLinea} r={3.5} className="fill-texto stroke-texto" strokeWidth={1.5} />
       {casillas.map((c, i) =>
         alternas && i % 2 !== 0 ? null : (
-          <text key={c.x} x={c.x} y={yMeses} textAnchor="middle" className={`${TEXTO} ${i === 0 ? "fill-texto" : "fill-terciario"}`}>
+          <text key={c.x} x={c.x} y={yMeses} textAnchor="middle" className={`${TEXTO} ${i === 0 ? "fill-texto" : "fill-secundario"}`}>
             {c.etiqueta}
           </text>
         ),

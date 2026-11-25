@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useId } from "react";
+import { useId, type CSSProperties } from "react";
 import { formatearDinero } from "@/domain/dinero/formato";
 import { formatearMes, formatearNombreMes } from "@/domain/fecha/formato";
 import { anchoBarra, formatearPorcentaje, mayorPorcentaje, SIN_PORCENTAJE } from "@/domain/resumen/porcentaje";
@@ -41,20 +41,25 @@ const COLUMNAS =
 /** «Sin categoría» se separa con una punteada arriba: es lo pendiente (las cuatro líneas). */
 const PUNTEADA_ARRIBA = "border-t border-t-terciario [border-top-style:dashed]";
 
-function Barra({ ancho, sinCategoria, alto }: { ancho: number; sinCategoria: boolean; alto: "h-1.5" | "h-1" }) {
+/** Escalón entre barras al trazarse, con tope: la lista entera queda trazada en menos de 750 ms. */
+function retraso(indice: number): CSSProperties {
+  return { "--retraso": `${Math.min(indice * 40, 200)}ms` } as CSSProperties;
+}
+
+function Barra({ ancho, sinCategoria, alto, indice }: { ancho: number; sinCategoria: boolean; alto: "h-1.5" | "h-1"; indice: number }) {
   if (ancho === 0) return <div aria-hidden className={alto} />;
   // «Sin categoría» es lo pendiente: la punteada de 1 px del sistema, al alto de la barra.
   // Un contorno punteado de 4–6 px de alto se volvía un borrón con porcentajes chicos.
   if (sinCategoria) {
     return (
       <div aria-hidden className={`flex items-center ${alto}`}>
-        <div className="punteada" style={{ width: `${ancho}%` }} />
+        <div className="punteada trazo" style={{ width: `${ancho}%`, ...retraso(indice) }} />
       </div>
     );
   }
   return (
     <div aria-hidden className={alto}>
-      <div className={`${alto} rounded-muestra bg-texto`} style={{ width: `${ancho}%` }} />
+      <div className={`${alto} trazo rounded-muestra bg-texto`} style={{ width: `${ancho}%`, ...retraso(indice) }} />
     </div>
   );
 }
@@ -70,12 +75,12 @@ function Nombre({ fila }: { fila: Fila }) {
 
 /** Enlace al filtro de `/movimientos` (N-34): solo si hay gastos sin clasificar (N-32, N-33). */
 function Indicador({ sinCategoria, mes, formato }: { sinCategoria: Resumen["sinCategoria"]; mes: string; formato: "escritorio" | "movil" }) {
-  const href = `/movimientos?mes=${mes}&sinClasificar=1`;
+  const href = `/movimientos/sin-clasificar?mes=${mes}`;
   const porcentaje = <span className="punteada font-mono tabular-nums">{formatearPorcentaje(sinCategoria.porcentaje)}</span>;
   const n = sinCategoria.cantidad;
   if (formato === "escritorio") {
     return (
-      <Link href={href} className="flex items-baseline gap-1 text-etiqueta font-normal text-secundario hover:text-texto">
+      <Link href={href} className="flex min-h-6 items-baseline gap-1 text-etiqueta font-normal text-secundario transition-colors duration-150 ease-llegada hover:text-texto">
         {porcentaje}
         <span>sin categoría ·</span>
         <span className="font-semibold text-marca-texto">Clasificar {n}</span>
@@ -155,7 +160,7 @@ export function GastoCategorias({ categorias, sinCategoria, gastos, mes, mesAnte
                 Var.
               </span>
             </div>
-            {filas.map((f) => (
+            {filas.map((f, i) => (
               <div
                 key={f.clave}
                 role="row"
@@ -165,7 +170,7 @@ export function GastoCategorias({ categorias, sinCategoria, gastos, mes, mesAnte
                   <Nombre fila={f} />
                 </span>
                 <span role="cell">
-                  <Barra ancho={anchoBarra(f.porcentaje, maximo)} sinCategoria={f.sinCategoria} alto="h-1.5" />
+                  <Barra ancho={anchoBarra(f.porcentaje, maximo)} sinCategoria={f.sinCategoria} alto="h-1.5" indice={i} />
                 </span>
                 <span role="cell" className="text-right font-mono text-cifra-s tabular-nums">
                   {pesos(f.monto)}
@@ -203,7 +208,7 @@ export function GastoCategorias({ categorias, sinCategoria, gastos, mes, mesAnte
 
           {/* Móvil */}
           <ul className="lg:hidden">
-            {filas.map((f) => (
+            {filas.map((f, i) => (
               <li key={f.clave} className={`flex flex-col gap-2 border-b border-linea py-3 ${f.sinCategoria ? PUNTEADA_ARRIBA : ""}`}>
                 <div className="grid grid-cols-[minmax(0,1fr)_auto_52px] items-baseline gap-3">
                   <Nombre fila={f} />
@@ -211,7 +216,7 @@ export function GastoCategorias({ categorias, sinCategoria, gastos, mes, mesAnte
                   <span className="text-right font-mono text-cifra-xs tabular-nums text-secundario">{formatearPorcentaje(f.porcentaje)}</span>
                 </div>
                 <div className="pr-16">
-                  <Barra ancho={anchoBarra(f.porcentaje, maximo)} sinCategoria={f.sinCategoria} alto="h-1" />
+                  <Barra ancho={anchoBarra(f.porcentaje, maximo)} sinCategoria={f.sinCategoria} alto="h-1" indice={i} />
                 </div>
               </li>
             ))}

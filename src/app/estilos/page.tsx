@@ -19,6 +19,7 @@ import {
 } from "@/components/iconos";
 import { CambioDelMes } from "@/components/resumen/cambio-del-mes";
 import { CifrasMes } from "@/components/resumen/cifras-mes";
+import { EsqueletoResumen } from "@/components/resumen/esqueleto-resumen";
 import { GastoCategorias } from "@/components/resumen/gasto-categorias";
 import { GraficaPatrimonio, PatrimonioNeto } from "@/components/resumen/grafica-patrimonio";
 import { TarjetaCuenta } from "@/components/tarjeta-cuenta";
@@ -166,6 +167,11 @@ function ComponentesResumen() {
           <NavegacionMes mes="2026-10" actual="2026-11" ruta="/estilos" hayAnterior={false} variante="titulo" />
           <NavegacionMes mes="2026-10" actual="2026-11" ruta="/estilos" hayAnterior={false} />
         </div>
+      </div>
+
+      <div>
+        <Etiqueta>Esqueleto del resumen · al entrar y al cambiar de mes (con el mes destino ya en el título)</Etiqueta>
+        <EsqueletoResumen mes="2026-10" />
       </div>
 
       <div>

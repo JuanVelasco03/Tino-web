@@ -54,7 +54,8 @@ function variacionDe({ dato }: Cifra) {
 /**
  * Ingresos, gastos y resultado del mes frente al anterior (N-14 a N-20). Las
  * cifras, variaciones y porcentajes llegan de la API: aquí solo se formatean.
- * Desde lg: tres columnas bajo una raya (en md, con el menú lateral, una
+ * Desde xl: tres columnas bajo una raya (en lg, con el menú lateral, un
+ * tercio deja 184 px y una cifra de 8 dígitos en cifra-l mide 204; en md, una
  * cifra-l no cabe en un tercio). Antes: ingresos y gastos en filas, y el
  * resultado entre raya y doble raya.
  */
@@ -70,7 +71,7 @@ export function CifrasMes({ ingresos, gastos, resultado, mesAnterior }: Props) {
   return (
     <section aria-label="Cifras del mes">
       {/* Escritorio */}
-      <div className="hidden grid-cols-3 border-t border-raya lg:grid">
+      <div className="hidden grid-cols-3 border-t border-raya xl:grid">
         {cifras.map((c, i) => (
           <div key={c.rotulo} className={`flex min-w-0 flex-col gap-3 pt-6 ${i > 0 ? "border-l border-linea pl-6" : ""} ${i < 2 ? "pr-6" : ""}`}>
             <h2 className="text-rotulo uppercase">{c.rotulo}</h2>
@@ -90,7 +91,7 @@ export function CifrasMes({ ingresos, gastos, resultado, mesAnterior }: Props) {
       </div>
 
       {/* Móvil */}
-      <dl className="lg:hidden">
+      <dl className="xl:hidden">
         {cifras.map((c) => {
           const esResultado = c.clase === "resultado";
           return (

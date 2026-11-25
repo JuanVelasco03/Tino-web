@@ -8,3 +8,8 @@ import type { TipoMovimiento } from "./cuerpo";
 export function esSinClasificar(m: { tipo: TipoMovimiento; categoria: unknown; partes: readonly unknown[] }): boolean {
   return m.tipo === "gasto" && m.categoria === null && m.partes.length === 0;
 }
+
+/** Ruta del libro: `/movimientos` o su subruta de gastos sin clasificar. */
+export function rutaLibro(sinClasificar: boolean): string {
+  return sinClasificar ? "/movimientos/sin-clasificar" : "/movimientos";
+}
