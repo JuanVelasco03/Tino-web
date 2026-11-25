@@ -45,12 +45,12 @@ export default async function PaginaResumen({ searchParams }: PageProps<"/resume
 
   return (
     <div className="flex flex-col gap-8 md:gap-12">
-      <header className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between md:gap-6">
+      <header className="flex flex-col gap-1 lg:flex-row lg:items-end lg:justify-between lg:gap-6">
         <div className="flex flex-col gap-1">
           {ROTULO}
           <NavegacionMes mes={r.mes} actual={actual} ruta="/resumen" hayAnterior={hayAnterior} haySiguiente={haySiguiente} variante="titulo" />
         </div>
-        <p className="text-etiqueta font-normal text-secundario md:pb-3">
+        <p className="text-etiqueta font-normal text-secundario lg:pb-3">
           {formatearRango(r.desde, r.hasta)} · <span className="font-mono tabular-nums">{r.cantidadMovimientos}</span> {movimientos} · comparado
           con {formatearNombreMes(r.mesAnterior)}
         </p>
@@ -60,8 +60,9 @@ export default async function PaginaResumen({ searchParams }: PageProps<"/resume
 
       <GastoCategorias categorias={r.categorias} sinCategoria={r.sinCategoria} gastos={r.gastos} mes={r.mes} mesAnterior={r.mesAnterior} />
 
-      <div className="flex flex-col gap-8 md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:items-start md:gap-12">
-        <PatrimonioNeto patrimonio={r.patrimonio} />
+      {/* Lado a lado solo desde xl: con el menú lateral, un tercio de lg (216 px) parte los rótulos del puente. */}
+      <div className="flex flex-col gap-8 md:gap-12 xl:grid xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:items-start">
+        <PatrimonioNeto patrimonio={r.patrimonio} mes={r.mes} />
         <CambioDelMes cambio={r.cambioDelMes} mes={r.mes} esActual={r.mes === actual} />
       </div>
     </div>

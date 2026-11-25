@@ -120,7 +120,7 @@ describe("geometriaSerie", () => {
   });
 
   it("serie vacía (sin cuentas): nada que dibujar", () => {
-    expect(geometriaSerie([], ESCRITORIO)).toEqual({ puntos: [], rejilla: [] });
+    expect(geometriaSerie([], ESCRITORIO)).toEqual({ puntos: [], rejilla: [], vacias: [] });
   });
 
   it("más de 12 puntos es un error del contrato", () => {
@@ -133,6 +133,25 @@ describe("casillasPuntoDePartida", () => {
     const casillas = casillasPuntoDePartida("2026-11-11", 480);
     expect(casillas.map((c) => c.etiqueta)).toEqual(["hoy", "dic", "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct"]);
     expect(casillas[0].x).toBe(MARGEN.izquierda);
-    expect(casillas[11].x).toBe(480 - MARGEN.derecha);
+    expect(casillas[11].x).toBe(480 - MARGEN.izquierda);
+  });
+});
+
+describe("geometriaSerie · casillas vacías", () => {
+  it("rotula los meses anteriores al inicio, sin punto", () => {
+    const serie = [
+      { fecha: "2026-09-30", patrimonio: 1_000_000n },
+      { fecha: "2026-10-31", patrimonio: 1_200_000n },
+      { fecha: "2026-11-24", patrimonio: 1_100_000n },
+    ];
+    const { vacias, puntos } = geometriaSerie(serie, { ancho: 690, alto: 240 });
+    expect(vacias.map((v) => v.etiqueta)).toEqual(["dic", "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago"]);
+    expect(vacias[0].x).toBe(xDeCasilla(0, 690));
+    expect(puntos[0].x).toBe(xDeCasilla(9, 690));
+  });
+
+  it("con 12 puntos no hay casillas vacías", () => {
+    const serie = Array.from({ length: CASILLAS }, (_, i) => ({ fecha: `2026-${String(i + 1).padStart(2, "0")}-28`, patrimonio: BigInt(i) * 1000n }));
+    expect(geometriaSerie(serie, { ancho: 690, alto: 240 }).vacias).toEqual([]);
   });
 });

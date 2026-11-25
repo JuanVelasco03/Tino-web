@@ -48,13 +48,16 @@ export function NavegacionMes({ mes, actual, ruta = "/movimientos", hayAnterior 
   const esteMes = mes !== actual && <EnlaceTexto href={ruta}>Este mes</EnlaceTexto>;
 
   if (variante === "titulo") {
+    // Sin ninguna flecha (el único mes con datos es el actual) no hay nada que
+    // estabilizar: sin huecos, el título queda alineado con el rótulo de arriba.
+    const sinFlechas = !hayAnterior && !haySiguiente;
     return (
       <nav aria-label="Mes" className="flex flex-col md:flex-row md:items-center md:gap-3">
-        <div className="flex min-h-11 items-center max-md:-mr-3 md:-ml-3">
-          {anterior}
+        <div className={`flex min-h-11 items-center ${sinFlechas ? "" : "max-md:-mr-3 md:-ml-3"}`}>
+          {!sinFlechas && anterior}
           {/* En móvil el mes pasa delante y empuja las flechas a la derecha. */}
           <h1 className="text-titulo-1 max-md:order-first max-md:flex-1">{formatearMes(mes)}</h1>
-          {siguiente}
+          {!sinFlechas && siguiente}
         </div>
         {esteMes && <div>{esteMes}</div>}
       </nav>

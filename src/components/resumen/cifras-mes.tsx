@@ -41,16 +41,22 @@ function anteriorDe({ dato, clase }: Cifra): string {
   return clase === "resultado" ? pesos(dato.anterior, true) : pesos(dato.anterior);
 }
 
-/** «+62.500 · +1,5 %»; sin base, «+62.500 · —». */
-function variacionDe({ dato }: Cifra): string {
-  return `${pesos(dato.variacion, true)} · ${formatearPorcentaje(dato.variacionPorcentaje, { signo: true })}`;
+/** «+62.500 · +1,5 %»; sin base, «+62.500 · —». Si no cabe, parte en el «·», nunca dentro de una cifra. */
+function variacionDe({ dato }: Cifra) {
+  return (
+    <>
+      <span className="whitespace-nowrap">{pesos(dato.variacion, true)} ·</span>{" "}
+      <span className="whitespace-nowrap">{formatearPorcentaje(dato.variacionPorcentaje, { signo: true })}</span>
+    </>
+  );
 }
 
 /**
  * Ingresos, gastos y resultado del mes frente al anterior (N-14 a N-20). Las
  * cifras, variaciones y porcentajes llegan de la API: aquí solo se formatean.
- * Escritorio: tres columnas bajo una raya. Móvil: ingresos y gastos en
- * filas, y el resultado entre raya y doble raya.
+ * Desde lg: tres columnas bajo una raya (en md, con el menú lateral, una
+ * cifra-l no cabe en un tercio). Antes: ingresos y gastos en filas, y el
+ * resultado entre raya y doble raya.
  */
 export function CifrasMes({ ingresos, gastos, resultado, mesAnterior }: Props) {
   const cifras: Cifra[] = [
@@ -64,7 +70,7 @@ export function CifrasMes({ ingresos, gastos, resultado, mesAnterior }: Props) {
   return (
     <section aria-label="Cifras del mes">
       {/* Escritorio */}
-      <div className="hidden grid-cols-3 border-t border-raya md:grid">
+      <div className="hidden grid-cols-3 border-t border-raya lg:grid">
         {cifras.map((c, i) => (
           <div key={c.rotulo} className={`flex min-w-0 flex-col gap-3 pt-6 ${i > 0 ? "border-l border-linea pl-6" : ""} ${i < 2 ? "pr-6" : ""}`}>
             <h2 className="text-rotulo uppercase">{c.rotulo}</h2>
@@ -84,7 +90,7 @@ export function CifrasMes({ ingresos, gastos, resultado, mesAnterior }: Props) {
       </div>
 
       {/* Móvil */}
-      <dl className="md:hidden">
+      <dl className="lg:hidden">
         {cifras.map((c) => {
           const esResultado = c.clase === "resultado";
           return (

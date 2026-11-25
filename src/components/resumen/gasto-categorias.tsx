@@ -30,20 +30,31 @@ function pesos(monto: bigint, signo = false): string {
   return formatearDinero({ monto, moneda: "COP" }, { omitirCOP: true, signoMas: signo });
 }
 
-/** Columnas de escritorio: Categoría 160 | barra | mes 120 | % 72 | anterior 120 | Var. 110. */
-const COLUMNAS = "grid-cols-[160px_minmax(0,1fr)_120px_72px_120px_110px]";
+/**
+ * Columnas de la tabla (desde lg): Categoría | barra | mes | % | anterior | Var.
+ * En lg el contenido mide ~700 px: columnas más estrechas para que la barra no
+ * quede en un punto. Desde xl, las medidas completas.
+ */
+const COLUMNAS =
+  "grid-cols-[140px_minmax(0,1fr)_112px_64px_112px_96px] gap-3 xl:grid-cols-[160px_minmax(0,1fr)_120px_72px_120px_110px] xl:gap-4";
 
 /** «Sin categoría» se separa con una punteada arriba: es lo pendiente (las cuatro líneas). */
 const PUNTEADA_ARRIBA = "border-t border-t-terciario [border-top-style:dashed]";
 
 function Barra({ ancho, sinCategoria, alto }: { ancho: number; sinCategoria: boolean; alto: "h-1.5" | "h-1" }) {
   if (ancho === 0) return <div aria-hidden className={alto} />;
+  // «Sin categoría» es lo pendiente: la punteada de 1 px del sistema, al alto de la barra.
+  // Un contorno punteado de 4–6 px de alto se volvía un borrón con porcentajes chicos.
+  if (sinCategoria) {
+    return (
+      <div aria-hidden className={`flex items-center ${alto}`}>
+        <div className="punteada" style={{ width: `${ancho}%` }} />
+      </div>
+    );
+  }
   return (
     <div aria-hidden className={alto}>
-      <div
-        className={`${alto} rounded-muestra ${sinCategoria ? "border border-dashed border-terciario" : "bg-texto"}`}
-        style={{ width: `${ancho}%` }}
-      />
+      <div className={`${alto} rounded-muestra bg-texto`} style={{ width: `${ancho}%` }} />
     </div>
   );
 }
@@ -116,8 +127,8 @@ export function GastoCategorias({ categorias, sinCategoria, gastos, mes, mesAnte
         </h2>
         {filas.length > 0 && (
           <>
-            <span className="hidden md:block">{conIndicador && <Indicador sinCategoria={sinCategoria} mes={mes} formato="escritorio" />}</span>
-            <span className="font-mono text-cifra-s tabular-nums md:hidden">{pesos(gastos.actual)}</span>
+            <span className="hidden lg:block">{conIndicador && <Indicador sinCategoria={sinCategoria} mes={mes} formato="escritorio" />}</span>
+            <span className="font-mono text-cifra-s tabular-nums lg:hidden">{pesos(gastos.actual)}</span>
           </>
         )}
       </div>
@@ -127,8 +138,8 @@ export function GastoCategorias({ categorias, sinCategoria, gastos, mes, mesAnte
       ) : (
         <>
           {/* Escritorio */}
-          <div role="table" aria-labelledby={titulo} className="hidden md:block">
-            <div role="row" className={`grid ${COLUMNAS} gap-4 border-b border-linea pt-3 pb-2 text-rotulo uppercase text-secundario`}>
+          <div role="table" aria-labelledby={titulo} className="hidden lg:block">
+            <div role="row" className={`grid ${COLUMNAS} border-b border-linea pt-3 pb-2 text-rotulo uppercase text-secundario`}>
               <span role="columnheader">Categoría</span>
               <span role="columnheader" aria-label="Proporción" />
               <span role="columnheader" className="text-right">
@@ -148,7 +159,7 @@ export function GastoCategorias({ categorias, sinCategoria, gastos, mes, mesAnte
               <div
                 key={f.clave}
                 role="row"
-                className={`grid ${COLUMNAS} items-center gap-4 border-b border-linea py-3 ${f.sinCategoria ? PUNTEADA_ARRIBA : ""}`}
+                className={`grid ${COLUMNAS} items-center border-b border-linea py-3 ${f.sinCategoria ? PUNTEADA_ARRIBA : ""}`}
               >
                 <span role="cell" className="flex min-w-0">
                   <Nombre fila={f} />
@@ -170,7 +181,7 @@ export function GastoCategorias({ categorias, sinCategoria, gastos, mes, mesAnte
                 </span>
               </div>
             ))}
-            <div role="row" className={`grid ${COLUMNAS} doble-raya items-baseline gap-4 pt-3 pb-2`}>
+            <div role="row" className={`grid ${COLUMNAS} doble-raya items-baseline pt-3 pb-2`}>
               <span role="cell" className="text-cuerpo font-semibold">
                 Total gastos
               </span>
@@ -191,7 +202,7 @@ export function GastoCategorias({ categorias, sinCategoria, gastos, mes, mesAnte
           </div>
 
           {/* Móvil */}
-          <ul className="md:hidden">
+          <ul className="lg:hidden">
             {filas.map((f) => (
               <li key={f.clave} className={`flex flex-col gap-2 border-b border-linea py-3 ${f.sinCategoria ? PUNTEADA_ARRIBA : ""}`}>
                 <div className="grid grid-cols-[minmax(0,1fr)_auto_52px] items-baseline gap-3">
@@ -206,7 +217,7 @@ export function GastoCategorias({ categorias, sinCategoria, gastos, mes, mesAnte
             ))}
           </ul>
           {conIndicador && (
-            <div className="md:hidden">
+            <div className="lg:hidden">
               <Indicador sinCategoria={sinCategoria} mes={mes} formato="movil" />
             </div>
           )}

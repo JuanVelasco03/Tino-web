@@ -208,8 +208,8 @@ function ComponentesResumen() {
 
       <div className="grid grid-cols-1 gap-12 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div>
-          <Etiqueta>Patrimonio neto · 12 meses</Etiqueta>
-          <PatrimonioNeto patrimonio={{ hoy: 34_121_072n, serie: SERIE_DOCE, variacionSerie: 6_708_692n }} />
+          <Etiqueta>Patrimonio neto · 12 meses · viendo agosto (su cierre marcado)</Etiqueta>
+          <PatrimonioNeto patrimonio={{ hoy: 34_121_072n, serie: SERIE_DOCE, variacionSerie: 6_708_692n }} mes="2026-08" />
         </div>
         <div>
           <Etiqueta>Cambio del mes · mes cerrado, con revaluación de inversiones</Etiqueta>
@@ -230,7 +230,7 @@ function ComponentesResumen() {
       </div>
 
       <div>
-        <Etiqueta>Gráfica · un solo punto (serie plana) y punto de partida (día uno)</Etiqueta>
+        <Etiqueta>Gráfica · un solo punto (se dibuja como punto de partida) y punto de partida (día uno)</Etiqueta>
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
           <GraficaPatrimonio serie={[{ fecha: "2026-11-21", patrimonio: 975_372n }]} />
           <GraficaPatrimonio puntoDePartida={{ fechaHoy: "2026-11-11" }} />
@@ -614,7 +614,7 @@ export default function Estilos() {
       </Seccion>
 
       <Seccion numero="03" titulo="Espaciado, radios y líneas">
-        <div className="grid grid-cols-1 gap-x-12 gap-y-10 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-12 gap-y-12 md:grid-cols-3">
           <div>
             <Rotulo>Espaciado · base 4</Rotulo>
             {ESPACIADO.map(([px, ancho, uso]) => (
@@ -653,7 +653,7 @@ export default function Estilos() {
       </Seccion>
 
       <Seccion numero="04" titulo="Iconos" nota="Lucide · 20 px · trazo 1,5 · color del texto que acompañan">
-        <div className="grid grid-cols-1 gap-x-12 gap-y-10 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-12 gap-y-12 md:grid-cols-2">
           <div>
             <Rotulo>Navegación · uno por destino</Rotulo>
             <div className="grid grid-cols-2 gap-x-6 sm:grid-cols-3">

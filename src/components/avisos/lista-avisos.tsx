@@ -157,7 +157,7 @@ export function ListaAvisos({ avisos, noLeidos, fechaHoy, zona, antelacion, acci
         {errorTodos && <MensajeError mensaje={errorTodos} />}
       </header>
 
-      <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_420px] xl:items-start xl:gap-14">
+      <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_420px] xl:items-start xl:gap-12">
         <div className="min-w-0">
           {sinAvisos ? (
             <EstadoVacio

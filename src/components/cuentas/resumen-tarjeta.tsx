@@ -60,7 +60,7 @@ export function ResumenTarjeta({ tarjeta, saldo, porcentajeTras = null, formato 
 
   return (
     <section aria-label="Cupo" className="flex flex-col gap-4">
-      <dl className="flex flex-wrap gap-x-10 gap-y-4">
+      <dl className="flex flex-wrap gap-x-8 gap-y-4">
         <div className="flex flex-col gap-1">
           <dt className="text-rotulo uppercase text-secundario">Cupo total</dt>
           <dd className="font-mono text-cifra-m tabular-nums">{montoConSigno(tarjeta.cupo, false)}</dd>

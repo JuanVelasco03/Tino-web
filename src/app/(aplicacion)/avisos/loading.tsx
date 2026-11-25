@@ -6,7 +6,7 @@ export default function CargandoAvisos() {
         <h1 className="text-titulo-1">Avisos</h1>
         <p className="text-etiqueta font-normal text-secundario">Cargando avisos…</p>
       </header>
-      <div aria-hidden className="flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-14">
+      <div aria-hidden className="flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_420px] xl:gap-12">
         <div>
           <div className="h-8 border-b border-raya" />
           <div className="h-16 border-b border-linea" />

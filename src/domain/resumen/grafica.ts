@@ -91,8 +91,8 @@ function mesAbreviado(fecha: string): string {
 export function geometriaSerie(
   serie: readonly { fecha: string; patrimonio: bigint }[],
   lienzo: Lienzo,
-): { puntos: PuntoGrafica[]; rejilla: LineaRejilla[] } {
-  if (serie.length === 0) return { puntos: [], rejilla: [] };
+): { puntos: PuntoGrafica[]; rejilla: LineaRejilla[]; vacias: { x: number; etiqueta: string }[] } {
+  if (serie.length === 0) return { puntos: [], rejilla: [], vacias: [] };
   if (serie.length > CASILLAS) throw new Error(`La serie tiene ${serie.length} puntos; el máximo es ${CASILLAS}.`);
 
   let menor = serie[0].patrimonio;
@@ -112,17 +112,26 @@ export function geometriaSerie(
     etiqueta: i === serie.length - 1 ? "hoy" : mesAbreviado(p.fecha),
   }));
   const rejilla = lineas.map((valor) => ({ y: yDe(valor, inferior, superior, lienzo.alto), etiqueta: formatearCompacto(valor) }));
-  return { puntos, rejilla };
+  // Casillas anteriores al inicio: sin punto, solo su mes, para que la escala de 12 se lea completa.
+  const mesHoy = mesDeFecha(serie[serie.length - 1].fecha);
+  const vacias = Array.from({ length: primera }, (_, i) => ({
+    x: xDeCasilla(i, lienzo.ancho),
+    etiqueta: formatearMesCorto(sumarMeses(mesHoy, i - (CASILLAS - 1))).split(" ")[0],
+  }));
+  return { puntos, rejilla, vacias };
 }
 
 /**
  * Día uno: hoy en la primera casilla y los 11 meses siguientes a su derecha,
  * por donde irá creciendo la línea. `"2026-11-11"` → `"hoy"`, `"dic"`, …, `"oct"`.
+ * Sin rejilla no hay etiquetas a la derecha: el margen es el mismo a ambos
+ * lados y las casillas ocupan todo el ancho.
  */
 export function casillasPuntoDePartida(fechaHoy: string, ancho: number): { x: number; etiqueta: string }[] {
   const mes = mesDeFecha(fechaHoy);
+  const util = ancho - 2 * MARGEN.izquierda;
   return Array.from({ length: CASILLAS }, (_, i) => ({
-    x: xDeCasilla(i, ancho),
+    x: MARGEN.izquierda + Math.round((util * i) / (CASILLAS - 1)),
     etiqueta: i === 0 ? "hoy" : formatearMesCorto(sumarMeses(mes, i)).split(" ")[0],
   }));
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-19T23:23:09+00:00",
+  "generatedAt": "2026-11-25T01:02:29+00:00",
   "title": "Design System: Tino",
   "extensions": {
     "colorMeta": {
@@ -624,7 +624,7 @@
       },
       {
         "name": "The Patrimony Sign Rule",
-        "body": "En la lista general, toda cifra se lee desde el patrimonio del usuario: salida con `−` (U+2212) en terracota, entrada con `+` en verde, transferencia en tinta y sin signo. El signo lo decide `src/domain/cuenta/naturaleza.ts` (RN-02); ningún componente lo recalcula.",
+        "body": "En la lista general, toda cifra se lee desde el patrimonio del usuario: salida con `−` (U+2212) en terracota, entrada con `+` en verde, transferencia en tinta y sin signo. El signo lo decide el dominio (RN-02): `efectoEnPatrimonio` en `src/domain/cuenta/naturaleza.ts` y, para un movimiento, `importeEnPatrimonio` en `src/domain/movimiento/vista-previa.ts` (gasto −, ingreso +, transferencia sin signo; coincide con el anterior para cualquier cuenta). Ningún componente lo recalcula.",
         "section": "colors"
       },
       {
