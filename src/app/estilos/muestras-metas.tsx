@@ -272,7 +272,7 @@ export function MuestraMetas({ sufijo }: { sufijo: string }) {
         <TotalesCabecera totales={{ avance: 2_500_000n, objetivo: 54_300_000n, incompleto: true }} activas={[d.viaje, { ...d.cuota, avance: null }, d.fondo]} />
       </div>
 
-      <div className="grid grid-cols-1 gap-12 xl:grid-cols-[400px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-12 xl:grid-cols-[360px_minmax(0,1fr)]">
         <div className="flex flex-col gap-2">
           <Etiqueta>Lista · activas y cumplida (Fondo elegido)</Etiqueta>
           <ListaMetas activas={activas} cumplidas={[d.moto]} fechaHoy={HOY} elegida={d.fondo.id} />
@@ -330,7 +330,7 @@ export function MuestraMetas({ sufijo }: { sufijo: string }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-12 xl:grid-cols-[400px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-12 xl:grid-cols-[360px_minmax(0,1fr)]">
         <div>
           <Etiqueta>Archivadas · lista sin grupos, fechas con año</Etiqueta>
           <ListaMetasArchivadas metas={[d.motoArchivada]} elegida={d.motoArchivada.id} />

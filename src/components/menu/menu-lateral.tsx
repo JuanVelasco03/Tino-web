@@ -18,7 +18,7 @@ type Props = {
   avisos?: ReactNode;
 };
 
-const FILA = "flex h-10 items-center gap-3 rounded-campo px-2 text-cuerpo";
+const FILA = "flex h-11 items-center gap-3 rounded-campo px-2 text-cuerpo";
 
 /**
  * Menú de escritorio (md+): barra lateral de 232 px. Con `cacheComponents`,

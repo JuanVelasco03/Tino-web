@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-26T00:44:19+00:00",
+  "generatedAt": "2026-11-26T04:09:02+00:00",
   "title": "Design System: Tino",
   "extensions": {
     "colorMeta": {
@@ -621,7 +621,7 @@
       "refersTo": "menu-entrada-activa",
       "description": "C14. Columna de 232 px; Registrar es el único botón en tinta; la entrada activa va sobre hundido.",
       "html": "<nav class=\"ds-nav\"><div class=\"ds-nav-marca\">TINO</div><button class=\"ds-nav-reg\">+ Registrar</button><a class=\"ds-nav-ent ds-nav-act\" href=\"#\">Cuentas</a><a class=\"ds-nav-ent\" href=\"#\">Movimientos</a><a class=\"ds-nav-ent\" href=\"#\">Resumen</a></nav>",
-      "css": ".ds-nav{display:flex;flex-direction:column;gap:2px;width:232px;padding:28px 16px;border-right:1px solid var(--linea);font-family:var(--font-interfaz), system-ui, sans-serif}.ds-nav-marca{padding:0 8px 24px;font-size:20px;line-height:26px;font-weight:700;letter-spacing:0.16em;color:var(--texto)}.ds-nav-reg{height:44px;margin-bottom:24px;border:0;border-radius:4px;background:var(--texto);color:var(--fondo);font-family:var(--font-interfaz), system-ui, sans-serif;font-size:15px;font-weight:600;cursor:pointer}.ds-nav-reg:focus-visible{outline:2px solid var(--marca);outline-offset:2px}.ds-nav-ent{display:flex;align-items:center;height:40px;padding:0 8px;border-radius:4px;font-size:15px;line-height:22px;color:var(--secundario);text-decoration:none}.ds-nav-ent:hover{color:var(--texto)}.ds-nav-ent:focus-visible{outline:2px solid var(--marca);outline-offset:2px}.ds-nav-act{background:var(--hundido);color:var(--texto);font-weight:600}"
+      "css": ".ds-nav{display:flex;flex-direction:column;gap:2px;width:232px;padding:28px 16px;border-right:1px solid var(--linea);font-family:var(--font-interfaz), system-ui, sans-serif}.ds-nav-marca{padding:0 8px 24px;font-size:20px;line-height:26px;font-weight:700;letter-spacing:0.16em;color:var(--texto)}.ds-nav-reg{height:44px;margin-bottom:24px;border:0;border-radius:4px;background:var(--texto);color:var(--fondo);font-family:var(--font-interfaz), system-ui, sans-serif;font-size:15px;font-weight:600;cursor:pointer}.ds-nav-reg:focus-visible{outline:2px solid var(--marca);outline-offset:2px}.ds-nav-ent{display:flex;align-items:center;height:44px;padding:0 8px;border-radius:4px;font-size:15px;line-height:22px;color:var(--secundario);text-decoration:none}.ds-nav-ent:hover{color:var(--texto)}.ds-nav-ent:focus-visible{outline:2px solid var(--marca);outline-offset:2px}.ds-nav-act{background:var(--hundido);color:var(--texto);font-weight:600}"
     },
     {
       "name": "Enlace de texto",

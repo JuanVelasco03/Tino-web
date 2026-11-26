@@ -243,8 +243,9 @@ export function BandejaRecurrentes({ fechaHoy, ventanaDias, bandeja, recurrentes
 
 type PropsAviso = {
   texto: ReactNode;
-  alDeshacer: () => void;
-  deshaciendo: boolean;
+  /** Sin él, el aviso solo informa (registros de Deudas). */
+  alDeshacer?: () => void;
+  deshaciendo?: boolean;
   error?: string | null;
 };
 
@@ -253,7 +254,7 @@ type PropsAviso = {
  * sobre una división, con la marca en verde y «Deshacer». No es
  * `AvisoRegistro`: su formato («Registrado: …») no coincide.
  */
-export function AvisoBandeja({ texto, alDeshacer, deshaciendo, error }: PropsAviso) {
+export function AvisoBandeja({ texto, alDeshacer, deshaciendo = false, error }: PropsAviso) {
   return (
     <div role="status" className="flex flex-col border-b border-linea">
       <div className="flex min-h-11 items-center gap-3">
@@ -261,9 +262,11 @@ export function AvisoBandeja({ texto, alDeshacer, deshaciendo, error }: PropsAvi
           <Check size={16} strokeWidth={1.5} aria-hidden />
         </span>
         <span className="min-w-0 flex-1 py-2 text-cuerpo">{texto}</span>
-        <Boton compacto variante="texto" onClick={alDeshacer} disabled={deshaciendo} className="shrink-0 px-3">
-          {deshaciendo ? "Deshaciendo…" : "Deshacer"}
-        </Boton>
+        {alDeshacer && (
+          <Boton compacto variante="texto" onClick={alDeshacer} disabled={deshaciendo} className="shrink-0 px-3">
+            {deshaciendo ? "Deshaciendo…" : "Deshacer"}
+          </Boton>
+        )}
       </div>
       {error && <MensajeError mensaje={error} className="pb-2" />}
     </div>

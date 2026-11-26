@@ -213,6 +213,18 @@ export async function condonarPrestamo(id: string, entrada: CondonacionCuerpo): 
   return { ok: true, movimiento };
 }
 
+/** Categorías de gasto y patrimonio neto para el bloque de condonar, al abrirlo (`GET /captura`, `GET /cuentas`). */
+export async function datosCondonacion(): Promise<
+  { ok: true; datos: { categorias: { id: string; nombre: string }[]; patrimonioNeto: bigint } } | ReturnType<typeof fallo>
+> {
+  try {
+    const { captura, patrimonioNeto } = await prestamos.cargarFormulario();
+    return { ok: true, datos: { categorias: captura.categorias.gasto.map(({ id, nombre }) => ({ id, nombre })), patrimonioNeto } };
+  } catch (error) {
+    return fallo(error);
+  }
+}
+
 /** «Deshacer» una condonación: `DELETE /movimientos/:id` con el `id` del gasto. */
 export async function deshacerCondonacion(movimientoId: string): Promise<ResultadoSimple> {
   if (!esId(movimientoId)) return ENTRADA_INVALIDA;

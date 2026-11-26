@@ -195,7 +195,7 @@ export default async function PaginaMetas({ searchParams }: PageProps<"/metas">)
             </EnlaceTexto>
           </div>
         ) : (
-          <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start xl:gap-12">
+          <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[360px_minmax(0,1fr)] xl:items-start xl:gap-12">
             <div className={`${soloLista} flex-col gap-2`}>
               <ListaMetas activas={datos.activas} cumplidas={datos.cumplidas} fechaHoy={datos.fechaHoy} elegida={detalle?.id ?? null} />
               <EnlaceTexto href={RUTA_ARCHIVADAS} className="self-start">

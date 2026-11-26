@@ -9,6 +9,7 @@ import {
   aplicarPropuesta,
   cuerpoAbono,
   totalAbono,
+  totalPendiente,
   VALORES_ABONO,
   type CampoAbono,
   type ValoresAbono,
@@ -26,6 +27,9 @@ import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { RUTA_DEUDAS, rutaPrestamo } from "./rutas";
 import { CampoFecha } from "../campo-fecha";
 import { llamarAccion } from "@/lib/sin-conexion";
+import { enfocarPrimerError } from "@/lib/enfocar-error";
+import { CifraAviso } from "../recurrentes/bandeja-recurrentes";
+import { useAvisoRegistro } from "./condonar-prestamo";
 
 type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoAbono };
 
@@ -47,6 +51,11 @@ type Props = {
 type Errores = Partial<Record<CampoAbono, string>>;
 
 const MENSAJE_MONTO = "Escribe un valor en pesos, sin decimales.";
+
+function vacio(monto: string): boolean {
+  const limpio = monto.replace(/\./g, "").trim();
+  return limpio === "" || /^0+$/.test(limpio);
+}
 const ID_FORMULARIO = "formulario-abono";
 
 /** Campo de cifra editable en cifra-s sobre su renglón (capital e interés de la propuesta). */
@@ -94,6 +103,7 @@ function CampoCifra({
  */
 export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) {
   const router = useRouter();
+  const avisar = useAvisoRegistro();
   const panel = useRef<ControlPanel>(null);
   const conInteres = tieneTasa(prestamo.tasaMensual);
   const otorgado = prestamo.tipo === "prestamo_otorgado";
@@ -104,6 +114,8 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
   const [propuesta, setPropuesta] = useState<PropuestaAbono | null>(null);
   const [calculando, setCalculando] = useState(false);
   const [confirmandoDescarte, setConfirmandoDescarte] = useState(false);
+  /** Capital e interés a mano: plegados bajo «Repartir distinto»; el total manda. */
+  const [repartoAbierto, setRepartoAbierto] = useState(false);
   const [pendiente, iniciar] = useTransition();
   /** Turno del último pedido: una respuesta vieja, o una que llega tras editar a mano, se descarta. */
   const turno = useRef(0);
@@ -184,12 +196,16 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
 
     const cuerpo = cuerpoAbono(valores, conInteres);
     if (cuerpo === null) {
-      if (!conInteres) setErrores({ total: MENSAJE_MONTO });
+      // Sin total no hay reparto: lo que falta es el total, no capital ni interés.
+      if (vacio(valores.total) && (!conInteres || (vacio(valores.capital) && vacio(valores.interes))))
+        setErrores({ total: otorgado ? "Escribe cuánto te abonó." : "Escribe cuánto abonaste." });
+      else if (!conInteres) setErrores({ total: MENSAJE_MONTO });
       else
         setErrores({
           capital: aDigitos(valores.capital) === null ? MENSAJE_MONTO : undefined,
           interes: aDigitos(valores.interes) === null ? MENSAJE_MONTO : undefined,
         });
+      enfocarPrimerError(ID_FORMULARIO);
       return;
     }
 
@@ -199,6 +215,13 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
       const resultado = await llamarAccion(() => acciones.abonar(prestamo.id, cuerpo));
       if (resultado.ok) {
         await cerrar();
+        if (total !== null) {
+          avisar(
+            <>
+              Abono registrado: <CifraAviso>{pesos(total)}</CifraAviso> · <span className="break-words">{prestamo.nombre}</span>.
+            </>,
+          );
+        }
         return;
       }
       if (resultado.codigo === "PRESTAMO_NO_ENCONTRADO") {
@@ -208,8 +231,10 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
       // Ya se saldó en otro lado: la página se refresca con el estado real.
       if (resultado.codigo === "PRESTAMO_SALDADO") router.refresh();
       const campo = campoDeError(resultado.campo);
-      if (campo) setErrores({ [campo]: resultado.mensaje });
-      else setErrorGeneral(resultado.mensaje);
+      if (campo) {
+        setErrores({ [campo]: resultado.mensaje });
+        enfocarPrimerError(ID_FORMULARIO);
+      } else setErrorGeneral(resultado.mensaje);
     });
   }
 
@@ -217,6 +242,17 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
   const causados = propuesta
     ? { fecha: propuesta.fecha, monto: propuesta.interesesCausados }
     : { fecha: prestamo.fechaHoy, monto: prestamo.interesesCausados };
+
+  // Un error de capital o interés (de la API) abre el reparto: si no, nadie lo vería.
+  const verReparto = repartoAbierto || Boolean(errores.capital) || Boolean(errores.interes);
+  const capitalDigitos = aDigitos(valores.capital);
+  const interesDigitos = aDigitos(valores.interes);
+
+  function todoLoPendiente() {
+    const texto = conInteres ? totalPendiente(prestamo.capitalPendiente, causados.monto) : totalPendiente(prestamo.capitalPendiente, 0n);
+    cambiar("total", texto);
+    pedirPropuesta(texto, valores.fecha);
+  }
 
   const pie = (
     <div className="flex flex-col gap-2">
@@ -258,18 +294,27 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
             )}
           </p>
 
-          <div className="flex flex-col gap-1" onBlur={() => pedirPropuesta(valores.total, valores.fecha)}>
-            <CampoMonto
-              valor={valores.total}
-              moneda="COP"
-              etiqueta="Total"
-              editable={{
-                nombre: "abono-total",
-                alCambiar: (v) => cambiar("total", v),
-                error: errores.total,
-                nota: calculando ? "Calculando…" : undefined,
-              }}
-            />
+          <div className="flex flex-col items-start gap-1">
+            <div className="w-full" onBlur={() => pedirPropuesta(valores.total, valores.fecha)}>
+              <CampoMonto
+                valor={valores.total}
+                moneda="COP"
+                etiqueta="Total"
+                editable={{
+                  nombre: "abono-total",
+                  alCambiar: (v) => cambiar("total", v),
+                  error: errores.total,
+                  nota: calculando ? "Calculando…" : undefined,
+                }}
+              />
+            </div>
+            {/* Atajo: lo que falta para saldar, a la fecha. Llena el total; el reparto lo propone la API. */}
+            <Boton variante="texto" compacto onClick={todoLoPendiente} disabled={pendiente} className="-ml-1 gap-2 px-1">
+              Todo lo pendiente
+              <span className="font-mono text-cifra-xs tabular-nums">
+                {conInteres ? totalPendiente(prestamo.capitalPendiente, causados.monto) : totalPendiente(prestamo.capitalPendiente, 0n)}
+              </span>
+            </Boton>
           </div>
 
           <CampoFecha
@@ -284,23 +329,62 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
           />
 
           {conInteres && (
-            <>
-              <CampoCifra
-                etiqueta="Capital"
-                nombre="abono-capital"
-                valor={valores.capital}
-                alCambiar={(v) => cambiarReparto("capital", v)}
-                error={errores.capital}
-              />
-              <CampoCifra
-                etiqueta="Interés"
-                nombre="abono-interes"
-                valor={valores.interes}
-                alCambiar={(v) => cambiarReparto("interes", v)}
-                error={errores.interes}
-                nota={`Causados al ${formatearFechaSinAnio(causados.fecha)}: ${pesos(causados.monto)}`}
-              />
-            </>
+            <div className="flex flex-col">
+              <div className="flex flex-wrap items-center justify-between gap-x-3">
+                <p className="min-w-0 py-2 text-etiqueta font-normal text-secundario">
+                  {capitalDigitos !== null && interesDigitos !== null ? (
+                    <>
+                      <span className="font-mono tabular-nums">{valores.capital}</span> a capital ·{" "}
+                      <span className="font-mono tabular-nums">{valores.interes}</span> de interés
+                    </>
+                  ) : (
+                    "El total se reparte solo entre interés y capital."
+                  )}
+                </p>
+                <Boton
+                  variante="texto"
+                  compacto
+                  aria-expanded={verReparto}
+                  aria-controls="abono-reparto"
+                  onClick={() => setRepartoAbierto(!verReparto)}
+                  className="-mr-1 px-1"
+                >
+                  {verReparto ? "Ocultar reparto" : "Repartir distinto"}
+                </Boton>
+              </div>
+              {/* Campo dependiente (grid 0fr → 1fr, sin animar `height`); plegado queda `inert`. */}
+              <div
+                id="abono-reparto"
+                inert={!verReparto}
+                className={`grid transition-[grid-template-rows,opacity] motion-reduce:transition-opacity ${
+                  verReparto ? "grid-rows-[1fr] opacity-100 duration-300 ease-despliegue" : "grid-rows-[0fr] opacity-0 duration-180 ease-retirada"
+                }`}
+              >
+                <div className="-mx-1 -mb-1 min-h-0 overflow-hidden px-1 pb-1">
+                  <div
+                    className={`flex flex-col gap-6 pt-4 transition-transform motion-reduce:transition-none ${
+                      verReparto ? "translate-y-0 duration-300 ease-despliegue" : "-translate-y-1 duration-180 ease-retirada"
+                    }`}
+                  >
+                    <CampoCifra
+                      etiqueta="Capital"
+                      nombre="abono-capital"
+                      valor={valores.capital}
+                      alCambiar={(v) => cambiarReparto("capital", v)}
+                      error={errores.capital}
+                    />
+                    <CampoCifra
+                      etiqueta="Interés"
+                      nombre="abono-interes"
+                      valor={valores.interes}
+                      alCambiar={(v) => cambiarReparto("interes", v)}
+                      error={errores.interes}
+                      nota={`${otorgado ? "Sin cobrar" : "Sin pagar"} al ${formatearFechaSinAnio(causados.fecha)}: ${pesos(causados.monto)}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           <div className="flex flex-col gap-2">

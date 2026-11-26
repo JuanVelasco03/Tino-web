@@ -25,6 +25,10 @@ import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { rutaPrestamo } from "./rutas";
 import { CampoFecha } from "../campo-fecha";
 import { llamarAccion } from "@/lib/sin-conexion";
+import { enfocarPrimerError } from "@/lib/enfocar-error";
+import { pesos } from "@/domain/prestamo/presentacion";
+import { CifraAviso } from "../recurrentes/bandeja-recurrentes";
+import { useAvisoRegistro } from "./condonar-prestamo";
 
 type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoAlta };
 type Resultado = { ok: true; id: string } | Fallo;
@@ -54,6 +58,16 @@ type Props = {
 type Errores = Partial<Record<CampoAlta, string>>;
 
 const MENSAJE_MONTO = "Escribe un valor en pesos, sin decimales.";
+
+/** Monto vacío o en cero: lo que falta, no el formato. */
+function faltaMonto(tipo: TipoPrestamo): string {
+  return tipo === "prestamo_otorgado" ? "Escribe cuánto le prestaste." : "Escribe cuánto te prestó.";
+}
+
+function vacio(monto: string): boolean {
+  const limpio = monto.replace(/\./g, "").trim();
+  return limpio === "" || /^0+$/.test(limpio);
+}
 const ID_FORMULARIO = "formulario-prestamo";
 
 const OPCIONES_SENTIDO = [
@@ -70,6 +84,7 @@ const OPCIONES_SENTIDO = [
  */
 export function PanelPrestamo({ tipoInicial, fechaHoy, prestamos, formulario, acciones, rutaCierre, alCerrar }: Props) {
   const router = useRouter();
+  const avisar = useAvisoRegistro();
   const panel = useRef<ControlPanel>(null);
   const [iniciales] = useState<ValoresAlta>(() =>
     VALORES_ALTA(tipoInicial, fechaHoy, formulario?.captura.cuentaPredeterminadaId ?? null),
@@ -109,8 +124,14 @@ export function PanelPrestamo({ tipoInicial, fechaHoy, prestamos, formulario, ac
 
     const persona = existente;
     const cuerpo = persona ? cuerpoDesembolso(valores) : cuerpoAlta(valores);
-    if (cuerpo === null) {
-      setErrores({ monto: MENSAJE_MONTO });
+    // Todo lo que falta a la vez, antes de ir a la API (que igual lo valida).
+    const sinNombre = valores.nombre.trim() === "";
+    if (cuerpo === null || sinNombre) {
+      setErrores({
+        nombre: sinNombre ? "Escribe el nombre de la persona." : undefined,
+        monto: cuerpo === null ? (vacio(valores.monto) ? faltaMonto(valores.tipo) : MENSAJE_MONTO) : undefined,
+      });
+      enfocarPrimerError(ID_FORMULARIO);
       return;
     }
 
@@ -123,10 +144,19 @@ export function PanelPrestamo({ tipoInicial, fechaHoy, prestamos, formulario, ac
       );
       if (resultado.ok) {
         await cerrar(rutaPrestamo(resultado.id));
+        const que = persona ? "Desembolso registrado" : otorgado ? "Préstamo registrado" : "Deuda registrada";
+        avisar(
+          <>
+            {que}: <CifraAviso>{pesos(BigInt(cuerpo.monto))}</CifraAviso> ·{" "}
+            <span className="break-words">{persona ? persona.nombre : valores.nombre.trim()}</span>.
+          </>,
+        );
         return;
       }
-      if (resultado.campo) setErrores({ [resultado.campo]: resultado.mensaje });
-      else setErrorGeneral(resultado.mensaje);
+      if (resultado.campo) {
+        setErrores({ [resultado.campo]: resultado.mensaje });
+        enfocarPrimerError(ID_FORMULARIO);
+      } else setErrorGeneral(resultado.mensaje);
       // Otro dispositivo lo borró o creó: la lista de personas está vieja.
       if (resultado.codigo === "PRESTAMO_EXISTENTE" || resultado.codigo === "PRESTAMO_NO_ENCONTRADO") router.refresh();
     });

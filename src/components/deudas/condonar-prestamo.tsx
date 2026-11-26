@@ -24,14 +24,16 @@ type Gasto = { id: string; monto: bigint; categoria: { nombre: string } | null }
 export type AccionCondonar = (id: string, cuerpo: CondonacionCuerpo) => Promise<{ ok: true; movimiento: Gasto } | (Fallo & { campo?: "monto" | "categoria" })>;
 export type AccionDeshacer = (movimientoId: string) => Promise<{ ok: true } | Fallo>;
 
-/* ── Aviso con «Deshacer» ─────────────────────────────────────────────── */
+/* ── Avisos de la pantalla ────────────────────────────────────────────── */
 
-type Aviso = { clave: number; gasto: Gasto; error: string | null };
+/** Condonación (con «Deshacer») o registro de un abono, alta o desembolso (sin él). */
+type Aviso = { clave: number; gasto: Gasto; error: string | null } | { clave: number; registro: ReactNode };
 
 type ContextoAviso = {
   aviso: Aviso | null;
   deshaciendo: boolean;
   mostrar: (gasto: Gasto) => void;
+  registrado: (texto: ReactNode) => void;
   quitar: () => void;
   deshacer: () => void;
 };
@@ -69,13 +71,19 @@ export function ProveedorAvisoDeudas({ deshacer: accionDeshacer, children }: { d
     programarCierre(clave);
   }
 
+  function registrado(texto: ReactNode) {
+    const clave = ++contador.current;
+    setAviso({ clave, registro: texto });
+    programarCierre(clave);
+  }
+
   function quitar() {
     limpiar();
     setAviso(null);
   }
 
   function deshacer() {
-    if (!aviso || deshaciendo) return;
+    if (!aviso || !("gasto" in aviso) || deshaciendo) return;
     const actual = aviso;
     limpiar();
     setDeshaciendo(true);
@@ -87,37 +95,56 @@ export function ProveedorAvisoDeudas({ deshacer: accionDeshacer, children }: { d
         return;
       }
       // El aviso se queda con el `mensaje` de la API 5 s más.
-      setAviso((a) => (a?.clave === actual.clave ? { ...a, error: resultado.mensaje } : a));
+      setAviso((a) => (a?.clave === actual.clave ? { ...actual, error: resultado.mensaje } : a));
       programarCierre(actual.clave);
     })();
   }
 
-  return <Contexto.Provider value={{ aviso, deshaciendo, mostrar, quitar, deshacer }}>{children}</Contexto.Provider>;
+  return <Contexto.Provider value={{ aviso, deshaciendo, mostrar, registrado, quitar, deshacer }}>{children}</Contexto.Provider>;
+}
+
+/** Para los paneles: avisar lo registrado. Fuera de `ProveedorAvisoDeudas` (muestras de `/estilos`), nada. */
+export function useAvisoRegistro(): (texto: ReactNode) => void {
+  const contexto = useContext(Contexto);
+  return contexto ? contexto.registrado : () => {};
 }
 
 function useAvisoDeudas(): ContextoAviso {
   const contexto = useContext(Contexto);
-  if (!contexto) throw new Error("CondonarPrestamo y AvisoCondonacion necesitan ProveedorAvisoDeudas.");
+  if (!contexto) throw new Error("CondonarPrestamo y AvisoDeudas necesitan ProveedorAvisoDeudas.");
   return contexto;
 }
 
-/** «Condonado. Se registró un gasto de 500.000 en Otros.» · «Deshacer». Fila de 44 px; dura 5 s. */
-export function AvisoCondonacion() {
+/**
+ * «Condonado. Se registró un gasto de 500.000 en Otros.» · «Deshacer», o
+ * «Abono registrado: 120.000 · Camila.» sin él. Fila de 44 px; dura 5 s.
+ */
+export function AvisoDeudas() {
   const { aviso, deshaciendo, deshacer } = useAvisoDeudas();
   if (!aviso) return null;
+  // `key`: cada aviso entra con «Asentar», aunque reemplace a uno todavía visible.
+  if ("registro" in aviso) {
+    return (
+      <div key={aviso.clave} className="asentar">
+        <AvisoBandeja texto={aviso.registro} />
+      </div>
+    );
+  }
   const { gasto } = aviso;
   return (
-    <AvisoBandeja
-      texto={
-        <>
-          Condonado. Se registró un gasto de <CifraAviso>{pesos(gasto.monto)}</CifraAviso>
-          {gasto.categoria ? ` en ${gasto.categoria.nombre}` : ""}.
-        </>
-      }
-      alDeshacer={deshacer}
-      deshaciendo={deshaciendo}
-      error={aviso.error}
-    />
+    <div key={aviso.clave} className="asentar">
+      <AvisoBandeja
+        texto={
+          <>
+            Condonado. Se registró un gasto de <CifraAviso>{pesos(gasto.monto)}</CifraAviso>
+            {gasto.categoria ? ` en ${gasto.categoria.nombre}` : ""}.
+          </>
+        }
+        alDeshacer={deshacer}
+        deshaciendo={deshaciendo}
+        error={aviso.error}
+      />
+    </div>
   );
 }
 
@@ -125,10 +152,19 @@ export function AvisoCondonacion() {
 
 type Categoria = { id: string; nombre: string };
 
+/** Categorías de gasto (`GET /captura`) y patrimonio neto (`GET /cuentas`). */
+export type DatosCondonacion = { categorias: readonly Categoria[]; patrimonioNeto: bigint };
+export type AccionDatosCondonacion = () => Promise<{ ok: true; datos: DatosCondonacion } | Fallo>;
+
 type Props = {
   prestamo: Pick<PrestamoDetalle, "id" | "nombre" | "capitalPendiente" | "interesesCausados">;
-  /** Categorías de gasto (`GET /captura`) y patrimonio neto (`GET /cuentas`); `null` si no se pudieron cargar. */
-  formulario: { categorias: readonly Categoria[]; patrimonioNeto: bigint } | null;
+  /**
+   * Pide los datos al abrir el bloque: el detalle no carga cuentas ni categorías
+   * para un bloque que casi nunca se abre. Sin `cargar`, se usa `formulario`
+   * (muestras de `/estilos`; `null` = no se pudieron cargar).
+   */
+  cargar?: AccionDatosCondonacion;
+  formulario?: DatosCondonacion | null;
   condonar: AccionCondonar;
   /** Abierto al montar (muestras de `/estilos`). */
   abiertoInicial?: boolean;
@@ -151,7 +187,33 @@ const EXPLICACION = {
  * Se acomoda al ancho de su contenedor (`@container`, el detalle): dos
  * columnas desde 672 px; si no, una, con «Qué cambia» debajo.
  */
-export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicial = false, inicial }: Props) {
+/** Última categoría con la que se condonó, en este navegador: sube al principio, sin quedar elegida (RN-11). */
+const CLAVE_CATEGORIA = "tino-condonar-categoria";
+
+function leerRecordada(): string | null {
+  try {
+    return localStorage.getItem(CLAVE_CATEGORIA);
+  } catch {
+    return null;
+  }
+}
+
+function recordar(id: string) {
+  try {
+    localStorage.setItem(CLAVE_CATEGORIA, id);
+  } catch {
+    // Sin almacenamiento (ventana privada): solo se pierde la sugerencia.
+  }
+}
+
+/** Bloque de carga con el `leading` del texto que reemplaza. */
+function Bloque({ className }: { className: string }) {
+  return <span aria-hidden className={`inline-block max-w-full rounded-muestra bg-linea align-middle motion-safe:animate-pulse ${className}`} />;
+}
+
+const ANCHOS_CHIP = ["w-20", "w-24", "w-16", "w-20", "w-16", "w-24"] as const;
+
+export function CondonarPrestamo({ prestamo, cargar, formulario: fijo = null, condonar, abiertoInicial = false, inicial }: Props) {
   const router = useRouter();
   const { mostrar, quitar } = useAvisoDeudas();
   const [abierto, setAbierto] = useState(abiertoInicial);
@@ -161,8 +223,35 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
   const [errorMonto, setErrorMonto] = useState<string | null>(null);
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [pendiente, iniciar] = useTransition();
+  /** `undefined`: sin pedir todavía; `"cargando"`; `null`: falló. */
+  const [datos, setDatos] = useState<DatosCondonacion | null | "cargando" | undefined>(cargar ? undefined : fijo);
+  const [recordada, setRecordada] = useState<string | null>(null);
+  const titulo = useRef<HTMLHeadingElement>(null);
+  const disparador = useRef<HTMLButtonElement>(null);
+  /** Abrir o cancelar a mano: el control pulsado desaparece y el foco no puede quedar en el aire. */
+  const cambioPorUsuario = useRef(false);
+
+  useEffect(() => {
+    if (!cambioPorUsuario.current) return;
+    cambioPorUsuario.current = false;
+    if (!abierto) {
+      disparador.current?.focus();
+      return;
+    }
+    titulo.current?.focus({ preventScroll: true });
+    titulo.current?.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }, [abierto]);
 
   const nombre = primerNombre(prestamo.nombre);
+
+  function pedirDatos() {
+    if (!cargar) {
+      router.refresh();
+      return;
+    }
+    setDatos("cargando");
+    void llamarAccion(cargar).then((resultado) => setDatos(resultado.ok ? resultado.datos : null));
+  }
 
   if (!abierto) {
     return (
@@ -170,9 +259,13 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
         id={prestamo.id}
         extra={
           <button
+            ref={disparador}
             type="button"
             onClick={() => {
               quitar();
+              cambioPorUsuario.current = true;
+              setRecordada(leerRecordada());
+              if (cargar && (datos === undefined || datos === null)) pedirDatos();
               setAbierto(true);
             }}
             className="presion h-12 px-1 text-cuerpo text-secundario underline underline-offset-4 hover:text-texto"
@@ -188,6 +281,11 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
   const monto = "monto" in calculo ? calculo.monto : null;
   // Vacío no es error todavía: el botón espera. Lo escrito que no sirve, sí.
   const errorCampo = errorMonto ?? (modo === "parte" && valor !== "" && "error" in calculo ? calculo.error : null);
+  const cargando = datos === "cargando" || datos === undefined;
+  const formulario = datos === "cargando" || datos === undefined ? null : datos;
+  const categorias = formulario
+    ? [...formulario.categorias].sort((a, b) => Number(b.id === recordada) - Number(a.id === recordada))
+    : [];
   const categoria = formulario?.categorias.find((c) => c.id === categoriaId) ?? null;
   const vista = formulario ? vistaPreviaCondonacion(prestamo.capitalPendiente, monto ?? 0n, formulario.patrimonioNeto) : null;
   const puedeCondonar = monto !== null && categoria !== null && !pendiente && formulario !== null;
@@ -203,6 +301,7 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
           : null;
 
   function cancelar() {
+    cambioPorUsuario.current = true;
     setAbierto(false);
     setModo("todo");
     setValor("");
@@ -218,6 +317,7 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
     iniciar(async () => {
       const resultado = await llamarAccion(() => condonar(prestamo.id, { monto: monto.toString(), categoriaId: categoria.id }));
       if (resultado.ok) {
+        recordar(categoria.id);
         cancelar();
         mostrar(resultado.movimiento);
         return;
@@ -239,10 +339,10 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
         onClick={enviar}
         disabled={!puedeCondonar}
         aria-describedby={falta ? idFalta : undefined}
-        monto={monto !== null ? pesos(monto) : undefined}
+        monto={!pendiente && monto !== null ? pesos(monto) : undefined}
         className="justify-center"
       >
-        Condonar
+        {pendiente ? "Condonando…" : "Condonar"}
       </Boton>
       <Boton variante="secundario" onClick={cancelar} disabled={pendiente} className="justify-center">
         Cancelar
@@ -254,7 +354,7 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
     <section aria-label={`Condonar a ${nombre}`} className="asentar grid gap-8 border-t border-raya pt-6 @2xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="flex min-w-0 flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <h3 className="text-cuerpo font-semibold break-words">Condonar a {nombre}</h3>
+          <h3 ref={titulo} tabIndex={-1} className="scroll-mt-8 text-cuerpo font-semibold break-words">Condonar a {nombre}</h3>
           <p className="max-w-prose text-cuerpo text-pretty text-secundario">{modo === "todo" ? EXPLICACION.todo(nombre) : EXPLICACION.parte()}</p>
         </div>
 
@@ -321,10 +421,23 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
           </div>
         </div>
 
-        {formulario === null ? (
+        {cargando ? (
+          // Mientras llegan las categorías: su rótulo y la forma de los chips, sin nombres inventados.
+          <div aria-busy="true" className="flex flex-col gap-2">
+            <span className="text-etiqueta text-secundario">Categoría del gasto</span>
+            <span role="status" className="sr-only">
+              Cargando categorías…
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {ANCHOS_CHIP.map((ancho, i) => (
+                <Bloque key={i} className={`h-11 rounded-campo md:h-9 ${ancho}`} />
+              ))}
+            </div>
+          </div>
+        ) : formulario === null ? (
           <div role="alert" className="flex flex-col items-start gap-4">
             <p className="text-cuerpo font-semibold">No pudimos cargar tus categorías.</p>
-            <Boton variante="secundario" onClick={() => router.refresh()}>
+            <Boton variante="secundario" onClick={pedirDatos}>
               Reintentar
             </Boton>
           </div>
@@ -332,7 +445,7 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
           <div className="flex flex-col gap-2">
             <span className="text-etiqueta text-secundario">Categoría del gasto</span>
             <div role="group" aria-label="Categoría del gasto" className="flex flex-wrap gap-2">
-              {formulario.categorias.map((c) => (
+              {categorias.map((c) => (
                 <ChipCategoria
                   key={c.id}
                   etiqueta={c.nombre}
@@ -347,13 +460,26 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
 
         {modo === "todo" && prestamo.interesesCausados > 0n && (
           <p className="max-w-prose text-etiqueta font-normal text-pretty text-secundario">
-            Los intereses causados sin cobrar (<span className="font-mono tabular-nums">{pesos(prestamo.interesesCausados)}</span>) también se
-            dejan de cobrar. No se registran como gasto porque nunca entraron a tu patrimonio.
+            Los intereses sin cobrar (<span className="font-mono tabular-nums">{pesos(prestamo.interesesCausados)}</span>) también se perdonan. No
+            cuentan como gasto porque nunca entraron a tu patrimonio.
           </p>
         )}
       </div>
 
       <div className="flex flex-col gap-6">
+        {cargando && (
+          <section aria-hidden>
+            <p className="border-b border-raya pb-2 text-rotulo uppercase">Qué cambia</p>
+            {["Gasto de hoy", `${nombre} te deberá`, "Patrimonio neto"].map((rotulo, i) => (
+              <div key={rotulo} className={`flex items-baseline justify-between gap-3 py-2 ${i < 2 ? "border-b border-linea" : ""}`}>
+                <span className="min-w-0 text-cuerpo break-words">{rotulo}</span>
+                <span className="text-cifra-s">
+                  <Bloque className={`h-4 ${i === 2 ? "w-40" : "w-20"}`} />
+                </span>
+              </div>
+            ))}
+          </section>
+        )}
         {vista && (
           <section aria-label="Qué cambia">
             <h4 className="border-b border-raya pb-2 text-rotulo uppercase">Qué cambia</h4>

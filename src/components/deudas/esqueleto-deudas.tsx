@@ -47,15 +47,13 @@ function ConsolidadoEsqueleto() {
       {/* Móvil: filas, la posición sobre doble renglón y la leyenda. */}
       <div className="lg:hidden">
         {ROTULOS_CONSOLIDADO.map((rotulo) => (
-          <div key={rotulo} className="flex items-baseline justify-between gap-3 border-b border-linea py-3">
-            <span className="flex min-w-0 flex-col">
-              <span className="text-cuerpo">{rotulo}</span>
-              <span className="text-etiqueta">
-                <Bloque className="h-3 w-36" />
-              </span>
-            </span>
+          <div key={rotulo} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 border-b border-linea py-3">
+            <span className="text-cuerpo">{rotulo}</span>
             <span className="text-cifra-m">
               <Bloque className="h-5 w-24" />
+            </span>
+            <span className="col-span-2 text-etiqueta">
+              <Bloque className="h-3 w-52" />
             </span>
           </div>
         ))}
@@ -209,6 +207,12 @@ function DetalleEsqueleto() {
         </div>
       </div>
 
+      {/* Fila de acciones (48 px), antes del historial como en el detalle: su caja, sin rótulos de botón. */}
+      <div className="flex flex-col gap-3 @lg:flex-row @lg:items-center">
+        <span className="h-12 rounded-campo bg-linea motion-safe:animate-pulse @lg:w-40" />
+        <span className="h-12 rounded-campo border border-linea @lg:w-52" />
+      </div>
+
       <section>
         <div className={`grid ${COLUMNAS_HISTORIAL} items-baseline gap-3 border-b border-raya px-2 pb-2 text-rotulo uppercase`}>
           <span className="hidden @2xl:block">Fecha</span>
@@ -232,12 +236,14 @@ function DetalleEsqueleto() {
 /** Cabecera, consolidado, lista y detalle de `/deudas`, sin datos. */
 export function EsqueletoDeudas() {
   return (
-    <div className="flex flex-col gap-8">
+    <div aria-busy="true" className="flex flex-col gap-8">
       <span role="status" className="sr-only">
         Cargando tus deudas…
       </span>
       <header className="flex items-end justify-between gap-6">
         <h1 className="text-titulo-1">Deudas y préstamos</h1>
+        {/* Móvil: la caja de «+ Nuevo» (44 px). */}
+        <span aria-hidden className="h-11 w-16 shrink-0 md:hidden" />
         {/* El botón real llega con la página; aquí solo su caja, para que nada salte. */}
         <span aria-hidden className="hidden h-12 items-center gap-3 rounded-campo border border-linea bg-superficie px-6 text-cuerpo font-medium text-terciario md:inline-flex">
           <Plus size={18} strokeWidth={1.5} />
@@ -247,7 +253,7 @@ export function EsqueletoDeudas() {
 
       <ConsolidadoEsqueleto />
 
-      <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start xl:gap-12">
+      <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[360px_minmax(0,1fr)] xl:items-start xl:gap-12">
         <ListaEsqueleto />
         <div className="hidden min-w-0 md:block">
           <DetalleEsqueleto />

@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { Boton } from "@/components/boton";
-import { CondonarPrestamo, ProveedorAvisoDeudas, type AccionCondonar } from "@/components/deudas/condonar-prestamo";
+import { CondonarPrestamo, ProveedorAvisoDeudas, type AccionCondonar, type AccionDatosCondonacion } from "@/components/deudas/condonar-prestamo";
 import { ConsolidadoDeudas } from "@/components/deudas/consolidado-deudas";
 import { DetallePrestamo } from "@/components/deudas/detalle-prestamo";
 import { DiaUnoDeudas } from "@/components/deudas/dia-uno-deudas";
@@ -217,6 +217,9 @@ const FORMULARIO: Pick<DatosCaptura, "captura" | "cuentas"> = {
 
 const FORMULARIO_CONDONAR = { categorias: CATEGORIAS_GASTO, patrimonioNeto: 12_480_000n };
 
+/** Carga que no termina: deja a la vista el estado «cargando» de condonar. */
+const NUNCA: AccionDatosCondonacion = () => new Promise(() => {});
+
 async function esperar(): Promise<void> {
   await new Promise((resolver) => setTimeout(resolver, 400));
 }
@@ -322,8 +325,18 @@ export function MuestraDeudas({ sufijo }: { sufijo: string }) {
             deshaciendo={false}
           />
         </div>
+        <div>
+          <Etiqueta>Aviso de registro · abono, alta o desembolso, 5 s, sin «Deshacer»</Etiqueta>
+          <AvisoBandeja
+            texto={
+              <>
+                Abono registrado: <CifraAviso>120.000</CifraAviso> · Camila.
+              </>
+            }
+          />
+        </div>
 
-        <div className="grid grid-cols-1 gap-12 xl:grid-cols-[400px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-12 xl:grid-cols-[360px_minmax(0,1fr)]">
           <div>
             <Etiqueta>Lista · te deben, debes y saldadas (Camila elegida)</Etiqueta>
             <ListaPrestamos prestamos={lista.prestamos} fechaHoy={HOY} totales={{ teDeben: 500_000n, debes: 500_000n }} elegido={camila.id} />
@@ -352,6 +365,10 @@ export function MuestraDeudas({ sufijo }: { sufijo: string }) {
         <div className="@container min-w-0">
           <Etiqueta>Condonar · todo lo pendiente, sin categoría elegida</Etiqueta>
           <CondonarPrestamo prestamo={{ ...camila, id: `${camila.id}-todo` }} formulario={FORMULARIO_CONDONAR} condonar={CONDONAR} abiertoInicial />
+        </div>
+        <div className="@container min-w-0">
+          <Etiqueta>Condonar · cargando categorías y patrimonio (se piden al abrir el bloque)</Etiqueta>
+          <CondonarPrestamo prestamo={{ ...camila, id: `${camila.id}-cargando` }} cargar={NUNCA} condonar={CONDONAR} abiertoInicial />
         </div>
         <div className="@container min-w-0">
           <Etiqueta>Condonar · una parte mayor que lo pendiente (error, no se envía)</Etiqueta>

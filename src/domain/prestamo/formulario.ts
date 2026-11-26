@@ -104,6 +104,15 @@ export function totalAbono(v: ValoresAbono): bigint | null {
 }
 
 /**
+ * «Todo lo pendiente» del abono: capital pendiente más los intereses causados a
+ * la fecha de la propuesta, como total sugerido. Solo llena el campo: el reparto
+ * lo propone la API y el abono lo valida ella.
+ */
+export function totalPendiente(capitalPendiente: bigint, interesesCausados: bigint): string {
+  return desdeMonto(capitalPendiente + interesesCausados);
+}
+
+/**
  * `POST /prestamos/:id/abonos`. Con interés, capital e interés escritos; sin
  * él (tasa 0), todo el total a capital e interés `"0"`. `null` si algún monto
  * no es entero. Sin `categoriaInteresId`: la API usa «Intereses».

@@ -11,6 +11,7 @@ import {
   tieneTasa,
 } from "@/domain/prestamo/presentacion";
 import type { MovimientoPrestamo, PrestamoDetalle } from "@/domain/prestamo/tipos";
+import { EnlaceTexto } from "../enlace-texto";
 import { BOTON_ENLACE, RUTA_DEUDAS, rutaPrestamo } from "./rutas";
 
 type Props = {
@@ -97,7 +98,7 @@ function Condiciones({ d }: { d: PrestamoDetalle }) {
         </Condicion>
       )}
       {conTasa && d.estado !== "saldado" && (
-        <Condicion rotulo={otorgado ? "Causados sin cobrar" : "Causados sin pagar"}>
+        <Condicion rotulo={otorgado ? "Intereses sin cobrar" : "Intereses sin pagar"}>
           <span className="font-mono text-cifra-s tabular-nums">{pesos(d.interesesCausados)}</span>
         </Condicion>
       )}
@@ -229,10 +230,11 @@ export function DetallePrestamo({ detalle: d, condonar }: Props) {
   return (
     <article aria-label={d.nombre} className="@container asentar flex flex-col gap-8">
       <div className="flex flex-col gap-4">
-        <Link href={RUTA_DEUDAS} className="-ml-1 inline-flex h-11 items-center gap-1 self-start text-cuerpo text-secundario md:hidden">
+        {/* Como «‹ Cuentas»: volver es una acción de navegación, en latón. */}
+        <EnlaceTexto href={RUTA_DEUDAS} className="-ml-1 gap-1 self-start md:hidden">
           <ChevronLeft size={20} strokeWidth={1.5} aria-hidden />
           Deudas
-        </Link>
+        </EnlaceTexto>
         <header className="flex flex-col gap-4 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:gap-6 md:border-b md:border-raya md:pb-4">
           <div className="flex min-w-0 flex-col">
             <span className="text-etiqueta font-normal text-secundario">{tipoTexto(d)}</span>
@@ -254,9 +256,10 @@ export function DetallePrestamo({ detalle: d, condonar }: Props) {
         </div>
       </div>
 
-      <Historial d={d} />
-
+      {/* Antes del historial: abonar es lo diario y no debe quedar al fondo de una tabla larga (en un teléfono, tras todo el historial). */}
       {d.estado !== "saldado" && (condonar ?? <AccionesPrestamo id={d.id} />)}
+
+      <Historial d={d} />
     </article>
   );
 }

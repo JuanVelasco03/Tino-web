@@ -7,6 +7,7 @@ import {
   cuerpoDesembolso,
   personaExistente,
   totalAbono,
+  totalPendiente,
   VALORES_ABONO,
   VALORES_ALTA,
   type ValoresAbono,
@@ -143,6 +144,11 @@ describe("abono", () => {
     expect(totalAbono({ ...v, capital: "105.333", interes: "0" })).toBe(105333n);
     expect(totalAbono({ ...v, capital: "105.333", interes: "" })).toBeNull();
     expect(totalAbono({ ...v, capital: "1,5", interes: "0" })).toBeNull();
+  });
+
+  it("totalPendiente sugiere capital más causados, ya formateado", () => {
+    expect(totalPendiente(343956n, 6191n)).toBe("350.147");
+    expect(totalPendiente(120000n, 0n)).toBe("120.000");
   });
 
   it("cuerpoAbono con interés", () => {

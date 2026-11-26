@@ -51,7 +51,7 @@ export default async function PaginaMetasArchivadas({ searchParams }: PageProps<
       {metas.length === 0 ? (
         <EstadoVacio rotulo="Archivadas" titulo="Sin metas archivadas." detalle="Al archivar una meta cumplida, aparece aquí." />
       ) : (
-        <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:items-start xl:gap-12">
+        <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[360px_minmax(0,1fr)] xl:items-start xl:gap-12">
           <div className={`${soloLista} flex-col`}>
             <ListaMetasArchivadas metas={metas} elegida={detalle?.id ?? null} />
           </div>

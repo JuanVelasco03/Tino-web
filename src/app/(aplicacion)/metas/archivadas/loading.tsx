@@ -6,7 +6,7 @@ export default function CargandoMetasArchivadas() {
         <h1 className="text-titulo-1">Metas archivadas</h1>
         <p className="text-etiqueta font-normal text-secundario">Cargando tus metas archivadas…</p>
       </header>
-      <div aria-hidden className="flex flex-col gap-8 xl:grid xl:grid-cols-[400px_minmax(0,1fr)] xl:gap-12">
+      <div aria-hidden className="flex flex-col gap-8 xl:grid xl:grid-cols-[360px_minmax(0,1fr)] xl:gap-12">
         <div className="border-t border-raya">
           <div className="h-20 border-b border-linea" />
           <div className="h-20 border-b border-linea" />

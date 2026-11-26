@@ -15,6 +15,8 @@ type Props = {
   totales: { teDeben: bigint; debes: bigint };
   /** La persona cuyo detalle se ve: fila resaltada. */
   elegido: string | null;
+  /** Sin `?prestamo=`, la elegida es la primera y su detalle solo se ve desde md: en móvil no se resalta. */
+  elegidoSoloEscritorio?: boolean;
 };
 
 const GRUPOS: readonly { estado: EstadoPrestamo; rotulo: string }[] = [
@@ -40,16 +42,27 @@ function Capital({ p }: { p: Prestamo }) {
 }
 
 /** Una persona: enlace a su detalle (`?prestamo=<id>`) sin mover la página. */
-export function FilaPrestamo({ p, fechaHoy, elegida }: { p: Prestamo; fechaHoy: string; elegida: boolean }) {
+export function FilaPrestamo({
+  p,
+  fechaHoy,
+  elegida,
+  soloEscritorio = false,
+}: {
+  p: Prestamo;
+  fechaHoy: string;
+  elegida: boolean;
+  soloEscritorio?: boolean;
+}) {
   const saldada = p.estado === "saldado";
   return (
     <li>
       <Link
         href={rutaPrestamo(p.id)}
         scroll={false}
-        aria-current={elegida ? "true" : undefined}
+        // Elegida sin `?prestamo=`: su detalle solo se ve desde md, así que allí se anuncia con texto (CSS) y no con `aria-current`.
+        aria-current={elegida && !soloEscritorio ? "true" : undefined}
         className={`grid grid-cols-[20px_minmax(0,1fr)_auto] items-start gap-3 border-b border-linea px-2 py-3 hover:bg-hundido ${
-          elegida ? "bg-hundido" : ""
+          elegida ? (soloEscritorio ? "md:bg-hundido" : "bg-hundido") : ""
         }`}
       >
         <span className="flex h-[22px] items-center text-secundario">
@@ -77,6 +90,7 @@ export function FilaPrestamo({ p, fechaHoy, elegida }: { p: Prestamo; fechaHoy: 
           <Capital p={p} />
           <span className="font-mono text-cifra-xs text-secundario">{ETIQUETA[p.estado]}</span>
         </span>
+        {elegida && soloEscritorio && <span className="sr-only hidden md:block">, abierta</span>}
         <MarcaPendiente />
       </Link>
     </li>
@@ -87,7 +101,7 @@ export function FilaPrestamo({ p, fechaHoy, elegida }: { p: Prestamo; fechaHoy: 
  * Lista de personas en «Te deben», «Debes» y «Saldadas» (los grupos vacíos no
  * salen). Rótulo y total sobre una raya; «Saldadas» en secundario y sin total.
  */
-export function ListaPrestamos({ prestamos, fechaHoy, totales, elegido }: Props) {
+export function ListaPrestamos({ prestamos, fechaHoy, totales, elegido, elegidoSoloEscritorio = false }: Props) {
   return (
     <div className="flex flex-col gap-8">
       {GRUPOS.map(({ estado, rotulo }) => {
@@ -106,7 +120,7 @@ export function ListaPrestamos({ prestamos, fechaHoy, totales, elegido }: Props)
             </div>
             <ul>
               {del.map((p) => (
-                <FilaPrestamo key={p.id} p={p} fechaHoy={fechaHoy} elegida={p.id === elegido} />
+                <FilaPrestamo key={p.id} p={p} fechaHoy={fechaHoy} elegida={p.id === elegido} soloEscritorio={elegidoSoloEscritorio} />
               ))}
             </ul>
           </section>

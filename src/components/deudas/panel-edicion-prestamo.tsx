@@ -12,6 +12,7 @@ import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { RUTA_DEUDAS, rutaPrestamo } from "./rutas";
 import { CampoFecha } from "../campo-fecha";
 import { llamarAccion } from "@/lib/sin-conexion";
+import { enfocarPrimerError } from "@/lib/enfocar-error";
 
 type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoEdicion };
 
@@ -67,6 +68,11 @@ export function PanelEdicionPrestamo({ prestamo, editar, alCerrar }: Props) {
     evento.preventDefault();
     if (pendiente || cambio === null) return;
     setErrorGeneral(null);
+    if (valores.nombre.trim() === "") {
+      setErrores({ nombre: "Escribe el nombre de la persona." });
+      enfocarPrimerError(ID_FORMULARIO);
+      return;
+    }
     setErrores({});
     setConfirmandoDescarte(false);
     const enviado = cambio;
@@ -80,8 +86,10 @@ export function PanelEdicionPrestamo({ prestamo, editar, alCerrar }: Props) {
         router.replace(RUTA_DEUDAS);
         return;
       }
-      if (resultado.campo) setErrores({ [resultado.campo]: resultado.mensaje });
-      else setErrorGeneral(resultado.mensaje);
+      if (resultado.campo) {
+        setErrores({ [resultado.campo]: resultado.mensaje });
+        enfocarPrimerError(ID_FORMULARIO);
+      } else setErrorGeneral(resultado.mensaje);
     });
   }
 

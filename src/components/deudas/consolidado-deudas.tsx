@@ -41,13 +41,13 @@ export function ConsolidadoDeudas({ teDeben, debes, posicionNeta, diaUno = false
       <div className="hidden grid-cols-3 border-t border-raya lg:grid">
         {cifras.map((c, i) => (
           <div key={c.rotulo} className={`@container flex min-w-0 flex-col gap-2 pt-6 pr-6 ${i > 0 ? "border-l border-linea pl-6" : ""}`}>
-            <h2 className="text-rotulo uppercase">{c.rotulo}</h2>
+            <p className="text-rotulo uppercase">{c.rotulo}</p>
             <span className={`${CIFRA_COLUMNA} ${c.color.grande}`}>{c.texto}</span>
             <span className="text-etiqueta font-normal text-secundario">{c.subtitulo}</span>
           </div>
         ))}
         <div className="@container flex min-w-0 flex-col items-start gap-2 border-l border-linea pt-6 pl-6">
-          <h2 className="text-rotulo uppercase">Posición neta</h2>
+          <p className="text-rotulo uppercase">Posición neta</p>
           <span className={`pb-1 ${CIFRA_COLUMNA} ${dobleRaya} ${colorNeta}`}>{neta}</span>
           {leyenda && <span className="text-etiqueta font-normal text-secundario">{leyenda}</span>}
         </div>
@@ -57,12 +57,11 @@ export function ConsolidadoDeudas({ teDeben, debes, posicionNeta, diaUno = false
       <div className="lg:hidden">
         <dl>
           {cifras.map((c) => (
-            <div key={c.rotulo} className="flex items-baseline justify-between gap-3 border-b border-linea py-3">
-              <dt className="flex min-w-0 flex-col">
-                <span className="text-cuerpo">{c.rotulo}</span>
-                <span className="text-etiqueta font-normal text-secundario">{c.subtitulo}</span>
-              </dt>
+            // El subtítulo va a todo el ancho bajo rótulo y cifra: junto a una cifra larga se partía en dos renglones.
+            <div key={c.rotulo} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 border-b border-linea py-3">
+              <dt className="text-cuerpo">{c.rotulo}</dt>
               <dd className={`font-mono text-cifra-m tabular-nums ${c.color.chica}`}>{c.texto}</dd>
+              <dd className="col-span-2 text-etiqueta font-normal text-pretty text-secundario">{c.subtitulo}</dd>
             </div>
           ))}
           <div className={`flex items-baseline justify-between gap-3 py-3 ${dobleRaya}`}>
