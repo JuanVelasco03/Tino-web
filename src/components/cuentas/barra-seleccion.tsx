@@ -32,7 +32,7 @@ export function BarraSeleccion({ cantidad, suma, alMarcar, alCancelar, pendiente
       <div
         role="region"
         aria-label="Selección"
-        className="fixed inset-x-0 z-10 flex items-center justify-between gap-3 border-t border-raya bg-hundido px-4 py-2 md:hidden"
+        className="asentar fixed inset-x-0 z-10 flex items-center justify-between gap-3 border-t border-raya bg-hundido px-4 py-2 md:hidden"
         style={{ bottom: ALTO_PESTANAS }}
       >
         {texto}
@@ -44,7 +44,7 @@ export function BarraSeleccion({ cantidad, suma, alMarcar, alCancelar, pendiente
   }
 
   return (
-    <div role="region" aria-label="Selección" className="flex items-center gap-3 rounded-campo bg-hundido px-3 py-1">
+    <div role="region" aria-label="Selección" className="asentar flex items-center gap-3 rounded-campo bg-hundido px-3 py-1">
       <button
         type="button"
         onClick={alCancelar}

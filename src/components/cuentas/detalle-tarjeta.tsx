@@ -102,7 +102,7 @@ export function DetalleTarjeta({ cuenta, fechaHoy, ciclo, rutaEditar, consultar 
   );
 
   return (
-    <div className="flex flex-col gap-6 md:gap-8">
+    <div className="asentar flex flex-col gap-6 md:gap-8">
       <CabeceraCuenta
         cuenta={cuenta}
         accion={archivada ? undefined : <Boton onClick={registrarPago}>Registrar pago</Boton>}
@@ -141,7 +141,7 @@ export function DetalleTarjeta({ cuenta, fechaHoy, ciclo, rutaEditar, consultar 
         <EstadoVacio
           rotulo="Ciclo"
           titulo="Falta el día de corte y el de pago."
-          detalle="Con ellos TINO arma el ciclo, el pago límite y lo que va en cada corte."
+          detalle="Con ellos Tino arma el ciclo, la fecha límite de pago y lo que entra en cada corte."
           accion={archivada ? undefined : { etiqueta: "Completar condiciones", href: rutaEditar, scroll: false, sinMas: true }}
         />
       )}

@@ -233,7 +233,7 @@ export function PanelPlantilla({ recurrente, fechaHoy, formulario, acciones, alC
             />
           ) : (
             <div className="flex flex-wrap items-center gap-x-1">
-              <Boton variante="texto" onClick={alternarPausa} disabled={pendiente} className="h-11">
+              <Boton compacto variante="texto" onClick={alternarPausa} disabled={pendiente}>
                 {pendiente && accion === "pausar"
                   ? pausa.pausada
                     ? "Reanudando…"

@@ -34,10 +34,11 @@ function tipoEscritorio(cuenta: Cuenta): string {
 }
 
 /**
- * Subtítulo de móvil: `Banco · Ahorros ·· 4821`, `Banco`, `Tarjeta de crédito · cupo 4.000.000`,
+ * Subtítulo de móvil: `Banco · Ahorros ·· 4821`, `Banco`, `Cupo 4.000.000`,
  * `Inversión · TRM 4.120,00`.
- * El cupo es una cifra: va en mono y nunca se corta. Si no cabe, «cupo X» baja
- * entero a la línea siguiente; el resto de subtítulos se trunca.
+ * La tarjeta lleva solo su cupo: el ícono y el grupo Pasivos ya dicen qué es,
+ * y con el tipo ocupaba tres líneas en 390 px. El cupo es una cifra: va en
+ * mono y nunca se corta (si no cabe, baja entero); el resto se trunca.
  */
 function subtituloMovil(cuenta: Cuenta): ReactNode {
   const tipo = ROTULO_TIPO_CUENTA[cuenta.tipo];
@@ -57,11 +58,7 @@ function subtituloMovil(cuenta: Cuenta): ReactNode {
   if (cuenta.tarjeta) {
     return (
       <span className="block">
-        {/* Espacio duro antes del «·»: si se parte, la línea nueva empieza en «cupo». */}
-        {tipo}&nbsp;·{" "}
-        <span className="whitespace-nowrap">
-          cupo <span className="font-mono tabular-nums">{pesos(cuenta.tarjeta.cupo)}</span>
-        </span>
+        Cupo <span className="whitespace-nowrap font-mono text-cifra-xs tabular-nums">{pesos(cuenta.tarjeta.cupo)}</span>
       </span>
     );
   }
@@ -113,7 +110,7 @@ function BarraCupo({ tarjeta, conCupo }: { tarjeta: NonNullable<Cuenta["tarjeta"
 }
 
 const BOTON_ORDEN =
-  "flex size-11 items-center justify-center rounded-campo border border-linea bg-superficie text-texto disabled:cursor-not-allowed disabled:text-terciario";
+  "presion flex size-11 items-center justify-center rounded-campo border border-linea bg-superficie text-texto hover:border-secundario disabled:cursor-not-allowed disabled:text-terciario";
 
 /**
  * Fila de cuenta. Escritorio (md+): agarre · ícono · nombre y tipo · detalle · saldo.
@@ -150,10 +147,10 @@ export function FilaCuenta({ cuenta, orden }: Props) {
 
       <div className="min-w-0">
         {ordenando ? (
-          <div className="truncate text-cuerpo font-semibold">{cuenta.nombre}</div>
+          <div className="line-clamp-2 break-words text-cuerpo font-semibold md:line-clamp-1">{cuenta.nombre}</div>
         ) : (
           // El enlace al detalle se estira sobre toda la fila; «Editar» queda encima, como hermano.
-          <Link href={enlaceCuenta(cuenta)} className="enlace-fila block truncate text-cuerpo font-semibold outline-none after:absolute after:inset-0">
+          <Link href={enlaceCuenta(cuenta)} className="enlace-fila line-clamp-2 break-words text-cuerpo font-semibold outline-none after:absolute after:inset-0 md:line-clamp-1">
             {cuenta.nombre}
           </Link>
         )}
@@ -237,7 +234,7 @@ export function FilaCuenta({ cuenta, orden }: Props) {
             scroll={false}
             aria-label={`Editar ${cuenta.nombre}`}
             title="Editar cuenta"
-            className="relative z-10 row-start-1 flex size-11 items-center justify-center rounded-campo text-secundario hover:bg-fondo hover:text-texto col-start-4 row-start-1 md:col-start-6"
+            className="presion relative z-10 col-start-4 row-start-1 flex size-11 items-center justify-center rounded-campo text-secundario hover:bg-fondo hover:text-texto md:col-start-6"
           >
             <Pencil size={18} strokeWidth={1.5} aria-hidden />
           </Link>

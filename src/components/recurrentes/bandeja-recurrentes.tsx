@@ -261,7 +261,7 @@ export function AvisoBandeja({ texto, alDeshacer, deshaciendo, error }: PropsAvi
           <Check size={16} strokeWidth={1.5} aria-hidden />
         </span>
         <span className="min-w-0 flex-1 py-2 text-cuerpo">{texto}</span>
-        <Boton variante="texto" onClick={alDeshacer} disabled={deshaciendo} className="h-11 shrink-0 px-3">
+        <Boton compacto variante="texto" onClick={alDeshacer} disabled={deshaciendo} className="shrink-0 px-3">
           {deshaciendo ? "Deshaciendo…" : "Deshacer"}
         </Boton>
       </div>

@@ -9,6 +9,7 @@ import { CamposTarjeta } from "@/components/cuentas/campos-tarjeta";
 import { CicloTarjeta } from "@/components/cuentas/ciclo-tarjeta";
 import { CifrasCuenta } from "@/components/cuentas/cifras-cuenta";
 import { CondicionesTarjeta } from "@/components/cuentas/condiciones-tarjeta";
+import { EsqueletoArchivadas, EsqueletoCuentas, EsqueletoDetalleCuenta } from "@/components/cuentas/esqueleto-cuentas";
 import { ConsultaCompra, type ResultadoCompra } from "@/components/cuentas/consulta-compra";
 import { LineaCiclo } from "@/components/cuentas/linea-ciclo";
 import { PanelAjuste } from "@/components/cuentas/panel-ajuste";
@@ -306,6 +307,15 @@ export function MuestraCuentas({ sufijo }: { sufijo: string }) {
 
   return (
     <div className="flex flex-col gap-12">
+      <div>
+        <Etiqueta>Esqueletos · lista, detalle y archivadas (forma real, bloques `linea`, sin cifras)</Etiqueta>
+        <div className="flex flex-col gap-12" data-muestra="esqueletos-cuentas">
+          <EsqueletoCuentas />
+          <EsqueletoDetalleCuenta />
+          <EsqueletoArchivadas />
+        </div>
+      </div>
+
       <div>
         <Etiqueta>Cabecera · efectivo, tarjeta y archivada</Etiqueta>
         <div className="flex flex-col gap-8">

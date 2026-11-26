@@ -229,7 +229,7 @@
    el color y el borde también cambian con transición. Confirma el toque sin
    rebotes. Con movimiento reducido no cede, pero el color sigue. */
 @utility presion {
-  transition-property: transform, color, background-color, border-color;
+  transition-property: transform, color, background-color, border-color, text-decoration-color;
   transition-duration: 150ms;
   transition-timing-function: var(--llegada);
 
@@ -274,7 +274,7 @@
   a,
   button,
   .hover\:bg-hundido {
-    transition-property: color, background-color, border-color, opacity;
+    transition-property: color, background-color, border-color, text-decoration-color, opacity;
     transition-duration: 150ms;
     transition-timing-function: var(--llegada);
   }

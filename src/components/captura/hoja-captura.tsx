@@ -567,7 +567,7 @@ export function HojaCaptura({ c }: { c: EstadoFormulario }) {
           <div className="border-t border-linea">{listaCuentas(hoja)}</div>
           {hoja === "cuenta" && usar && (
             <div className="flex flex-col items-start pt-2">
-              <Boton variante="texto" onClick={usar.alPulsar} disabled={usar.pendiente} className="h-11">
+              <Boton compacto variante="texto" onClick={usar.alPulsar} disabled={usar.pendiente}>
                 Usar {usar.cuenta.nombre} siempre
               </Boton>
               {registro?.errorPredeterminada && <MensajeError mensaje={registro.errorPredeterminada} />}

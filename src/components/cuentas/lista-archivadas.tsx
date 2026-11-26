@@ -10,6 +10,7 @@ import { MensajeError } from "../mensaje-error";
 import { BloqueEliminar, DETALLE_ELIMINAR_CUENTA } from "../bloque-eliminar";
 import Link from "next/link";
 import { enlaceCuenta } from "./rutas";
+import { llamarAccion } from "./sin-conexion";
 
 type Props = {
   cuentas: Cuenta[];
@@ -22,7 +23,7 @@ type Props = {
 export function CabeceraArchivadas() {
   return (
     <header className="flex flex-col items-start gap-1">
-      <EnlaceTexto href="/cuentas">← Cuentas</EnlaceTexto>
+      <EnlaceTexto href="/cuentas">‹ Cuentas</EnlaceTexto>
       <h1 className="text-titulo-1">Cuentas archivadas</h1>
     </header>
   );
@@ -31,7 +32,7 @@ export function CabeceraArchivadas() {
 /** Lista de cuentas archivadas, en el orden de la API (la más reciente primero). */
 export function ListaArchivadas({ cuentas, restaurar, eliminar }: Props) {
   return (
-    <div className="flex flex-col gap-6 md:gap-8">
+    <div className="asentar flex flex-col gap-6 md:gap-8">
       <CabeceraArchivadas />
       {cuentas.length === 0 ? (
         <p className="border-t border-raya pt-6 text-cuerpo text-secundario">No tienes cuentas archivadas.</p>
@@ -81,7 +82,7 @@ function FilaArchivada({ cuenta, restaurar, eliminar }: PropsFila) {
     if (pendiente) return;
     setError(null);
     iniciar(async () => {
-      const resultado = await restaurar(cuenta.id);
+      const resultado = await llamarAccion(() => restaurar(cuenta.id));
       if (resultado.ok) return; // La lista revalidada ya no la trae.
       if (resultado.codigo === "NOMBRE_DUPLICADO") {
         setNombre(cuenta.nombre);
@@ -98,7 +99,7 @@ function FilaArchivada({ cuenta, restaurar, eliminar }: PropsFila) {
     setError(null);
     setErrorNombre(null);
     iniciar(async () => {
-      const resultado = await restaurar(cuenta.id, nombre);
+      const resultado = await llamarAccion(() => restaurar(cuenta.id, nombre));
       if (resultado.ok) return;
       if (resultado.campo === "nombre") setErrorNombre(resultado.mensaje);
       else setError(resultado.mensaje);
@@ -109,7 +110,7 @@ function FilaArchivada({ cuenta, restaurar, eliminar }: PropsFila) {
     if (pendiente) return;
     setError(null);
     iniciar(async () => {
-      const resultado = await eliminar(cuenta.id);
+      const resultado = await llamarAccion(() => eliminar(cuenta.id));
       if (!resultado.ok) setError(resultado.mensaje);
     });
   }
@@ -128,15 +129,19 @@ function FilaArchivada({ cuenta, restaurar, eliminar }: PropsFila) {
 
       <div className="flex min-h-10 min-w-0 flex-col justify-center">
         {/* El nombre abre su detalle en solo lectura (SPEC 13). */}
-        <Link href={enlaceCuenta(cuenta)} className="truncate text-cuerpo font-semibold hover:text-marca-texto">
-          {cuenta.nombre}
+        <Link
+          href={enlaceCuenta(cuenta)}
+          // Objetivo táctil de 46 px sin cambiar el alto de la fila (el recorte va en el hijo, no aquí).
+          className="relative block text-cuerpo font-semibold after:absolute after:inset-x-0 after:-inset-y-3 hover:text-marca-texto"
+        >
+          <span className="block truncate">{cuenta.nombre}</span>
         </Link>
         {!abierta && <div className="truncate text-etiqueta font-normal text-secundario">{subtitulo(cuenta)}</div>}
       </div>
 
       {modo === "normal" && (
         <div className="col-start-2 flex items-center gap-4 md:col-start-3 md:row-start-1 md:justify-end">
-          <Boton variante="texto" onClick={restaurarSinCuerpo} disabled={pendiente} className="h-11">
+          <Boton compacto variante="texto" onClick={restaurarSinCuerpo} disabled={pendiente}>
             {pendiente ? "Restaurando…" : "Restaurar"}
           </Boton>
           <button

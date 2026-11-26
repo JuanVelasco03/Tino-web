@@ -8,6 +8,23 @@ type Props = {
 };
 
 /**
+ * Un hito del ciclo en dos renglones: el rótulo en `etiqueta` secundaria y,
+ * debajo, la fecha en mono tinta con «en 20 días» aparte, en secundario. En
+ * una sola línea («Corte 15 dic · en 20 días») las tres piezas se pegaban.
+ */
+function Hito({ rotulo, fecha, faltan, alinear = "izquierda" }: { rotulo: string; fecha: string; faltan?: string; alinear?: "izquierda" | "derecha" }) {
+  return (
+    <div className={`flex flex-col gap-1 ${alinear === "derecha" ? "md:items-end" : ""}`}>
+      <span className="text-etiqueta font-normal text-secundario">{rotulo}</span>
+      <span className="flex flex-wrap items-baseline gap-x-2">
+        <span className="font-mono text-cifra-s tabular-nums text-texto">{fecha}</span>
+        {faltan && <span className="text-etiqueta font-normal text-secundario">{faltan}</span>}
+      </span>
+    </div>
+  );
+}
+
+/**
  * Línea del ciclo de facturación (SPEC 13). Escritorio: rótulo y «16 oct –
  * 15 nov · pago hasta 30 nov»; la línea con «Inicio» a la izquierda, «Corte»
  * y «Pago límite» con sus días a la derecha, y el punto «Hoy». Móvil: «Ciclo
@@ -16,17 +33,9 @@ type Props = {
  */
 export function LineaCiclo({ ciclo, fechaHoy }: Props) {
   const posicion = posicionHoy(ciclo, fechaHoy);
-  const corte = (
-    <>
-      Corte <span className="font-mono tabular-nums text-texto">{fechaCorta(ciclo.corte, fechaHoy)}</span> · {textoDiasHasta(ciclo.diasHastaCorte)}
-    </>
-  );
-  const pago = (
-    <>
-      Pago límite <span className="font-mono tabular-nums text-texto">{fechaCorta(ciclo.pagoLimite, fechaHoy)}</span> ·{" "}
-      {textoDiasHasta(ciclo.diasHastaPago)}
-    </>
-  );
+  const inicio = <Hito rotulo="Inicio" fecha={fechaCorta(ciclo.inicio, fechaHoy)} />;
+  const corte = <Hito rotulo="Corte" fecha={fechaCorta(ciclo.corte, fechaHoy)} faltan={textoDiasHasta(ciclo.diasHastaCorte)} alinear="derecha" />;
+  const pago = <Hito rotulo="Pago límite" fecha={fechaCorta(ciclo.pagoLimite, fechaHoy)} faltan={textoDiasHasta(ciclo.diasHastaPago)} alinear="derecha" />;
 
   return (
     <section aria-label="Ciclo de facturación">
@@ -36,14 +45,12 @@ export function LineaCiclo({ ciclo, fechaHoy }: Props) {
           <h2 className="text-rotulo uppercase">Ciclo de facturación</h2>
           <span className="text-etiqueta font-normal text-secundario">{textoLineaCiclo(ciclo, fechaHoy)}</span>
         </div>
-        <div className="flex items-baseline justify-between gap-6 text-etiqueta font-normal text-secundario">
-          <span>
-            Inicio <span className="font-mono tabular-nums text-texto">{fechaCorta(ciclo.inicio, fechaHoy)}</span>
-          </span>
-          <span className="flex gap-8">
-            <span>{corte}</span>
-            <span>{pago}</span>
-          </span>
+        <div className="flex items-end justify-between gap-6">
+          {inicio}
+          <div className="flex gap-12">
+            {corte}
+            {pago}
+          </div>
         </div>
         <div className="relative pb-6">
           <div className="h-1 overflow-hidden rounded-muestra bg-linea">
@@ -64,9 +71,9 @@ export function LineaCiclo({ ciclo, fechaHoy }: Props) {
         <h2 className="text-rotulo uppercase">
           Ciclo <span className="font-mono normal-case tracking-normal tabular-nums">{formatearRango(ciclo.inicio, ciclo.corte)}</span>
         </h2>
-        <div className="grid grid-cols-2 gap-3 text-etiqueta font-normal text-secundario">
-          <span>{corte}</span>
-          <span>{pago}</span>
+        <div className="grid grid-cols-2 gap-4">
+          <Hito rotulo="Corte" fecha={fechaCorta(ciclo.corte, fechaHoy)} faltan={textoDiasHasta(ciclo.diasHastaCorte)} />
+          <Hito rotulo="Pago límite" fecha={fechaCorta(ciclo.pagoLimite, fechaHoy)} faltan={textoDiasHasta(ciclo.diasHastaPago)} />
         </div>
       </div>
     </section>

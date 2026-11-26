@@ -15,6 +15,7 @@ import { MensajeError } from "../mensaje-error";
 import { CierrePatrimonio } from "./cierre-patrimonio";
 import { FilaCuenta } from "./fila-cuenta";
 import { GrupoCuentas, SANGRIA_LISTA } from "./grupo-cuentas";
+import { llamarAccion } from "./sin-conexion";
 
 type Props = {
   lista: Lista;
@@ -86,7 +87,7 @@ export function ListaCuentas({ lista, guardarOrden }: Props) {
     }
 
     iniciarGuardado(async () => {
-      const resultado = await guardarOrden(cambios);
+      const resultado = await llamarAccion(() => guardarOrden(cambios));
       if (resultado.ok) {
         setOrdenando(false);
         return;
@@ -163,7 +164,7 @@ export function ListaCuentas({ lista, guardarOrden }: Props) {
   const etiquetaOrden = guardando ? "Guardando…" : ordenando ? "Listo" : "Ordenar";
 
   return (
-    <div className="flex flex-col gap-6 md:gap-8">
+    <div className="asentar flex flex-col gap-6 md:gap-8">
       <header className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between md:gap-6">
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between gap-3">
@@ -196,8 +197,8 @@ export function ListaCuentas({ lista, guardarOrden }: Props) {
             type="button"
             onClick={alternarOrden}
             disabled={sinCuentas || guardando}
-            className={`flex h-11 items-center gap-2 rounded-campo border bg-superficie px-4 text-cuerpo font-medium text-texto disabled:cursor-not-allowed disabled:text-terciario ${
-              ordenando ? "border-texto" : "border-linea"
+            className={`presion flex h-12 items-center gap-3 rounded-campo border bg-superficie px-6 text-cuerpo font-medium text-texto disabled:cursor-not-allowed disabled:text-terciario ${
+              ordenando ? "border-texto" : "border-linea hover:border-secundario"
             }`}
           >
             {ordenando ? (
@@ -210,7 +211,7 @@ export function ListaCuentas({ lista, guardarOrden }: Props) {
           <Link
             href={RUTA_NUEVA}
             scroll={false}
-            className="flex h-11 items-center gap-2 rounded-campo bg-texto px-4 text-cuerpo font-semibold text-fondo"
+            className="presion flex h-12 items-center gap-3 rounded-campo bg-texto px-6 text-cuerpo font-semibold text-fondo"
           >
             <Plus size={18} strokeWidth={1.5} aria-hidden />
             Nueva cuenta

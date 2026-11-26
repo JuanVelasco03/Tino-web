@@ -25,12 +25,21 @@ type Props = {
   alConciliar?: (fila: FilaHistorial) => void;
 };
 
-/** Escritorio: casilla · fecha · concepto · categoría · movimiento · saldo · estado. */
-const COLUMNAS = "grid-cols-[44px_64px_minmax(0,1fr)_170px_130px_130px_64px]";
+/**
+ * Escritorio (lg+): casilla · fecha · concepto · categoría · movimiento · saldo · estado.
+ * Entre md y lg las siete columnas no caben: fecha y categoría bajan bajo el
+ * concepto («11 nov · Comida», como en móvil) y los montos van en 110 px.
+ */
+const COLUMNAS = "grid-cols-[44px_minmax(0,1fr)_110px_110px_64px] lg:grid-cols-[44px_64px_minmax(0,1fr)_170px_130px_130px_64px]";
 /** Escritorio de una archivada: sin casillas. */
-const COLUMNAS_LECTURA = "grid-cols-[64px_minmax(0,1fr)_170px_130px_130px_64px]";
-/** Móvil: estado o casilla · concepto · movimiento · saldo. */
-const COLUMNAS_MOVIL = "grid-cols-[24px_minmax(0,1fr)_76px_76px]";
+const COLUMNAS_LECTURA = "grid-cols-[minmax(0,1fr)_110px_110px_64px] lg:grid-cols-[64px_minmax(0,1fr)_170px_130px_130px_64px]";
+/**
+ * Móvil: estado o casilla · concepto · movimiento · saldo. Una sola rejilla
+ * con filas en `subgrid`: las columnas de montos crecen con la cifra más
+ * ancha (76 px mínimo) y siguen alineadas dígito con dígito en todas las filas.
+ */
+const COLUMNAS_MOVIL = "grid-cols-[24px_minmax(0,1fr)_minmax(76px,auto)_minmax(76px,auto)]";
+const FILA_MOVIL = "col-span-4 grid grid-cols-subgrid";
 
 function colorEfecto(n: bigint): string {
   return n > 0n ? "text-entrada-texto" : n < 0n ? "text-salida-texto" : "";
@@ -45,7 +54,8 @@ function Estado({ fila, alConciliar, className = "" }: { fila: FilaHistorial; al
   const icono = fila.conciliado ? (
     <Check size={18} strokeWidth={1.5} aria-hidden className="text-entrada-texto" />
   ) : (
-    <Circle size={18} strokeWidth={1.5} aria-hidden className="text-terciario" />
+    // `secundario`, no `terciario`: un ícono con significado pide 3:1 (WCAG 1.4.11); `terciario` da 2,8.
+    <Circle size={18} strokeWidth={1.5} aria-hidden className="text-secundario" />
   );
   if (!alConciliar) {
     return (
@@ -55,14 +65,15 @@ function Estado({ fila, alConciliar, className = "" }: { fila: FilaHistorial; al
       </span>
     );
   }
-  const etiqueta = fila.conciliado ? "Conciliado. Tocar para desmarcar" : "Pendiente. Tocar para conciliar";
+  // Nombre estable + `aria-pressed`: el lector anuncia el estado; el título dice qué hará.
   return (
     <button
       type="button"
       onClick={() => alConciliar(fila)}
-      aria-label={etiqueta}
-      title={etiqueta}
-      className={`flex size-11 items-center justify-center rounded-campo hover:bg-hundido ${className}`}
+      aria-label={`Conciliado: ${conceptoFila(fila)}`}
+      aria-pressed={fila.conciliado}
+      title={fila.conciliado ? "Quitar conciliación" : "Marcar como conciliado"}
+      className={`presion flex size-11 items-center justify-center rounded-campo hover:bg-hundido ${className}`}
     >
       {icono}
     </button>
@@ -78,6 +89,17 @@ function Fecha({ fila, fechaHoy }: { fila: FilaHistorial; fechaHoy: string }) {
         {fechaCorta(fila.fecha, fechaHoy)}
       </span>
       {programada && <span className="text-rotulo uppercase text-marca-texto">Programado</span>}
+    </span>
+  );
+}
+
+/** «11 nov · Comida» bajo el concepto (móvil y md–lg); una programada, en latón con «Programado». */
+function SubtituloFila({ fila, fechaHoy, className = "" }: { fila: FilaHistorial; fechaHoy: string; className?: string }) {
+  const programada = esProgramada(fila.fecha, fechaHoy);
+  return (
+    <span className={`truncate text-etiqueta font-normal text-secundario ${className}`}>
+      <span className={programada ? "text-marca-texto" : ""}>{fechaCorta(fila.fecha, fechaHoy)}</span>
+      {programada && <span className="text-marca-texto"> · Programado</span>} · {etiquetaFila(fila)}
     </span>
   );
 }
@@ -103,77 +125,90 @@ export function TablaHistorial({ filas, fechaHoy, desde, saldoInicioRango, selec
   );
 
   return (
-    <section aria-label="Historial">
-      {/* Escritorio */}
-      <div role="table" className="hidden md:block">
-        <div role="row" className={`grid ${columnas} items-end gap-x-3 border-b border-raya py-2 text-rotulo uppercase text-secundario`}>
-          {!lectura && (
-            <span role="columnheader">
-              <span className="sr-only">Seleccionar</span>
+    <section aria-label="Historial" className="transition-opacity duration-150 ease-llegada group-has-[[data-rango-pendiente]]/rango:opacity-50">
+      {/* Escritorio. La tabla solo tiene filas; el pie (saldo antes del rango) va fuera. */}
+      <div className="hidden md:block">
+        <div role="table" aria-label="Movimientos del rango">
+          <div role="row" className={`grid ${columnas} items-end gap-x-3 border-b border-raya py-2 text-rotulo uppercase text-secundario`}>
+            {!lectura && (
+              <span role="columnheader">
+                <span className="sr-only">Seleccionar</span>
+              </span>
+            )}
+            <span role="columnheader" className="hidden lg:block">
+              Fecha
             </span>
-          )}
-          <span role="columnheader">Fecha</span>
-          <span role="columnheader">Concepto</span>
-          <span role="columnheader">Categoría</span>
-          <span role="columnheader" className="text-right">
-            Movimiento
-          </span>
-          <span role="columnheader" className="text-right">
-            Saldo
-          </span>
-          <span role="columnheader" className="text-center">
-            Conc.
-          </span>
-        </div>
-        {vacio}
-        {filas.map((f) => {
-          const elegida = seleccion.has(f.movimientoId);
-          const concepto = conceptoFila(f);
-          return (
-            <div
-              key={f.movimientoId}
-              role="row"
-              className={`grid ${columnas} items-center gap-x-3 border-b border-linea py-1 ${elegida ? "bg-hundido" : ""}`}
-            >
-              {alElegir && (
-                <span role="cell">
-                  <Casilla
-                    nombre={`elegir-${f.movimientoId}`}
-                    rotulo={`Seleccionar ${concepto}`}
-                    rotuloOculto
-                    marcada={elegida}
-                    alCambiar={(marcada) => alElegir(f.movimientoId, marcada)}
-                  />
-                </span>
-              )}
-              <span role="cell">
-                <Fecha fila={f} fechaHoy={fechaHoy} />
-              </span>
-              <span role="cell" className="flex min-w-0 flex-col py-2">
-                <span className="truncate text-cuerpo">{concepto}</span>
-                {f.partes.length > 0 && <SubRenglones partes={partesDe(f)} className="pt-1" />}
-              </span>
-              <span role="cell" className="truncate text-etiqueta font-normal text-secundario">
-                {etiquetaFila(f)}
-              </span>
-              <span role="cell" className={`text-right font-mono text-cifra-s tabular-nums ${colorEfecto(f.efecto)}`}>
-                {montoConSigno(f.efecto)}
-              </span>
-              <span role="cell" className="text-right font-mono text-cifra-s tabular-nums">
-                {montoConSigno(f.saldo, false)}
-              </span>
-              <span role="cell" className="flex justify-center">
-                <Estado fila={f} alConciliar={alConciliar} />
-              </span>
+            <span role="columnheader">Concepto</span>
+            <span role="columnheader" className="hidden lg:block">
+              Categoría
+            </span>
+            <span role="columnheader" className="text-right">
+              Movimiento
+            </span>
+            <span role="columnheader" className="text-right">
+              Saldo
+            </span>
+            <span role="columnheader" className="text-center">
+              <abbr title="Conciliado" className="no-underline">
+                Conc.
+              </abbr>
+            </span>
+          </div>
+          {vacio && (
+            <div role="row">
+              <div role="cell">{vacio}</div>
             </div>
-          );
-        })}
+          )}
+          {filas.map((f) => {
+            const elegida = seleccion.has(f.movimientoId);
+            const concepto = conceptoFila(f);
+            return (
+              <div
+                key={f.movimientoId}
+                role="row"
+                className={`grid ${columnas} items-center gap-x-3 border-b border-linea py-1 transition-colors duration-150 ease-llegada ${elegida ? "bg-hundido" : ""}`}
+              >
+                {alElegir && (
+                  <span role="cell">
+                    <Casilla
+                      nombre={`elegir-${f.movimientoId}`}
+                      rotulo={`Seleccionar ${concepto}`}
+                      rotuloOculto
+                      marcada={elegida}
+                      alCambiar={(marcada) => alElegir(f.movimientoId, marcada)}
+                    />
+                  </span>
+                )}
+                <span role="cell" className="hidden lg:block">
+                  <Fecha fila={f} fechaHoy={fechaHoy} />
+                </span>
+                <span role="cell" className="flex min-w-0 flex-col py-2">
+                  <span className="truncate text-cuerpo" title={concepto}>{concepto}</span>
+                  <SubtituloFila fila={f} fechaHoy={fechaHoy} className="lg:hidden" />
+                  {f.partes.length > 0 && <SubRenglones partes={partesDe(f)} className="pt-1" />}
+                </span>
+                <span role="cell" className="hidden truncate text-etiqueta font-normal text-secundario lg:block">
+                  {etiquetaFila(f)}
+                </span>
+                <span role="cell" className={`text-right font-mono text-cifra-s tabular-nums ${colorEfecto(f.efecto)}`}>
+                  {montoConSigno(f.efecto)}
+                </span>
+                <span role="cell" className="text-right font-mono text-cifra-s tabular-nums">
+                  {montoConSigno(f.saldo, false)}
+                </span>
+                <span role="cell" className="flex justify-center">
+                  <Estado fila={f} alConciliar={alConciliar} />
+                </span>
+              </div>
+            );
+          })}
+        </div>
         {pie}
       </div>
 
       {/* Móvil */}
-      <div className="md:hidden">
-        <div className={`grid ${COLUMNAS_MOVIL} gap-x-3 border-b border-raya py-2 text-rotulo uppercase text-secundario`}>
+      <div className={`grid ${COLUMNAS_MOVIL} gap-x-3 md:hidden`}>
+        <div className={`${FILA_MOVIL} border-b border-raya py-2 text-rotulo uppercase text-secundario`}>
           <span>
             <span className="sr-only">{modoSeleccion ? "Seleccionar" : "Estado"}</span>
           </span>
@@ -181,16 +216,15 @@ export function TablaHistorial({ filas, fechaHoy, desde, saldoInicioRango, selec
           <span className="text-right">Mov.</span>
           <span className="text-right">Saldo</span>
         </div>
-        {vacio}
-        <ul>
+        {vacio && <div className="col-span-4">{vacio}</div>}
+        <ul className={FILA_MOVIL}>
           {filas.map((f) => {
             const elegida = seleccion.has(f.movimientoId);
             const concepto = conceptoFila(f);
-            const programada = esProgramada(f.fecha, fechaHoy);
             return (
               <li
                 key={f.movimientoId}
-                className={`grid ${COLUMNAS_MOVIL} items-center gap-x-3 border-b border-linea py-1 ${elegida ? "bg-hundido" : ""}`}
+                className={`${FILA_MOVIL} items-center border-b border-linea py-1 transition-colors duration-150 ease-llegada ${elegida ? "bg-hundido" : ""}`}
               >
                 {modoSeleccion && alElegir ? (
                   <span className="-ml-3">
@@ -206,11 +240,8 @@ export function TablaHistorial({ filas, fechaHoy, desde, saldoInicioRango, selec
                   <Estado fila={f} alConciliar={alConciliar} className="-ml-3" />
                 )}
                 <span className="flex min-w-0 flex-col py-2">
-                  <span className="truncate text-cuerpo">{concepto}</span>
-                  <span className="truncate text-etiqueta font-normal text-secundario">
-                    <span className={programada ? "text-marca-texto" : ""}>{fechaCorta(f.fecha, fechaHoy)}</span>
-                    {programada && <span className="text-marca-texto"> · Programado</span>} · {etiquetaFila(f)}
-                  </span>
+                  <span className="truncate text-cuerpo" title={concepto}>{concepto}</span>
+                  <SubtituloFila fila={f} fechaHoy={fechaHoy} />
                   {f.partes.length > 0 && <SubRenglones partes={partesDe(f)} className="pt-1" />}
                 </span>
                 <span className={`text-right font-mono text-cifra-s tabular-nums ${colorEfecto(f.efecto)}`}>{montoConSigno(f.efecto)}</span>
@@ -219,7 +250,7 @@ export function TablaHistorial({ filas, fechaHoy, desde, saldoInicioRango, selec
             );
           })}
         </ul>
-        {pie}
+        <div className="col-span-4">{pie}</div>
       </div>
     </section>
   );

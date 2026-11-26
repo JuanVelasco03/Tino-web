@@ -45,7 +45,7 @@ export function ResumenTarjeta({ tarjeta, saldo, porcentajeTras = null, formato 
         <span className="text-rotulo uppercase text-secundario">Disponible hoy</span>
         <span className="font-mono text-cifra-l tabular-nums">{montoConSigno(tarjeta.disponible, false)}</span>
         {barra("h-1")}
-        <div className="flex justify-between gap-3 text-etiqueta">
+        <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-etiqueta">
           <span>
             Usado <span className="font-mono tabular-nums">{tarjeta.porcentajeUsado} %</span> de{" "}
             <span className="font-mono tabular-nums">{montoConSigno(tarjeta.cupo, false)}</span>

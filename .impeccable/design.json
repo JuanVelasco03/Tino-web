@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-25T03:27:03+00:00",
+  "generatedAt": "2026-11-26T00:04:04+00:00",
   "title": "Design System: Tino",
   "extensions": {
     "colorMeta": {
@@ -531,6 +531,11 @@
         "name": "fila-abriendo",
         "value": "background: var(--hundido); animate-pulse (motion-safe)",
         "purpose": "La fila pulsada del libro late con aria-busy mientras llega la edición por URL; con movimiento reducido, solo el fondo."
+      },
+      {
+        "name": "atenuar-pendiente",
+        "value": "opacity: 0.5; transition: opacity 150ms var(--llegada)",
+        "purpose": "En /cuentas: el historial al cambiar de rango (data-rango-pendiente, useLinkStatus) y la respuesta de «¿Puedo comprar esto?» mientras consulta se atenúan en su lugar, sin desplazarse."
       }
     ],
     "breakpoints": [

@@ -8,6 +8,7 @@ import { CampoMonto } from "../campo-monto";
 import { Casilla } from "../casilla";
 import { MensajeError } from "../mensaje-error";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
+import { llamarAccion } from "./sin-conexion";
 
 export type ResultadoAjuste = { ok: true } | { ok: false; codigo: string; mensaje: string; campo?: "saldoReal" };
 
@@ -70,7 +71,8 @@ export function PanelAjuste({ cuenta, historial, rutaCierre, registrar, alCerrar
     setErrorCampo(null);
     setErrorGeneral(null);
     setConfirmandoDescarte(false);
-    const resultado = await registrar(cuenta.id, validacion.valor.toString(), conciliar);
+    const saldoReal = validacion.valor.toString();
+    const resultado = await llamarAccion(() => registrar(cuenta.id, saldoReal, conciliar));
     enCurso.current = false;
     setEnviando(false);
     if (resultado.ok) {
@@ -113,12 +115,12 @@ export function PanelAjuste({ cuenta, historial, rutaCierre, registrar, alCerrar
       <form id="panel-ajuste" onSubmit={(e) => void enviar(e)} noValidate className="flex flex-col gap-6">
         <div className="flex flex-col gap-1">
           <p className="text-cuerpo">Cuenta lo que tienes en {lugar} y escribe el total.</p>
-          <p className="text-etiqueta font-normal text-secundario">TINO registra la diferencia como un movimiento aparte.</p>
+          <p className="text-etiqueta font-normal text-secundario">Tino registra la diferencia como un ajuste aparte.</p>
         </div>
 
         <div className="flex flex-col gap-1">
           <div className="flex items-baseline justify-between gap-3">
-            <span className="text-etiqueta font-normal text-secundario">Saldo en TINO</span>
+            <span className="text-etiqueta font-normal text-secundario">Saldo en Tino</span>
             <span className="font-mono text-cifra-m tabular-nums">{montoConSigno(historial.saldoHoy, false)}</span>
           </div>
           {historial.saldo !== historial.saldoHoy && (

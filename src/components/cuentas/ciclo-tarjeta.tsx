@@ -27,9 +27,9 @@ type Props = {
 };
 
 /** Escritorio: fecha · concepto · categoría · cargo · abono. */
-const COLUMNAS = "grid-cols-[64px_minmax(0,1fr)_150px_110px_110px]";
-/** Móvil: fecha · concepto · monto. */
-const COLUMNAS_MOVIL = "grid-cols-[48px_minmax(0,1fr)_96px]";
+const COLUMNAS = "grid-cols-[64px_minmax(0,1fr)_150px_130px_130px]";
+/** Móvil: fecha · concepto · monto, en una rejilla con filas en `subgrid` (el monto crece y sigue alineado). */
+const COLUMNAS_MOVIL = "grid-cols-[48px_minmax(0,1fr)_minmax(96px,auto)]";
 
 function pesos(n: bigint): string {
   return montoConSigno(n, false);
@@ -41,12 +41,15 @@ function FilaEscritorio({ fecha, concepto, categoria, cargo, abono, tenue = fals
       <span role="cell" className="font-mono text-cifra-xs tabular-nums text-secundario">
         {fecha}
       </span>
-      <span role="cell" className="truncate text-cuerpo">
+      {/* Sin categoría (el saldo al corte anterior), el concepto ocupa también esa columna. */}
+      <span role="cell" title={concepto} aria-colspan={categoria ? undefined : 2} className={`truncate text-cuerpo ${categoria ? "" : "col-span-2"}`}>
         {concepto}
       </span>
-      <span role="cell" className="truncate text-etiqueta font-normal text-secundario">
-        {categoria}
-      </span>
+      {categoria && (
+        <span role="cell" className="truncate text-etiqueta font-normal text-secundario">
+          {categoria}
+        </span>
+      )}
       <span role="cell" className={`text-right font-mono text-cifra-s tabular-nums ${tenue ? "text-secundario" : ""}`}>
         {cargo}
       </span>
@@ -73,11 +76,45 @@ function PieEscritorio({ rotulo, cifra, fuerte = false }: { rotulo: string; cifr
 }
 
 function Subtitulo({ children }: { children: ReactNode }) {
-  return <h3 className="border-b border-raya pt-6 pb-2 text-rotulo uppercase text-secundario">{children}</h3>;
+  return <h3 className="border-b border-raya pt-6 pb-2 text-etiqueta text-secundario">{children}</h3>;
 }
 
 function Vacio({ children }: { children: ReactNode }) {
   return <p className="border-b border-linea py-3 text-etiqueta font-normal text-secundario">{children}</p>;
+}
+
+/** Bloque vacío dentro de una tabla: una fila con una celda (una tabla solo tiene filas). */
+function FilaVacia({ children }: { children: ReactNode }) {
+  return (
+    <div role="row">
+      <div role="cell" aria-colspan={5}>
+        <Vacio>{children}</Vacio>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Rótulos de columna. El primer bloque los muestra; los demás los repiten solo
+ * para el lector de pantalla (cada bloque es su propia tabla), sin ocupar alto.
+ */
+function Encabezado({ oculto = false }: { oculto?: boolean }) {
+  return (
+    <div
+      role="row"
+      className={oculto ? "sr-only" : `grid ${COLUMNAS} gap-x-3 border-b border-linea py-2 text-rotulo uppercase text-secundario`}
+    >
+      <span role="columnheader">Fecha</span>
+      <span role="columnheader">Concepto</span>
+      <span role="columnheader">Categoría</span>
+      <span role="columnheader" className="text-right">
+        Cargo
+      </span>
+      <span role="columnheader" className="text-right">
+        Abono
+      </span>
+    </div>
+  );
 }
 
 /**
@@ -98,44 +135,43 @@ export function CicloTarjeta({ ciclo, fechaHoy }: Props) {
         <span className="text-etiqueta font-normal text-secundario">{textoConsumos(ciclo.consumos.length)}</span>
       </div>
 
-      {/* Escritorio */}
-      <div role="table" className="hidden md:block">
-        <div role="row" className={`grid ${COLUMNAS} gap-x-3 border-b border-linea py-2 text-rotulo uppercase text-secundario`}>
-          <span role="columnheader">Fecha</span>
-          <span role="columnheader">Concepto</span>
-          <span role="columnheader">Categoría</span>
-          <span role="columnheader" className="text-right">
-            Cargo
-          </span>
-          <span role="columnheader" className="text-right">
-            Abono
-          </span>
+      {/* Escritorio: tres tablas (saldo anterior, consumos, cargos), cada una solo con filas;
+          sus títulos y la deuda actual van fuera. */}
+      <div className="hidden md:block">
+        <div role="table" aria-label="Saldo anterior">
+          <Encabezado />
+          <FilaEscritorio fecha={fecha(ciclo.corteAnterior.fecha)} concepto="Saldo al corte anterior" cargo={pesos(ciclo.corteAnterior.saldo)} tenue />
+          {ciclo.abonos.map((f) => (
+            <FilaEscritorio key={f.movimientoId} fecha={fecha(f.fecha)} concepto={etiquetaAbono(f)} categoria={categoriaAbono(f)} abono={pesos(f.monto)} />
+          ))}
+          <PieEscritorio rotulo="Saldo anterior pendiente" cifra={pendiente} fuerte />
         </div>
-        <FilaEscritorio fecha={fecha(ciclo.corteAnterior.fecha)} concepto="Saldo al corte anterior" cargo={pesos(ciclo.corteAnterior.saldo)} tenue />
-        {ciclo.abonos.map((f) => (
-          <FilaEscritorio key={f.movimientoId} fecha={fecha(f.fecha)} concepto={etiquetaAbono(f)} categoria={categoriaAbono(f)} abono={pesos(f.monto)} />
-        ))}
-        <PieEscritorio rotulo="Saldo anterior pendiente" cifra={pendiente} fuerte />
 
         <Subtitulo>Consumos del período</Subtitulo>
-        {ciclo.consumos.length === 0 && <Vacio>Sin consumos en este ciclo.</Vacio>}
-        {ciclo.consumos.map((f) => (
-          <FilaEscritorio key={f.movimientoId} fecha={fecha(f.fecha)} concepto={conceptoCiclo(f)} categoria={categoriaConsumo(f)} cargo={pesos(f.monto)} />
-        ))}
-        <PieEscritorio rotulo="Subtotal consumos" cifra={pesos(ciclo.totalConsumos)} />
+        <div role="table" aria-label="Consumos del período">
+          <Encabezado oculto />
+          {ciclo.consumos.length === 0 && <FilaVacia>Sin consumos en este ciclo.</FilaVacia>}
+          {ciclo.consumos.map((f) => (
+            <FilaEscritorio key={f.movimientoId} fecha={fecha(f.fecha)} concepto={conceptoCiclo(f)} categoria={categoriaConsumo(f)} cargo={pesos(f.monto)} />
+          ))}
+          <PieEscritorio rotulo="Subtotal consumos" cifra={pesos(ciclo.totalConsumos)} />
+        </div>
 
         <Subtitulo>Cargos del banco · no son consumos</Subtitulo>
-        {ciclo.cargos.length === 0 && <Vacio>Sin cargos en este ciclo.</Vacio>}
-        {ciclo.cargos.map((f) => (
-          <FilaEscritorio
-            key={f.movimientoId}
-            fecha={fecha(f.fecha)}
-            concepto={f.descripcion ?? f.categoria?.nombre ?? "Cargo"}
-            categoria={detalleCargo(f, ciclo)}
-            cargo={pesos(f.monto)}
-          />
-        ))}
-        <PieEscritorio rotulo="Subtotal cargos" cifra={pesos(ciclo.totalCargos)} />
+        <div role="table" aria-label="Cargos del banco">
+          <Encabezado oculto />
+          {ciclo.cargos.length === 0 && <FilaVacia>Sin cargos en este ciclo.</FilaVacia>}
+          {ciclo.cargos.map((f) => (
+            <FilaEscritorio
+              key={f.movimientoId}
+              fecha={fecha(f.fecha)}
+              concepto={f.descripcion ?? f.categoria?.nombre ?? "Cargo"}
+              categoria={detalleCargo(f, ciclo)}
+              cargo={pesos(f.monto)}
+            />
+          ))}
+          <PieEscritorio rotulo="Subtotal cargos" cifra={pesos(ciclo.totalCargos)} />
+        </div>
 
         <div className="flex items-baseline justify-end gap-6 border-t border-raya pt-3">
           <span className="text-etiqueta font-normal text-secundario">Deuda actual</span>
@@ -152,9 +188,9 @@ export function CicloTarjeta({ ciclo, fechaHoy }: Props) {
 
         <Subtitulo>Consumos del período</Subtitulo>
         {ciclo.consumos.length === 0 && <Vacio>Sin consumos en este ciclo.</Vacio>}
-        <ul>
+        <ul className={`grid ${COLUMNAS_MOVIL} gap-x-3`}>
           {ciclo.consumos.map((f) => (
-            <li key={f.movimientoId} className={`grid ${COLUMNAS_MOVIL} items-baseline gap-x-3 border-b border-linea py-3`}>
+            <li key={f.movimientoId} className="col-span-3 grid grid-cols-subgrid items-baseline border-b border-linea py-3">
               <span className="font-mono text-cifra-xs tabular-nums text-secundario">{fecha(f.fecha)}</span>
               <span className="truncate text-cuerpo">{conceptoCiclo(f)}</span>
               <span className="text-right font-mono text-cifra-s tabular-nums">{pesos(f.monto)}</span>

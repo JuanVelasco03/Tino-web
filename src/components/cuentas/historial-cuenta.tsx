@@ -14,6 +14,7 @@ import { CabeceraCuenta } from "./cabecera-cuenta";
 import { CifrasCuenta } from "./cifras-cuenta";
 import { RangoHistorial } from "./rango-historial";
 import { TablaHistorial } from "./tabla-historial";
+import { llamarAccion } from "./sin-conexion";
 
 export type ResultadoConciliacion = { ok: true } | { ok: false; codigo: string; mensaje: string };
 
@@ -78,7 +79,7 @@ export function HistorialCuenta({ cuenta, historial, pedido, rutas, conciliar }:
     setError(null);
     iniciar(async () => {
       aplicarOptimista({ ids, conciliado });
-      const resultado = await conciliar(cuenta.id, ids, conciliado);
+      const resultado = await llamarAccion(() => conciliar(cuenta.id, ids, conciliado));
       if (!resultado.ok) {
         setError(resultado.mensaje);
         alFallar?.();
@@ -106,7 +107,7 @@ export function HistorialCuenta({ cuenta, historial, pedido, rutas, conciliar }:
   const hayFilas = filas.length > 0;
   const extraMovil =
     !archivada && hayFilas ? (
-      <Boton variante="texto" className="h-11" onClick={() => (modoSeleccion ? limpiar() : setModoSeleccion(true))}>
+      <Boton compacto variante="texto" onClick={() => (modoSeleccion ? limpiar() : setModoSeleccion(true))}>
         {modoSeleccion ? "Listo" : "Seleccionar"}
       </Boton>
     ) : null;
@@ -114,7 +115,7 @@ export function HistorialCuenta({ cuenta, historial, pedido, rutas, conciliar }:
   const suma = sumaSeleccion(filas, seleccion);
 
   return (
-    <div className={`flex flex-col gap-6 md:gap-8 ${seleccion.size > 0 ? "max-md:pb-16" : ""}`}>
+    <div className={`asentar flex flex-col gap-6 md:gap-8 ${seleccion.size > 0 ? "max-md:pb-16" : ""}`}>
       <CabeceraCuenta
         cuenta={cuenta}
         accion={
@@ -135,7 +136,7 @@ export function HistorialCuenta({ cuenta, historial, pedido, rutas, conciliar }:
             <Link
               href={rutas.ajuste}
               scroll={false}
-              className="inline-flex h-11 items-center justify-center rounded-campo border border-linea bg-superficie px-4 text-cuerpo font-medium"
+              className="presion inline-flex h-11 items-center justify-center rounded-campo border border-linea bg-superficie px-4 text-cuerpo font-medium hover:border-secundario"
             >
               Ajustar
             </Link>
@@ -143,14 +144,14 @@ export function HistorialCuenta({ cuenta, historial, pedido, rutas, conciliar }:
         }
       />
 
-      <div className="flex flex-col gap-4">
+      <div className="group/rango flex flex-col gap-4">
         <RangoHistorial
           cuentaId={cuenta.id}
           pedido={pedido}
           historial={historial}
           extra={
             !archivada && pendientes.length > 0 ? (
-              <Boton variante="texto" className="h-11" onClick={() => setSeleccion(new Set(pendientes))}>
+              <Boton compacto variante="texto" onClick={() => setSeleccion(new Set(pendientes))}>
                 Seleccionar pendientes
               </Boton>
             ) : null

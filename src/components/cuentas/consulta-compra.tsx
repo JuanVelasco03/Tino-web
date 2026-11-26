@@ -35,6 +35,7 @@ const SIN_RED = "No pudimos consultar. Intenta de nuevo.";
 export function ConsultaCompra({ cuentaId, fechaHoy, ciclo, disponible, compra, alCambiarCompra, consultar, nombre = "compra" }: Props) {
   const [texto, setTexto] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [consultando, setConsultando] = useState(false);
   const secuencia = useRef(0);
   const espera = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -53,10 +54,12 @@ export function ConsultaCompra({ cuentaId, fechaHoy, ciclo, disponible, compra, 
     const digitos = aDigitos(valor);
     if (digitos === null || digitos === "0") {
       alCambiarCompra(null);
+      setConsultando(false);
       return;
     }
     espera.current = setTimeout(async () => {
       espera.current = null;
+      setConsultando(true);
       let resultado: ResultadoCompra;
       try {
         resultado = await consultar(cuentaId, digitos);
@@ -64,6 +67,7 @@ export function ConsultaCompra({ cuentaId, fechaHoy, ciclo, disponible, compra, 
         resultado = { ok: false, codigo: "SIN_CONEXION", mensaje: SIN_RED };
       }
       if (n !== secuencia.current) return; // llegó tarde: ya se pidió otra
+      setConsultando(false);
       if (resultado.ok) alCambiarCompra(resultado.compra);
       else {
         alCambiarCompra(null);
@@ -84,9 +88,14 @@ export function ConsultaCompra({ cuentaId, fechaHoy, ciclo, disponible, compra, 
 
   return (
     <section aria-label="¿Puedo comprar esto?" className="flex flex-col gap-3">
-      <h2 className="text-rotulo uppercase">¿Puedo comprar esto?</h2>
+      <h2 className="text-cuerpo font-semibold">¿Puedo comprar esto?</h2>
       <CampoMonto valor={texto} moneda="COP" etiqueta="Valor de la compra" editable={{ nombre, alCambiar: cambiar, error: error ?? undefined }} />
-      <div role="status" aria-live="polite" className="grid grid-cols-[18px_minmax(0,1fr)] gap-x-3">
+      <div
+        role="status"
+        aria-live="polite"
+        aria-busy={consultando}
+        className={`grid grid-cols-[18px_minmax(0,1fr)] gap-x-3 transition-opacity duration-150 ease-llegada ${consultando ? "opacity-50" : ""}`}
+      >
         <span className="flex pt-0.5">{icono}</span>
         <div className="flex flex-col gap-1">
           <p className="text-cuerpo font-semibold">{titulo}</p>

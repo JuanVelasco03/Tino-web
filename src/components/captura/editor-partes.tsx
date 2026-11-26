@@ -68,7 +68,7 @@ export function EditorPartes({
 }: Props) {
   if (partes === null) {
     return (
-      <Boton variante="texto" onClick={alActivar} className="h-11 self-start">
+      <Boton compacto variante="texto" onClick={alActivar} className="self-start">
         Dividir entre categorías
       </Boton>
     );
@@ -84,7 +84,7 @@ export function EditorPartes({
     <div role="group" aria-label="Dividir entre categorías" className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-3">
         <span className="text-etiqueta text-secundario">Dividir entre categorías</span>
-        <Boton variante="texto" onClick={alDesactivar} className="h-11">
+        <Boton compacto variante="texto" onClick={alDesactivar}>
           No dividir
         </Boton>
       </div>
@@ -151,7 +151,7 @@ export function EditorPartes({
       </ul>
 
       {partes.length < categorias.length && (
-        <Boton variante="texto" onClick={alAgregar} className="h-11 self-start">
+        <Boton compacto variante="texto" onClick={alAgregar} className="self-start">
           + Agregar parte
         </Boton>
       )}
@@ -159,7 +159,7 @@ export function EditorPartes({
       <div className="flex min-h-11 items-center justify-between gap-3">
         <Restante resto={resto} />
         {puedeCompletar && (
-          <Boton variante="texto" onClick={alCompletar} className="h-11">
+          <Boton compacto variante="texto" onClick={alCompletar}>
             El resto
           </Boton>
         )}

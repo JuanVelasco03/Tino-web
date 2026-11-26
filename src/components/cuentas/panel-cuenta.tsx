@@ -26,6 +26,7 @@ import { OpcionUnica, type Opcion } from "../opcion-unica";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { BloqueEliminar, PedirEliminar, DETALLE_ELIMINAR_CUENTA } from "../bloque-eliminar";
 import { CamposTarjeta, type CuentaPago } from "./campos-tarjeta";
+import { llamarAccion } from "./sin-conexion";
 
 export type { CuentaPago };
 
@@ -190,7 +191,7 @@ export function PanelCuenta({ cuenta, acciones, cuentasPago = [], rutaCierre = "
     setErrores({});
     setAccion("guardar");
     iniciar(async () => {
-      if (mostrarResultado(await llamada())) await cerrar();
+      if (mostrarResultado(await llamarAccion(llamada))) await cerrar();
       setAccion(null);
     });
   }
@@ -200,7 +201,7 @@ export function PanelCuenta({ cuenta, acciones, cuentasPago = [], rutaCierre = "
     setErrorArchivo(null);
     setAccion("archivar");
     iniciar(async () => {
-      const resultado = await acciones.archivar(cuenta.id);
+      const resultado = await llamarAccion(() => acciones.archivar(cuenta.id));
       if (resultado.ok) await cerrar(rutaTrasQuitar);
       else setErrorArchivo(resultado.mensaje);
       setAccion(null);
@@ -212,7 +213,7 @@ export function PanelCuenta({ cuenta, acciones, cuentasPago = [], rutaCierre = "
     setErrorBorrado(null);
     setAccion("eliminar");
     iniciar(async () => {
-      const resultado = await acciones.eliminar(cuenta.id);
+      const resultado = await llamarAccion(() => acciones.eliminar(cuenta.id));
       if (resultado.ok) await cerrar(rutaTrasQuitar);
       else setErrorBorrado(resultado.mensaje);
       setAccion(null);
@@ -352,11 +353,13 @@ export function PanelCuenta({ cuenta, acciones, cuentasPago = [], rutaCierre = "
         <div className="mt-6 flex flex-col gap-6 border-t border-linea pt-6">
           <div className="flex flex-col items-start gap-2">
             <Boton variante="secundario" onClick={archivar} disabled={pendiente || !archivable}>
-              {pendiente && accion === "archivar" ? "Archivando…" : "Archivar"}
+              {pendiente && accion === "archivar" ? "Archivando…" : "Archivar cuenta"}
             </Boton>
-            {!archivable && (
-              <p className="text-etiqueta font-normal text-secundario">Solo puedes archivar una cuenta con saldo cero.</p>
-            )}
+            <p className="text-etiqueta font-normal text-secundario">
+              {archivable
+                ? "Sale de tu lista y queda en Archivadas, con su historial."
+                : "Para archivarla, su saldo debe estar en cero."}
+            </p>
             {errorArchivo && <MensajeError mensaje={errorArchivo} />}
           </div>
 

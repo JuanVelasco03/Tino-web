@@ -68,7 +68,7 @@ export function CamposTarjeta({ valores, alCambiar, cuentasPago, errores, prefij
       </div>
 
       <CampoSubrayado
-        etiqueta="Tasa M.V. · opcional"
+        etiqueta="Tasa mensual (M.V.) · opcional"
         id={`${prefijo}-tasa`}
         name="tasaMensual"
         inputMode="decimal"

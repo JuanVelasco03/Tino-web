@@ -89,7 +89,7 @@ export function AvisoRegistro({ formato = "panel", aviso, oferta }: Props) {
               </span>
             )}
             {aviso.alDeshacer && (
-              <Boton variante="texto" onClick={aviso.alDeshacer} disabled={aviso.deshaciendo} className="h-11 shrink-0 px-3">
+              <Boton compacto variante="texto" onClick={aviso.alDeshacer} disabled={aviso.deshaciendo} className="shrink-0 px-3">
                 {aviso.deshaciendo ? "Deshaciendo…" : "Deshacer"}
               </Boton>
             )}
@@ -102,13 +102,13 @@ export function AvisoRegistro({ formato = "panel", aviso, oferta }: Props) {
           <div className="flex min-h-11 flex-wrap items-center gap-x-3">
             <span className="min-w-0 flex-1 py-2 text-etiqueta text-secundario">{oferta.pregunta}</span>
             <span className="flex shrink-0 items-center">
-              <Boton variante="texto" onClick={oferta.alAceptar} disabled={oferta.pendiente} className="h-11 px-2">
+              <Boton compacto variante="texto" onClick={oferta.alAceptar} disabled={oferta.pendiente} className="px-2">
                 {oferta.pendiente ? "Guardando…" : oferta.accion}
               </Boton>
               <span aria-hidden className="text-terciario">
                 ·
               </span>
-              <Boton variante="texto" onClick={oferta.alRechazar} disabled={oferta.pendiente} className="h-11 px-3">
+              <Boton compacto variante="texto" onClick={oferta.alRechazar} disabled={oferta.pendiente} className="px-3">
                 No
               </Boton>
             </span>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent, type ReactNode } from "react";
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { useRouter } from "next/navigation";
 import { Calendar } from "lucide-react";
 import { atajoActivo, rangoDeAtajo, textoRango, validarRango, type Atajo } from "@/domain/cuenta/detalle";
@@ -19,7 +19,17 @@ type Props = {
   extra?: ReactNode;
 };
 
-const FICHA = "inline-flex h-11 shrink-0 items-center rounded-campo border bg-superficie px-3 text-cuerpo whitespace-nowrap md:h-9";
+const FICHA = "presion inline-flex h-11 shrink-0 items-center rounded-campo border bg-superficie px-3 text-cuerpo whitespace-nowrap md:h-9";
+
+/**
+ * Marca de una ficha que está navegando: cambiar `?desde=` no vuelve a
+ * mostrar `loading.tsx`, así que mientras llega el rango nuevo el historial
+ * (que la busca con `:has()`) se atenúa en su lugar, sin saltar.
+ */
+function MarcaPendiente() {
+  const { pending } = useLinkStatus();
+  return pending ? <span data-rango-pendiente aria-hidden /> : null;
+}
 
 /** «Noviembre» desde `"2026-11"`. */
 function nombreMes(mes: string): string {
@@ -77,6 +87,7 @@ export function RangoHistorial({ cuentaId, pedido, historial, extra }: Props) {
                 className={`${FICHA} ${elegida ? "border-texto font-semibold" : "border-linea hover:border-secundario"}`}
               >
                 {rotulo}
+                <MarcaPendiente />
               </Link>
             );
           })}

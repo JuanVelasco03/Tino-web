@@ -14,7 +14,7 @@ type Props = {
 
 /**
  * Casilla de verificación: un `<input type="checkbox">` real, dibujado como
- * cuadro de 18 px (borde `terciario`; marcada, tinta llena con la marca en
+ * cuadro de 18 px (borde `secundario`: un control pide 3:1 y `terciario` da 2,8; marcada, tinta llena con la marca en
  * `fondo`). Toda la fila es el control: rótulo en cuerpo 600 (secundario si
  * no está marcada) y descripción en `etiqueta` secundaria. A diferencia de
  * `OpcionUnica`, no es una elección exclusiva.
@@ -40,7 +40,7 @@ export function Casilla({ nombre, rotulo, descripcion, marcada, alCambiar, desha
         <span
           aria-hidden
           className={`flex size-[18px] items-center justify-center rounded-muestra border ${
-            marcada ? "border-texto bg-texto text-fondo" : "border-terciario"
+            marcada ? "border-texto bg-texto text-fondo" : "border-secundario"
           }`}
         >
           {marcada && <Check size={14} strokeWidth={2} />}
@@ -66,7 +66,7 @@ export function Casilla({ nombre, rotulo, descripcion, marcada, alCambiar, desha
       <span
         aria-hidden
         className={`mt-0.5 flex size-[18px] items-center justify-center rounded-muestra border ${
-          marcada ? "border-texto bg-texto text-fondo" : "border-terciario"
+          marcada ? "border-texto bg-texto text-fondo" : "border-secundario"
         }`}
       >
         {marcada && <Check size={14} strokeWidth={2} />}

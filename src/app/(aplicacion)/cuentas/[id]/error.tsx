@@ -14,7 +14,10 @@ export default function ErrorCuenta({ retry }: { error: unknown; retry: () => vo
         ‹ Cuentas
       </EnlaceTexto>
       <div role="alert" className="flex flex-col items-start gap-4">
-        <p className="text-cuerpo font-semibold">No pudimos cargar esta cuenta.</p>
+        <div className="flex flex-col gap-1">
+          <p className="text-cuerpo font-semibold">No pudimos cargar esta cuenta.</p>
+          <p className="text-etiqueta font-normal text-secundario">Tus datos siguen guardados. Intenta de nuevo en un momento.</p>
+        </div>
         <Boton variante="secundario" onClick={() => retry()}>
           Reintentar
         </Boton>

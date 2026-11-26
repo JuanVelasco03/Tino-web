@@ -305,7 +305,7 @@ function GrupoFichas({ c, rol, etiqueta }: { c: EstadoFormulario; rol: RolCuenta
       <div className="flex min-h-6 items-center justify-between gap-3">
         <span className="text-etiqueta text-secundario">{etiqueta}</span>
         {usar && (
-          <Boton variante="texto" onClick={usar.alPulsar} disabled={usar.pendiente} className="h-11 shrink-0">
+          <Boton compacto variante="texto" onClick={usar.alPulsar} disabled={usar.pendiente} className="shrink-0">
             Usar {usar.cuenta.nombre} siempre
           </Boton>
         )}

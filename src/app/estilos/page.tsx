@@ -471,7 +471,7 @@ function Componentes({ modo }: { modo: "light" | "dark" }) {
       <div>
         <Etiqueta>Enlace de texto · acción que navega</Etiqueta>
         <div className="flex flex-wrap gap-6">
-          <EnlaceTexto href="#">← Cuentas</EnlaceTexto>
+          <EnlaceTexto href="#">‹ Cuentas</EnlaceTexto>
           <EnlaceTexto href="#">+ Nueva cuenta</EnlaceTexto>
           <EnlaceTexto href="#">Ver archivadas</EnlaceTexto>
         </div>
