@@ -8,6 +8,7 @@ import { DetallePrestamo } from "@/components/deudas/detalle-prestamo";
 import { DiaUnoDeudas } from "@/components/deudas/dia-uno-deudas";
 import { ListaPrestamos } from "@/components/deudas/lista-prestamos";
 import { PanelAbono, type AccionesPanelAbono } from "@/components/deudas/panel-abono";
+import { EsqueletoDeudas } from "@/components/deudas/esqueleto-deudas";
 import { PanelEdicionPrestamo } from "@/components/deudas/panel-edicion-prestamo";
 import { PanelPrestamo, type AccionesPanelPrestamo } from "@/components/deudas/panel-prestamo";
 import { AvisoBandeja, CifraAviso } from "@/components/recurrentes/bandeja-recurrentes";
@@ -275,12 +276,27 @@ const NADA = () => {};
  */
 export function MuestraDeudas({ sufijo }: { sufijo: string }) {
   const [{ lista, camila, mama, andres }] = useState(() => datosDeudas(sufijo));
+  // Mamá con cifras de diez dígitos (×10.000): fuerza el historial apilado.
+  const millonario: PrestamoDetalle = {
+    ...mama,
+    id: `${mama.id}-largo`,
+    capitalPendiente: mama.capitalPendiente * 10_000n,
+    totalPrestado: mama.totalPrestado * 10_000n,
+    totalAbonado: mama.totalAbonado * 10_000n,
+    historial: mama.historial.map((f) => ({ ...f, capital: f.capital * 10_000n, saldoCapital: f.saldoCapital * 10_000n })),
+  };
   const [panel, setPanel] = useState<"otorgado" | "contraida" | "abono" | "editar" | null>(null);
   const cerrar = () => setPanel(null);
 
   return (
     <ProveedorAvisoDeudas deshacer={deshacer}>
       <div className="flex flex-col gap-12">
+        <div>
+          <Etiqueta>Esqueleto · cabecera, consolidado, lista y detalle (forma real, bloques `linea`, sin cifras)</Etiqueta>
+          <div data-muestra="esqueleto-deudas">
+            <EsqueletoDeudas />
+          </div>
+        </div>
         <div>
           <Etiqueta>Consolidado · con saldos (posición neta en cero)</Etiqueta>
           <ConsolidadoDeudas teDeben={lista.teDeben} debes={lista.debes} posicionNeta={lista.posicionNeta} />
@@ -327,6 +343,10 @@ export function MuestraDeudas({ sufijo }: { sufijo: string }) {
             <Etiqueta>Detalle · Andrés, saldado (sin acciones)</Etiqueta>
             <DetallePrestamo detalle={andres} />
           </div>
+        </div>
+        <div className="max-w-[390px] min-w-0">
+          <Etiqueta>Detalle angosto · cifras de diez dígitos: la descripción toma su renglón</Etiqueta>
+          <DetallePrestamo detalle={millonario} />
         </div>
 
         <div className="@container min-w-0">

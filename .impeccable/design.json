@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-26T00:04:04+00:00",
+  "generatedAt": "2026-11-26T00:44:19+00:00",
   "title": "Design System: Tino",
   "extensions": {
     "colorMeta": {
@@ -495,7 +495,7 @@
         "name": "despliegue",
         "value": "var(--despliegue)",
         "canonical": "cubic-bezier(0.22, 1, 0.36, 1)",
-        "purpose": "Fila que crece en su lugar (cupo al elegir tarjeta): grid-template-rows 0fr → 1fr, fundido y 4 px de asiento, 300 ms. Utilidad ease-despliegue."
+        "purpose": "Fila que crece en su lugar (cupo al elegir tarjeta; campo de «Solo una parte» al condonar): grid-template-rows 0fr → 1fr, fundido y 4 px de asiento, 300 ms. Plegada queda inert. Utilidad ease-despliegue."
       },
       {
         "name": "reducido",
@@ -505,7 +505,7 @@
       {
         "name": "asentar",
         "value": "animation: asentar 220ms var(--llegada) both",
-        "purpose": "Fundido sin desplazamiento cuando el contenido reemplaza a un esqueleto: resumen al cambiar de mes, libro de movimientos y la lista de un filtro al abrir. Utilidad asentar."
+        "purpose": "Fundido sin desplazamiento cuando el contenido reemplaza a un esqueleto o a otro estado: resumen al cambiar de mes, libro de movimientos, la lista de un filtro al abrir, /deudas al llegar, el detalle de otra persona y el bloque de condonar. Utilidad asentar."
       },
       {
         "name": "trazo",
@@ -535,7 +535,7 @@
       {
         "name": "atenuar-pendiente",
         "value": "opacity: 0.5; transition: opacity 150ms var(--llegada)",
-        "purpose": "En /cuentas: el historial al cambiar de rango (data-rango-pendiente, useLinkStatus) y la respuesta de «¿Puedo comprar esto?» mientras consulta se atenúan en su lugar, sin desplazarse."
+        "purpose": "En su lugar, sin desplazarse: en /cuentas, el historial al cambiar de rango (data-rango-pendiente) y la respuesta de «¿Puedo comprar esto?» mientras consulta; en /deudas, el detalle viejo al elegir otra persona (data-prestamo-pendiente). Las marcas salen de useLinkStatus."
       }
     ],
     "breakpoints": [

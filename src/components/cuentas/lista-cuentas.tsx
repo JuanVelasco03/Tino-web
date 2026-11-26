@@ -15,7 +15,7 @@ import { MensajeError } from "../mensaje-error";
 import { CierrePatrimonio } from "./cierre-patrimonio";
 import { FilaCuenta } from "./fila-cuenta";
 import { GrupoCuentas, SANGRIA_LISTA } from "./grupo-cuentas";
-import { llamarAccion } from "./sin-conexion";
+import { llamarAccion } from "@/lib/sin-conexion";
 
 type Props = {
   lista: Lista;

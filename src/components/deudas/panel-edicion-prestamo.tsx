@@ -11,6 +11,7 @@ import { MensajeError } from "../mensaje-error";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { RUTA_DEUDAS, rutaPrestamo } from "./rutas";
 import { CampoFecha } from "../campo-fecha";
+import { llamarAccion } from "@/lib/sin-conexion";
 
 type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoEdicion };
 
@@ -18,7 +19,7 @@ type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoEdicion 
 export type AccionEditarPrestamo = (id: string, cambio: PrestamoCambio) => Promise<{ ok: true } | Fallo>;
 
 type Props = {
-  prestamo: Pick<PrestamoDetalle, "id" | "nombre" | "fechaAcordada" | "fechaHoy">;
+  prestamo: Pick<PrestamoDetalle, "id" | "nombre" | "tipo" | "fechaAcordada" | "fechaHoy">;
   editar: AccionEditarPrestamo;
   /** Tras la salida de la hoja; por defecto navega. En `/estilos`, cierra la muestra. */
   alCerrar?: (destino: string) => void;
@@ -70,7 +71,7 @@ export function PanelEdicionPrestamo({ prestamo, editar, alCerrar }: Props) {
     setConfirmandoDescarte(false);
     const enviado = cambio;
     iniciar(async () => {
-      const resultado = await editar(prestamo.id, enviado);
+      const resultado = await llamarAccion(() => editar(prestamo.id, enviado));
       if (resultado.ok) {
         await cerrar();
         return;
@@ -98,7 +99,7 @@ export function PanelEdicionPrestamo({ prestamo, editar, alCerrar }: Props) {
   );
 
   return (
-    <PanelLateral ref={panel} titulo="Editar préstamo" alSolicitarCierre={solicitarCierre} pie={pie}>
+    <PanelLateral ref={panel} titulo={prestamo.tipo === "deuda_contraida" ? "Editar deuda" : "Editar préstamo"} alSolicitarCierre={solicitarCierre} pie={pie}>
       <form id={ID_FORMULARIO} onSubmit={guardar} noValidate className="flex flex-col gap-6">
         <CampoSubrayado
           etiqueta="Persona"

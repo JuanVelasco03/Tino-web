@@ -24,6 +24,7 @@ import { OpcionUnica } from "../opcion-unica";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { rutaPrestamo } from "./rutas";
 import { CampoFecha } from "../campo-fecha";
+import { llamarAccion } from "@/lib/sin-conexion";
 
 type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoAlta };
 type Resultado = { ok: true; id: string } | Fallo;
@@ -56,8 +57,8 @@ const MENSAJE_MONTO = "Escribe un valor en pesos, sin decimales.";
 const ID_FORMULARIO = "formulario-prestamo";
 
 const OPCIONES_SENTIDO = [
-  { valor: "prestamo_otorgado", rotulo: "Le presté a alguien · queda como activo: te deben" },
-  { valor: "deuda_contraida", rotulo: "Alguien me prestó · queda como pasivo: le debes" },
+  { valor: "prestamo_otorgado", rotulo: "Le presté a alguien", detalle: "Queda como activo: te deben" },
+  { valor: "deuda_contraida", rotulo: "Alguien me prestó", detalle: "Queda como pasivo: le debes" },
 ] as const;
 
 /**
@@ -116,9 +117,10 @@ export function PanelPrestamo({ tipoInicial, fechaHoy, prestamos, formulario, ac
     setErrores({});
     setConfirmandoDescarte(false);
     iniciar(async () => {
-      const resultado = persona
-        ? await acciones.desembolsar(persona.id, cuerpo as DesembolsoCuerpo)
-        : await acciones.crear(cuerpo as PrestamoCuerpo);
+      // Sin red, el error se queda en el pie y no tumba la página.
+      const resultado = await llamarAccion(() =>
+        persona ? acciones.desembolsar(persona.id, cuerpo as DesembolsoCuerpo) : acciones.crear(cuerpo as PrestamoCuerpo),
+      );
       if (resultado.ok) {
         await cerrar(rutaPrestamo(resultado.id));
         return;
@@ -155,7 +157,7 @@ export function PanelPrestamo({ tipoInicial, fechaHoy, prestamos, formulario, ac
     <PanelLateral ref={panel} titulo="Nuevo préstamo o deuda" ancho="amplio" alSolicitarCierre={solicitarCierre} pie={pie}>
       {formulario === null ? (
         <div role="alert" className="flex flex-col items-start gap-4">
-          <p className="text-cuerpo font-semibold">No pudimos cargar el formulario.</p>
+          <p className="text-cuerpo font-semibold">No pudimos cargar tus cuentas.</p>
           <Boton variante="secundario" onClick={() => router.refresh()}>
             Reintentar
           </Boton>
@@ -190,7 +192,7 @@ export function PanelPrestamo({ tipoInicial, fechaHoy, prestamos, formulario, ac
             )}
             {existente && (
               <p className="text-etiqueta font-normal text-secundario">
-                Suma al préstamo con {existente.nombre}.{existente.estado === "saldado" && " Está saldado: se reabre."}
+                <span className="break-words">Suma al préstamo con {existente.nombre}.</span>{existente.estado === "saldado" && " Está saldado: se reabre."}
               </p>
             )}
           </div>
@@ -229,7 +231,7 @@ export function PanelPrestamo({ tipoInicial, fechaHoy, prestamos, formulario, ac
                   error={errores.tasaMensual}
                   className="font-mono tabular-nums"
                 />
-                {!errores.tasaMensual && <p className="text-etiqueta font-normal text-secundario">% mensual · vacío = sin intereses</p>}
+                {!errores.tasaMensual && <p className="text-etiqueta font-normal text-secundario">En % mensual. Déjala vacía si no hay intereses.</p>}
               </div>
 
               <CampoFecha

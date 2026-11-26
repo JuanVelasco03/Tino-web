@@ -13,6 +13,7 @@ import type {
   Recurrentes,
   Ref,
 } from "@/repositories/api/recurrentes";
+import { MENSAJE_SIN_API } from "@/lib/sin-conexion";
 
 export type {
   CampoPlantilla,
@@ -38,7 +39,6 @@ export type ResultadoConfirmacion = { ok: true; movimiento: Movimiento } | { ok:
 /** Resultado de pausar o reanudar: el panel sigue abierto con el estado nuevo. */
 export type ResultadoPausa = { ok: true; recurrente: Recurrente } | { ok: false; codigo: string; mensaje: string };
 
-export const MENSAJE_SIN_CONEXION = "No pudimos conectar. Intenta de nuevo.";
 
 /** Campo de la API → campo del formulario de plantilla. */
 const CAMPO_FORMULARIO: Record<string, CampoPlantilla> = {
@@ -60,7 +60,7 @@ const CAMPO_FORMULARIO: Record<string, CampoPlantilla> = {
  */
 export function falloDeError(error: unknown): { ok: false; codigo: string; mensaje: string; campo?: CampoPlantilla } {
   if (!(error instanceof ErrorApi) || error.codigo === "SIN_CONEXION") {
-    return { ok: false, codigo: error instanceof ErrorApi ? error.codigo : "ERROR_INTERNO", mensaje: MENSAJE_SIN_CONEXION };
+    return { ok: false, codigo: error instanceof ErrorApi ? error.codigo : "ERROR_INTERNO", mensaje: MENSAJE_SIN_API };
   }
   const campo = error.campo === undefined ? undefined : CAMPO_FORMULARIO[error.campo];
   return campo

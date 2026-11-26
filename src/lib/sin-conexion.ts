@@ -1,4 +1,13 @@
-/** Mensaje cuando la server action ni siquiera llega al servidor (sin red, despliegue nuevo). */
+/**
+ * Los dos fallos de red de la web, con su texto único. No son el mismo: en uno
+ * falla la red de quien usa la app; en el otro, el servidor web no llega a
+ * Tino API, y pedirle a la persona que revise su conexión la despistaría.
+ */
+
+/** El servidor web no obtuvo respuesta de Tino API (caída, red del servidor, error sin código). */
+export const MENSAJE_SIN_API = "No pudimos conectar. Intenta de nuevo.";
+
+/** La server action ni siquiera llega al servidor desde el navegador (sin red, despliegue nuevo). */
 export const MENSAJE_SIN_CONEXION = "No pudimos conectar. Revisa tu conexión e intenta de nuevo.";
 
 /**

@@ -11,6 +11,7 @@ import { ChipCategoria } from "../chip-categoria";
 import { MensajeError } from "../mensaje-error";
 import { OpcionUnica } from "../opcion-unica";
 import { AvisoBandeja, CifraAviso } from "../recurrentes/bandeja-recurrentes";
+import { llamarAccion } from "@/lib/sin-conexion";
 import { AccionesPrestamo } from "./detalle-prestamo";
 import { RUTA_DEUDAS } from "./rutas";
 
@@ -79,7 +80,7 @@ export function ProveedorAvisoDeudas({ deshacer: accionDeshacer, children }: { d
     limpiar();
     setDeshaciendo(true);
     void (async () => {
-      const resultado = await accionDeshacer(actual.gasto.id);
+      const resultado = await llamarAccion(() => accionDeshacer(actual.gasto.id));
       setDeshaciendo(false);
       if (resultado.ok) {
         setAviso((a) => (a?.clave === actual.clave ? null : a));
@@ -174,7 +175,7 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
               quitar();
               setAbierto(true);
             }}
-            className="h-12 px-1 text-cuerpo text-secundario underline underline-offset-4 hover:text-texto"
+            className="presion h-12 px-1 text-cuerpo text-secundario underline underline-offset-4 hover:text-texto"
           >
             Condonar lo pendiente…
           </button>
@@ -190,6 +191,16 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
   const categoria = formulario?.categorias.find((c) => c.id === categoriaId) ?? null;
   const vista = formulario ? vistaPreviaCondonacion(prestamo.capitalPendiente, monto ?? 0n, formulario.patrimonioNeto) : null;
   const puedeCondonar = monto !== null && categoria !== null && !pendiente && formulario !== null;
+  const idFalta = `condonar-falta-${prestamo.id}`;
+  // Por qué «Condonar» espera: lo primero que falta. Un monto inválido ya lo dice su campo.
+  const falta =
+    pendiente || formulario === null || errorCampo
+      ? null
+      : monto === null
+        ? "Escribe cuánto vas a condonar."
+        : categoria === null
+          ? "Elige la categoría del gasto."
+          : null;
 
   function cancelar() {
     setAbierto(false);
@@ -205,7 +216,7 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
     setErrorMonto(null);
     setErrorGeneral(null);
     iniciar(async () => {
-      const resultado = await condonar(prestamo.id, { monto: monto.toString(), categoriaId: categoria.id });
+      const resultado = await llamarAccion(() => condonar(prestamo.id, { monto: monto.toString(), categoriaId: categoria.id }));
       if (resultado.ok) {
         cancelar();
         mostrar(resultado.movimiento);
@@ -224,7 +235,13 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
 
   const botones = (
     <div className="flex flex-col gap-3 @2xl:flex-row @2xl:flex-wrap">
-      <Boton onClick={enviar} disabled={!puedeCondonar} monto={monto !== null ? pesos(monto) : undefined} className="justify-center">
+      <Boton
+        onClick={enviar}
+        disabled={!puedeCondonar}
+        aria-describedby={falta ? idFalta : undefined}
+        monto={monto !== null ? pesos(monto) : undefined}
+        className="justify-center"
+      >
         Condonar
       </Boton>
       <Boton variante="secundario" onClick={cancelar} disabled={pendiente} className="justify-center">
@@ -234,18 +251,18 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
   );
 
   return (
-    <section aria-label={`Condonar a ${nombre}`} className="grid gap-8 border-t border-raya pt-6 @2xl:grid-cols-[minmax(0,1fr)_320px]">
+    <section aria-label={`Condonar a ${nombre}`} className="asentar grid gap-8 border-t border-raya pt-6 @2xl:grid-cols-[minmax(0,1fr)_320px]">
       <div className="flex min-w-0 flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <h3 className="text-titulo-2">Condonar a {nombre}</h3>
-          <p className="text-cuerpo text-secundario">{modo === "todo" ? EXPLICACION.todo(nombre) : EXPLICACION.parte()}</p>
+          <h3 className="text-cuerpo font-semibold break-words">Condonar a {nombre}</h3>
+          <p className="max-w-prose text-cuerpo text-pretty text-secundario">{modo === "todo" ? EXPLICACION.todo(nombre) : EXPLICACION.parte()}</p>
         </div>
 
         <OpcionUnica
           nombre={`condonar-${prestamo.id}`}
           etiqueta="Valor a condonar"
           opciones={[
-            { valor: "todo", rotulo: `Todo lo pendiente ${pesos(prestamo.capitalPendiente)}` },
+            { valor: "todo", rotulo: "Todo lo pendiente", cifra: pesos(prestamo.capitalPendiente) },
             { valor: "parte", rotulo: "Solo una parte" },
           ]}
           valor={modo}
@@ -256,38 +273,57 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
           deshabilitado={pendiente}
         />
 
-        {modo === "parte" && (
-          <div className="flex flex-col gap-1">
-            <div className="border-b border-raya pb-3 pt-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-marca">
-              <label htmlFor={`condonar-valor-${prestamo.id}`} className="sr-only">
-                Valor a condonar
-              </label>
-              <div className="flex items-baseline gap-2">
-                <input
-                  id={`condonar-valor-${prestamo.id}`}
-                  value={valor}
-                  onChange={(e) => {
-                    setValor(formatearEntradaPesos(e.target.value));
-                    setErrorMonto(null);
-                  }}
-                  inputMode="numeric"
-                  autoComplete="off"
-                  placeholder="0"
-                  disabled={pendiente}
-                  aria-invalid={errorCampo ? true : undefined}
-                  aria-describedby={errorCampo ? `condonar-valor-${prestamo.id}-error` : undefined}
-                  className="min-w-0 flex-1 border-0 bg-transparent p-0 font-mono text-cifra-campo tabular-nums text-texto caret-marca outline-none! placeholder:text-terciario"
-                />
-                <span className="text-etiqueta text-secundario">COP</span>
+        {/*
+         * «Solo una parte» despliega su campo en su lugar (campo dependiente: grid 0fr → 1fr,
+         * sin animar `height`, y el campo se asienta 4 px). Plegado queda `inert`. Con
+         * movimiento reducido el alto cambia de golpe y queda el fundido.
+         */}
+        <div
+          inert={modo !== "parte"}
+          className={`-mt-6 grid transition-[grid-template-rows,opacity] motion-reduce:transition-opacity ${
+            modo === "parte" ? "grid-rows-[1fr] opacity-100 duration-300 ease-despliegue" : "grid-rows-[0fr] opacity-0 duration-180 ease-retirada"
+          }`}
+        >
+          {/* 4 px de holgura: el recorte no se come el anillo de foco del campo. */}
+          <div className="-mx-1 -mb-1 min-h-0 overflow-hidden px-1 pb-1">
+            <div
+              className={`pt-6 transition-transform motion-reduce:transition-none ${
+                modo === "parte" ? "translate-y-0 duration-300 ease-despliegue" : "-translate-y-1 duration-180 ease-retirada"
+              }`}
+            >
+              <div className="flex flex-col gap-1">
+                <div className="border-b border-raya pb-3 pt-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-marca">
+                  <label htmlFor={`condonar-valor-${prestamo.id}`} className="sr-only">
+                    Valor a condonar
+                  </label>
+                  <div className="flex items-baseline gap-2">
+                    <input
+                      id={`condonar-valor-${prestamo.id}`}
+                      value={valor}
+                      onChange={(e) => {
+                        setValor(formatearEntradaPesos(e.target.value));
+                        setErrorMonto(null);
+                      }}
+                      inputMode="numeric"
+                      autoComplete="off"
+                      placeholder="0"
+                      disabled={pendiente}
+                      aria-invalid={errorCampo ? true : undefined}
+                      aria-describedby={errorCampo ? `condonar-valor-${prestamo.id}-error` : undefined}
+                      className="min-w-0 flex-1 border-0 bg-transparent p-0 font-mono text-cifra-campo tabular-nums text-texto caret-marca outline-none! placeholder:text-terciario"
+                    />
+                    <span className="text-etiqueta text-secundario">COP</span>
+                  </div>
+                </div>
+                {errorCampo && <MensajeError id={`condonar-valor-${prestamo.id}-error`} mensaje={errorCampo} />}
               </div>
             </div>
-            {errorCampo && <MensajeError id={`condonar-valor-${prestamo.id}-error`} mensaje={errorCampo} />}
           </div>
-        )}
+        </div>
 
         {formulario === null ? (
           <div role="alert" className="flex flex-col items-start gap-4">
-            <p className="text-cuerpo font-semibold">No pudimos cargar el formulario.</p>
+            <p className="text-cuerpo font-semibold">No pudimos cargar tus categorías.</p>
             <Boton variante="secundario" onClick={() => router.refresh()}>
               Reintentar
             </Boton>
@@ -310,7 +346,7 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
         )}
 
         {modo === "todo" && prestamo.interesesCausados > 0n && (
-          <p className="text-etiqueta font-normal text-secundario">
+          <p className="max-w-prose text-etiqueta font-normal text-pretty text-secundario">
             Los intereses causados sin cobrar (<span className="font-mono tabular-nums">{pesos(prestamo.interesesCausados)}</span>) también se
             dejan de cobrar. No se registran como gasto porque nunca entraron a tu patrimonio.
           </p>
@@ -323,11 +359,11 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
             <h4 className="border-b border-raya pb-2 text-rotulo uppercase">Qué cambia</h4>
             <dl>
               <div className="flex items-baseline justify-between gap-3 border-b border-linea py-2">
-                <dt className="text-cuerpo">{categoria ? `Gasto de hoy · ${categoria.nombre}` : "Gasto de hoy"}</dt>
+                <dt className="min-w-0 text-cuerpo break-words">{categoria ? `Gasto de hoy · ${categoria.nombre}` : "Gasto de hoy"}</dt>
                 <dd className={`font-mono text-cifra-s tabular-nums ${vista.gasto > 0n ? "text-salida-texto" : ""}`}>{pesos(-vista.gasto)}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-3 border-b border-linea py-2">
-                <dt className="text-cuerpo">{nombre} te deberá</dt>
+                <dt className="min-w-0 text-cuerpo break-words">{nombre} te deberá</dt>
                 <dd className="font-mono text-cifra-s tabular-nums">{pesos(vista.queda)}</dd>
               </div>
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 py-2">
@@ -340,6 +376,10 @@ export function CondonarPrestamo({ prestamo, formulario, condonar, abiertoInicia
           </section>
         )}
         <div className="flex flex-col gap-2">
+          {/* Siempre montado: `aria-live` anuncia el cambio («Elige la categoría…») sin mover el foco. */}
+          <p id={idFalta} aria-live="polite" className={`text-etiqueta font-normal text-secundario ${falta ? "" : "hidden"}`}>
+            {falta}
+          </p>
           {botones}
           {errorGeneral && <MensajeError mensaje={errorGeneral} />}
         </div>

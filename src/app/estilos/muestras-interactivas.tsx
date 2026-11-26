@@ -92,7 +92,7 @@ export function MuestraPanelLateral() {
         Abrir panel
       </Boton>
       {abierto && (
-        <PanelLateral ref={panel} titulo="Panel lateral" alSolicitarCierre={() => void cerrar()}>
+        <PanelLateral ref={panel} titulo="Panel lateral · un título que no cabe se corta con puntos suspensivos y la cabecera no crece" alSolicitarCierre={() => void cerrar()}>
           <div className="flex flex-col gap-6">
             <p className="text-cuerpo text-secundario">
               Hoja de 400 px a la derecha con raya a la izquierda en escritorio; hoja inferior en móvil. Sin sombra.

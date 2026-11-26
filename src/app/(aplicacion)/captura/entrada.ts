@@ -5,13 +5,13 @@
 import { unstable_rethrow } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { ErrorApi, type CampoCaptura, type MovimientoCuerpo, type TipoCaptura, type TipoMovimiento } from "@/services/movimientos";
+import { MENSAJE_SIN_API } from "@/lib/sin-conexion";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MONTO = /^\d{1,19}$/;
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const TIPOS: readonly TipoCaptura[] = ["gasto", "ingreso", "transferencia"];
 
-export const MENSAJE_SIN_CONEXION = "No pudimos conectar. Intenta de nuevo.";
 const MENSAJE_ENTRADA = "No pudimos procesar los datos. Intenta de nuevo.";
 
 /**
@@ -66,7 +66,7 @@ function campoFormulario(campo: string | undefined, tipo: TipoMovimiento | null)
  * general si no trae campo. Sin conexión o error desconocido, texto local.
  * Las redirecciones de Next (sesión vencida) se relanzan.
  */
-export function fallo(error: unknown, tipo: TipoMovimiento | null = null, sinConexion = MENSAJE_SIN_CONEXION): Fallo {
+export function fallo(error: unknown, tipo: TipoMovimiento | null = null, sinConexion = MENSAJE_SIN_API): Fallo {
   unstable_rethrow(error);
   if (!(error instanceof ErrorApi) || error.codigo === "SIN_CONEXION") {
     return { ok: false, codigo: error instanceof ErrorApi ? error.codigo : "ERROR_INTERNO", mensaje: sinConexion };

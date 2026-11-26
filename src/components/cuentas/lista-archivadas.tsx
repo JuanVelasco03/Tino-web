@@ -10,7 +10,7 @@ import { MensajeError } from "../mensaje-error";
 import { BloqueEliminar, DETALLE_ELIMINAR_CUENTA } from "../bloque-eliminar";
 import Link from "next/link";
 import { enlaceCuenta } from "./rutas";
-import { llamarAccion } from "./sin-conexion";
+import { llamarAccion } from "@/lib/sin-conexion";
 
 type Props = {
   cuentas: Cuenta[];

@@ -16,7 +16,7 @@ export function DiaUnoDeudas() {
     <section aria-label="Sin préstamos" className="flex flex-col gap-6 md:w-[400px]">
       <div className="flex flex-col gap-1">
         <p className="text-cuerpo font-semibold">Nadie anotado todavía.</p>
-        <p className="text-cuerpo text-secundario">
+        <p className="text-cuerpo text-pretty text-secundario">
           Aquí llevas lo que prestas y lo que te prestan, persona por persona, con abonos e intereses aparte.
         </p>
       </div>

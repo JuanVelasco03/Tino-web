@@ -26,7 +26,7 @@ import { OpcionUnica, type Opcion } from "../opcion-unica";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { BloqueEliminar, PedirEliminar, DETALLE_ELIMINAR_CUENTA } from "../bloque-eliminar";
 import { CamposTarjeta, type CuentaPago } from "./campos-tarjeta";
-import { llamarAccion } from "./sin-conexion";
+import { llamarAccion } from "@/lib/sin-conexion";
 
 export type { CuentaPago };
 

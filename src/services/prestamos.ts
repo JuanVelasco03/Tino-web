@@ -21,6 +21,7 @@ import type {
   TipoPrestamo,
 } from "@/repositories/api/prestamos";
 import type { DatosCaptura } from "./captura";
+import { MENSAJE_SIN_API } from "@/lib/sin-conexion";
 
 export type {
   AbonoCuerpo,
@@ -63,7 +64,6 @@ export type ResultadoSimple = { ok: true } | Fallo;
 /** Cuentas activas y categorías del formulario, y el patrimonio para «Qué cambia» de la condonación. */
 export type DatosFormularioPrestamo = DatosCaptura & { patrimonioNeto: bigint };
 
-export const MENSAJE_SIN_CONEXION = "No pudimos conectar. Intenta de nuevo.";
 
 /* Campo de la API → campo del formulario. Lo que no está aquí va al pie. */
 export const CAMPOS_ALTA: Record<string, CampoAlta> = {
@@ -88,7 +88,7 @@ export const CAMPOS_CONDONACION: Record<string, CampoCondonacion> = { monto: "mo
  */
 export function falloDeError<C extends string = never>(error: unknown, campos: Record<string, C> = {}): Fallo<C> {
   if (!(error instanceof ErrorApi) || error.codigo === "SIN_CONEXION") {
-    return { ok: false, codigo: error instanceof ErrorApi ? error.codigo : "ERROR_INTERNO", mensaje: MENSAJE_SIN_CONEXION };
+    return { ok: false, codigo: error instanceof ErrorApi ? error.codigo : "ERROR_INTERNO", mensaje: MENSAJE_SIN_API };
   }
   const campo = error.campo === undefined ? undefined : campos[error.campo];
   return campo

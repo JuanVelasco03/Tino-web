@@ -14,7 +14,7 @@ import { CabeceraCuenta } from "./cabecera-cuenta";
 import { CifrasCuenta } from "./cifras-cuenta";
 import { RangoHistorial } from "./rango-historial";
 import { TablaHistorial } from "./tabla-historial";
-import { llamarAccion } from "./sin-conexion";
+import { llamarAccion } from "@/lib/sin-conexion";
 
 export type ResultadoConciliacion = { ok: true } | { ok: false; codigo: string; mensaje: string };
 

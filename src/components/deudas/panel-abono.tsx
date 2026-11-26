@@ -25,6 +25,7 @@ import { MensajeError } from "../mensaje-error";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { RUTA_DEUDAS, rutaPrestamo } from "./rutas";
 import { CampoFecha } from "../campo-fecha";
+import { llamarAccion } from "@/lib/sin-conexion";
 
 type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoAbono };
 
@@ -146,7 +147,7 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
     const mio = ++turno.current;
     setCalculando(true);
     setErrores((actual) => ({ ...actual, total: undefined }));
-    void acciones.proponer(prestamo.id, fecha, monto).then((resultado) => {
+    void llamarAccion(() => acciones.proponer(prestamo.id, fecha, monto)).then((resultado) => {
       if (turno.current !== mio) return;
       setCalculando(false);
       if (resultado.ok) {
@@ -195,7 +196,7 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
     setErrores({});
     setConfirmandoDescarte(false);
     iniciar(async () => {
-      const resultado = await acciones.abonar(prestamo.id, cuerpo);
+      const resultado = await llamarAccion(() => acciones.abonar(prestamo.id, cuerpo));
       if (resultado.ok) {
         await cerrar();
         return;
@@ -240,7 +241,7 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
     <PanelLateral ref={panel} titulo={`Registrar abono · ${prestamo.nombre}`} alSolicitarCierre={solicitarCierre} pie={pie}>
       {formulario === null ? (
         <div role="alert" className="flex flex-col items-start gap-4">
-          <p className="text-cuerpo font-semibold">No pudimos cargar el formulario.</p>
+          <p className="text-cuerpo font-semibold">No pudimos cargar tus cuentas.</p>
           <Boton variante="secundario" onClick={() => router.refresh()}>
             Reintentar
           </Boton>
@@ -251,7 +252,7 @@ export function PanelAbono({ prestamo, formulario, acciones, alCerrar }: Props) 
             Capital pendiente <span className="font-mono tabular-nums">{pesos(prestamo.capitalPendiente)}</span>
             {conInteres && (
               <>
-                {" · causados a hoy "}
+                {otorgado ? " · intereses sin cobrar " : " · intereses sin pagar "}
                 <span className="font-mono tabular-nums">{pesos(prestamo.interesesCausados)}</span>
               </>
             )}

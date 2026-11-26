@@ -11,7 +11,10 @@ export default function ErrorDeudas({ retry }: { error: unknown; retry: () => vo
     <div className="flex flex-col gap-6 md:gap-8">
       <h1 className="text-titulo-1">Deudas y préstamos</h1>
       <div role="alert" className="flex flex-col items-start gap-4">
-        <p className="text-cuerpo font-semibold">No pudimos cargar tus deudas.</p>
+        <div className="flex flex-col gap-1">
+          <p className="text-cuerpo font-semibold">No pudimos cargar tus deudas.</p>
+          <p className="text-cuerpo text-secundario">Revisa tu conexión e intenta de nuevo.</p>
+        </div>
         <Boton variante="secundario" onClick={() => retry()}>
           Reintentar
         </Boton>

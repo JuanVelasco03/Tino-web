@@ -155,15 +155,16 @@ export function PanelLateral({ titulo, alSolicitarCierre, children, ancho = "nor
       className={`fixed inset-x-0 top-auto bottom-0 m-0 outline-none! max-h-[90dvh] w-full max-w-none overflow-hidden rounded-t-hoja border-0 border-t border-raya bg-superficie p-0 text-texto backdrop:bg-fondo/60 md:inset-y-0 md:right-0 md:left-auto md:h-dvh md:max-h-none md:rounded-none md:border-t-0 md:border-l ${ANCHOS[ancho]}`}
     >
       <div className="flex max-h-[90dvh] flex-col md:h-dvh md:max-h-none">
-        <div className="flex h-14 shrink-0 items-center justify-between border-b border-raya px-4 md:px-6">
-          <h2 id={idTitulo} className="text-rotulo uppercase text-secundario">
+        <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-raya px-4 md:px-6">
+          {/* Un nombre largo («Registrar abono · …») se corta con «…»: la cabecera no crece de 56 px. */}
+          <h2 id={idTitulo} className="min-w-0 truncate text-rotulo uppercase text-secundario">
             {titulo}
           </h2>
           {/* Un botón que se lee como tal: ✕ de 18 px y el rótulo en tinta, con fondo hundido al pasar el cursor. */}
           <button
             type="button"
             onClick={alSolicitarCierre}
-            className="-mr-2 inline-flex h-11 items-center gap-2 rounded-campo px-2 text-cuerpo font-medium text-texto transition-colors duration-150 hover:bg-hundido"
+            className="-mr-2 inline-flex h-11 shrink-0 items-center gap-2 rounded-campo px-2 text-cuerpo font-medium text-texto transition-colors duration-150 hover:bg-hundido"
           >
             <X size={18} strokeWidth={1.5} aria-hidden />
             {rotuloCerrar}

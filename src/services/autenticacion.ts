@@ -7,6 +7,7 @@ import {
   validarRegistro,
   type ErrorCredenciales,
 } from "@/domain/autenticacion/credenciales";
+import { MENSAJE_SIN_API } from "@/lib/sin-conexion";
 import * as repositorio from "@/repositories/supabase/autenticacion";
 import type { TipoEnlace } from "@/repositories/supabase/autenticacion";
 
@@ -16,7 +17,7 @@ export const MENSAJES = {
   correoInvalido: "Escribe un correo válido.",
   contrasenaCorta: "La contraseña debe tener al menos 8 caracteres.",
   contrasenasDistintas: "Las contraseñas no coinciden.",
-  generico: "No pudimos conectar. Intenta de nuevo.",
+  generico: MENSAJE_SIN_API,
   enlaceInvalido: "El enlace de confirmación no es válido o venció.",
 } as const;
 

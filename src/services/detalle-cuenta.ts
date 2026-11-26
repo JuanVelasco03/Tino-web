@@ -3,6 +3,7 @@ import { enLotes } from "@/domain/cuenta/detalle";
 import { ErrorApi } from "@/repositories/api/cliente";
 import * as api from "@/repositories/api/detalle-cuenta";
 import type { Ciclo, CicloTarjeta, Compra, FilaCiclo, FilaHistorial, Historial } from "@/repositories/api/detalle-cuenta";
+import { MENSAJE_SIN_API } from "@/lib/sin-conexion";
 
 export type { Ciclo, CicloTarjeta, Compra, FilaCiclo, FilaHistorial, Historial };
 export { ErrorApi };
@@ -12,7 +13,6 @@ export type ResultadoSimple = { ok: true } | { ok: false; codigo: string; mensaj
 export type ResultadoAjuste = { ok: true } | { ok: false; codigo: string; mensaje: string; campo?: "saldoReal" };
 export type ResultadoCompra = { ok: true; compra: Compra | null } | { ok: false; codigo: string; mensaje: string };
 
-const MENSAJE_SIN_CONEXION = "No pudimos conectar. Intenta de nuevo.";
 
 /** Ruta del detalle de una cuenta. */
 export function rutaDetalle(id: string, consulta: Record<string, string | undefined> = {}): string {
@@ -33,7 +33,7 @@ async function conSesion<T>(llamada: () => Promise<T>): Promise<T> {
 }
 
 /** Error → resultado con el `mensaje` de la API; sin conexión, texto local. */
-export function falloDe(error: unknown, sinConexion = MENSAJE_SIN_CONEXION): { ok: false; codigo: string; mensaje: string; campo?: string } {
+export function falloDe(error: unknown, sinConexion = MENSAJE_SIN_API): { ok: false; codigo: string; mensaje: string; campo?: string } {
   if (!(error instanceof ErrorApi) || error.codigo === "SIN_CONEXION") {
     return { ok: false, codigo: error instanceof ErrorApi ? error.codigo : "ERROR_INTERNO", mensaje: sinConexion };
   }

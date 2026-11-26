@@ -13,6 +13,7 @@ import type {
   Tarjeta,
   TipoCuenta,
 } from "@/repositories/api/cuentas";
+import { MENSAJE_SIN_API } from "@/lib/sin-conexion";
 
 export type {
   AltaCuenta,
@@ -39,7 +40,6 @@ export type ResultadoCuenta =
   | { ok: true }
   | { ok: false; codigo: string; mensaje: string; campo?: CampoCuenta };
 
-const MENSAJE_SIN_CONEXION = "No pudimos conectar. Intenta de nuevo.";
 
 /** Campo de la API → campo del formulario. `saldoInicial` se dibuja bajo `saldo`. */
 const CAMPO_FORMULARIO: Record<string, CampoCuenta> = {
@@ -63,10 +63,10 @@ const CAMPO_FORMULARIO: Record<string, CampoCuenta> = {
  */
 export function resultadoDeError(error: unknown): ResultadoCuenta & { ok: false } {
   if (!(error instanceof ErrorApi)) {
-    return { ok: false, codigo: "ERROR_INTERNO", mensaje: MENSAJE_SIN_CONEXION };
+    return { ok: false, codigo: "ERROR_INTERNO", mensaje: MENSAJE_SIN_API };
   }
   if (error.codigo === "SIN_CONEXION") {
-    return { ok: false, codigo: error.codigo, mensaje: MENSAJE_SIN_CONEXION };
+    return { ok: false, codigo: error.codigo, mensaje: MENSAJE_SIN_API };
   }
   const campo = error.campo === undefined ? undefined : CAMPO_FORMULARIO[error.campo];
   return campo

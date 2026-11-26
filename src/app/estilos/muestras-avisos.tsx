@@ -9,6 +9,7 @@ import { NumeroAvisos, PuntoAvisos } from "@/components/menu/contador-avisos";
 import { IconoNavegacion } from "@/components/iconos";
 import type { Aviso, AvisoConfig, AvisoCobro, AvisoDeuda, AvisoPrecio, AvisoRecurrente } from "@/domain/aviso/presentacion";
 import { Ellipsis } from "lucide-react";
+import { MENSAJE_SIN_API } from "@/lib/sin-conexion";
 
 const HOY = "2026-11-11";
 const ZONA = "America/Bogota";
@@ -175,7 +176,7 @@ export function MuestraAvisos({ sufijo }: { sufijo: string }) {
         <div>
           <Etiqueta>Error bajo la fila</Etiqueta>
           <ul className="border-t border-raya">
-            <FilaAviso aviso={INTERNET} fechaHoy={HOY} zona={ZONA} error="No pudimos conectar. Intenta de nuevo." alAlternar={() => {}} alConfirmar={() => {}} />
+            <FilaAviso aviso={INTERNET} fechaHoy={HOY} zona={ZONA} error={MENSAJE_SIN_API} alAlternar={() => {}} alConfirmar={() => {}} />
           </ul>
         </div>
       </div>

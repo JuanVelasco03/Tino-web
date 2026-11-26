@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 import * as api from "@/repositories/api/avisos";
 import type { Aviso, AvisoConfig, Avisos, ConfigCuerpo, TipoAviso } from "@/repositories/api/avisos";
 import { ErrorApi } from "@/repositories/api/cliente";
+import { MENSAJE_SIN_API } from "@/lib/sin-conexion";
 
 export type { Aviso, AvisoConfig, Avisos, ConfigCuerpo, TipoAviso };
 
-export const MENSAJE_SIN_CONEXION = "No pudimos conectar. Intenta de nuevo.";
 
 type Fallo = { ok: false; codigo: string; mensaje: string };
 
@@ -18,7 +18,7 @@ export type ResultadoConfig = { ok: true; config: AvisoConfig } | Fallo;
 /** El `mensaje` de la API; sin conexión o error desconocido, texto local. */
 export function falloDeError(error: unknown): Fallo {
   if (!(error instanceof ErrorApi) || error.codigo === "SIN_CONEXION") {
-    return { ok: false, codigo: error instanceof ErrorApi ? error.codigo : "ERROR_INTERNO", mensaje: MENSAJE_SIN_CONEXION };
+    return { ok: false, codigo: error instanceof ErrorApi ? error.codigo : "ERROR_INTERNO", mensaje: MENSAJE_SIN_API };
   }
   return { ok: false, codigo: error.codigo, mensaje: error.message };
 }

@@ -8,7 +8,7 @@ import { CampoMonto } from "../campo-monto";
 import { Casilla } from "../casilla";
 import { MensajeError } from "../mensaje-error";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
-import { llamarAccion } from "./sin-conexion";
+import { llamarAccion } from "@/lib/sin-conexion";
 
 export type ResultadoAjuste = { ok: true } | { ok: false; codigo: string; mensaje: string; campo?: "saldoReal" };
 

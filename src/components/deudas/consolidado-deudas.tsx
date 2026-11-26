@@ -6,6 +6,13 @@ type Props = Pick<Prestamos, "teDeben" | "debes" | "posicionNeta"> & {
   diaUno?: boolean;
 };
 
+/**
+ * Cifra de columna: cifra-l si la columna mide 18 rem (288 px) o más, donde cabe
+ * «−12.345.678.901»; si no (escritorio angosto, 1024 px), cifra-m, para que una
+ * cifra de diez dígitos no invada la columna vecina.
+ */
+const CIFRA_COLUMNA = "font-mono text-cifra-m tabular-nums whitespace-nowrap @2xs:text-cifra-l";
+
 type Cifra = { rotulo: string; texto: string; subtitulo: string; color: { grande: string; chica: string } };
 
 /**
@@ -33,15 +40,15 @@ export function ConsolidadoDeudas({ teDeben, debes, posicionNeta, diaUno = false
       {/* Escritorio */}
       <div className="hidden grid-cols-3 border-t border-raya lg:grid">
         {cifras.map((c, i) => (
-          <div key={c.rotulo} className={`flex min-w-0 flex-col gap-2 pt-6 pr-6 ${i > 0 ? "border-l border-linea pl-6" : ""}`}>
+          <div key={c.rotulo} className={`@container flex min-w-0 flex-col gap-2 pt-6 pr-6 ${i > 0 ? "border-l border-linea pl-6" : ""}`}>
             <h2 className="text-rotulo uppercase">{c.rotulo}</h2>
-            <span className={`font-mono text-cifra-l tabular-nums ${c.color.grande}`}>{c.texto}</span>
+            <span className={`${CIFRA_COLUMNA} ${c.color.grande}`}>{c.texto}</span>
             <span className="text-etiqueta font-normal text-secundario">{c.subtitulo}</span>
           </div>
         ))}
-        <div className="flex min-w-0 flex-col items-start gap-2 border-l border-linea pt-6 pl-6">
+        <div className="@container flex min-w-0 flex-col items-start gap-2 border-l border-linea pt-6 pl-6">
           <h2 className="text-rotulo uppercase">Posición neta</h2>
-          <span className={`pb-1 font-mono text-cifra-l tabular-nums ${dobleRaya} ${colorNeta}`}>{neta}</span>
+          <span className={`pb-1 ${CIFRA_COLUMNA} ${dobleRaya} ${colorNeta}`}>{neta}</span>
           {leyenda && <span className="text-etiqueta font-normal text-secundario">{leyenda}</span>}
         </div>
       </div>

@@ -3,6 +3,7 @@ import { ArrowDownLeft, ArrowUpRight, Check, Clock } from "lucide-react";
 import { formatearFechaSinAnio } from "@/domain/fecha/formato";
 import { diasDesde, pesos, textoCierre } from "@/domain/prestamo/presentacion";
 import type { EstadoPrestamo, Prestamo } from "@/domain/prestamo/tipos";
+import { MarcaPendiente } from "./marca-pendiente";
 import { rutaPrestamo } from "./rutas";
 
 type Props = {
@@ -76,6 +77,7 @@ export function FilaPrestamo({ p, fechaHoy, elegida }: { p: Prestamo; fechaHoy: 
           <Capital p={p} />
           <span className="font-mono text-cifra-xs text-secundario">{ETIQUETA[p.estado]}</span>
         </span>
+        <MarcaPendiente />
       </Link>
     </li>
   );

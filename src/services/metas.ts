@@ -14,6 +14,7 @@ import type {
   Metas,
   ModoMeta,
 } from "@/domain/meta/tipos";
+import { MENSAJE_SIN_API } from "@/lib/sin-conexion";
 
 export type {
   AporteCambio,
@@ -40,7 +41,6 @@ export type ResultadoMeta = { ok: true; id: string } | Fallo<CampoMeta>;
 export type ResultadoAporte = { ok: true } | Fallo<CampoAporte>;
 export type ResultadoSimple = { ok: true } | Fallo;
 
-export const MENSAJE_SIN_CONEXION = "No pudimos conectar. Intenta de nuevo.";
 
 /* Campo de la API → campo del formulario. Lo que no está aquí va al pie. */
 export const CAMPOS_ALTA: Record<string, CampoMeta> = {
@@ -80,7 +80,7 @@ export const CAMPOS_APORTE: Record<string, CampoAporte> = {
  */
 export function falloDeError<C extends string = never>(error: unknown, campos: Record<string, C> = {}): Fallo<C> {
   if (!(error instanceof ErrorApi) || error.codigo === "SIN_CONEXION") {
-    return { ok: false, codigo: error instanceof ErrorApi ? error.codigo : "ERROR_INTERNO", mensaje: MENSAJE_SIN_CONEXION };
+    return { ok: false, codigo: error instanceof ErrorApi ? error.codigo : "ERROR_INTERNO", mensaje: MENSAJE_SIN_API };
   }
   const campo = error.campo === undefined ? undefined : campos[error.campo];
   return campo

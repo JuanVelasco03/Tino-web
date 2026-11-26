@@ -4,6 +4,8 @@ import { MensajeError } from "./mensaje-error";
 export type Opcion<T extends string> = {
   valor: T;
   rotulo: string;
+  /** Importe ya formateado tras el rótulo, en mono con dígitos tabulares («Todo lo pendiente 500.000»). */
+  cifra?: string;
   /** Ícono opcional entre el círculo y el rótulo (Lucide, 20 px). */
   icono?: ReactNode;
   /** Explicación bajo el rótulo, en `etiqueta` secundaria. */
@@ -24,6 +26,16 @@ type Props<T extends string> = {
   /** Mensaje de error bajo el grupo. */
   error?: string;
 };
+
+/** Rótulo (600 si está elegida) y, si la hay, la cifra en mono tabular (cifra-s, 500: Plex Mono solo carga 400 y 500). */
+function Rotulo<T extends string>({ opcion, elegida }: { opcion: Opcion<T>; elegida: boolean }) {
+  return (
+    <span className={elegida ? "font-semibold" : ""}>
+      {opcion.rotulo}
+      {opcion.cifra && <span className="ml-2 font-mono text-cifra-s tabular-nums">{opcion.cifra}</span>}
+    </span>
+  );
+}
 
 /**
  * C34 · Opción única. Filas de 44 px con un `<input type="radio">` real,
@@ -83,11 +95,11 @@ export function OpcionUnica<T extends string>({
               {opcion.icono && <span className="flex text-secundario">{opcion.icono}</span>}
               {opcion.detalle ? (
                 <span className="flex flex-col">
-                  <span className={elegida ? "font-semibold" : ""}>{opcion.rotulo}</span>
+                  <Rotulo opcion={opcion} elegida={elegida} />
                   <span className={`text-etiqueta font-normal ${inactiva ? "" : "text-secundario"}`}>{opcion.detalle}</span>
                 </span>
               ) : (
-                <span className={elegida ? "font-semibold" : ""}>{opcion.rotulo}</span>
+                <Rotulo opcion={opcion} elegida={elegida} />
               )}
             </label>
           );

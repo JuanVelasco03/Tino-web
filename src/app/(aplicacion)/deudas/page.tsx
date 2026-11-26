@@ -99,7 +99,7 @@ export default async function PaginaDeudas({ searchParams }: PageProps<"/deudas"
 
   return (
     <ProveedorAvisoDeudas deshacer={deshacerCondonacion}>
-      <div className="flex flex-col gap-8">
+      <div className="group/deudas asentar flex flex-col gap-8">
         <header className={`${soloEscritorio} items-end justify-between gap-6`}>
           <h1 className="text-titulo-1">Deudas y préstamos</h1>
           <div className="hidden md:block">
@@ -133,7 +133,12 @@ export default async function PaginaDeudas({ searchParams }: PageProps<"/deudas"
               </EnlaceTexto>
             </div>
             {detalle && (
-              <div className={`min-w-0 ${idPedido !== undefined ? "" : "hidden md:block"}`}>
+              // Mientras llega otra persona, el detalle viejo se atenúa (marca de `ListaPrestamos`).
+              <div
+                className={`min-w-0 transition-opacity duration-150 ease-llegada group-has-[[data-prestamo-pendiente]]/deudas:opacity-50 ${
+                  idPedido !== undefined ? "" : "hidden md:block"
+                }`}
+              >
                 <DetallePrestamo
                   key={detalle.id}
                   detalle={detalle}
