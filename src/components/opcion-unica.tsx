@@ -87,7 +87,7 @@ export function OpcionUnica<T extends string>({
               <span
                 aria-hidden
                 className={`flex size-[18px] shrink-0 items-center justify-center rounded-full border ${
-                  elegida ? "border-texto" : "border-terciario"
+                  elegida ? "border-texto" : inactiva ? "border-terciario" : "border-secundario"
                 }`}
               >
                 {elegida && <span className="size-2.5 rounded-full bg-texto" />}

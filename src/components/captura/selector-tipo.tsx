@@ -34,7 +34,7 @@ export function SelectorTipo({ valor, alCambiar, variante = "segmentado" }: Prop
               type="button"
               aria-pressed={activo}
               onClick={() => alCambiar(tipo)}
-              className={`h-11 shrink-0 border-b text-cuerpo ${
+              className={`h-11 min-w-11 shrink-0 border-b text-cuerpo ${
                 activo ? "border-raya font-semibold text-texto" : "border-transparent text-secundario disabled:cursor-not-allowed disabled:text-terciario"
               }`}
             >

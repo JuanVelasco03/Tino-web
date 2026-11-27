@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import { Boton } from "@/components/boton";
+import { Boton, BOTON_ENLACE } from "@/components/boton";
 import { BarraSeleccion } from "@/components/cuentas/barra-seleccion";
 import { CabeceraCuenta } from "@/components/cuentas/cabecera-cuenta";
 import { CamposTarjeta } from "@/components/cuentas/campos-tarjeta";
@@ -16,7 +16,6 @@ import { PanelAjuste } from "@/components/cuentas/panel-ajuste";
 import { RangoHistorial } from "@/components/cuentas/rango-historial";
 import { ResumenTarjeta } from "@/components/cuentas/resumen-tarjeta";
 import { TablaHistorial } from "@/components/cuentas/tabla-historial";
-import { BOTON_ENLACE } from "@/components/deudas/rutas";
 import { EstadoVacio } from "@/components/estado-vacio";
 import { sumaSeleccion, type FilaHistorial } from "@/domain/cuenta/detalle";
 import { valoresTarjetaDesde, type ValoresTarjeta } from "@/domain/cuenta/edicion";

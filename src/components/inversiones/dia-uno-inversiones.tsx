@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Trm } from "@/domain/inversion/tipos";
-import { BOTON_ENLACE } from "../deudas/rutas";
+import { BOTON_ENLACE } from "../boton";
 import { LineaTrm } from "../linea-trm";
 import { rutaNueva } from "./rutas";
 

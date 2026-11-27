@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { Plus } from "lucide-react";
-import { BOTON_ENLACE } from "@/components/deudas/rutas";
+import { BOTON_ENLACE } from "@/components/boton";
 import { EnlaceTexto } from "@/components/enlace-texto";
 import { EstadoVacio } from "@/components/estado-vacio";
 import { AccionesMeta, type AccionesDetalleMeta } from "@/components/metas/acciones-meta";

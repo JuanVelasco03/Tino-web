@@ -31,3 +31,9 @@ export function Boton({ variante = "primario", monto, compacto = false, children
     </button>
   );
 }
+
+/** Enlace con aspecto de botón (C6): primario en tinta, secundario en hoja con línea. 48 px. Cede al pulsar (`presion`) como `Boton`. */
+export const BOTON_ENLACE = {
+  primario: "presion inline-flex h-12 items-center justify-center gap-3 rounded-campo bg-texto px-6 text-cuerpo font-semibold text-fondo hover:bg-texto/85",
+  secundario: "presion inline-flex h-12 items-center justify-center gap-3 rounded-campo border border-linea bg-superficie px-6 text-cuerpo font-medium hover:border-secundario",
+} as const;

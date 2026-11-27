@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { subtituloInversion } from "@/domain/inversion/presentacion";
 import type { InversionDetalle } from "@/domain/inversion/tipos";
-import { BOTON_ENLACE } from "../deudas/rutas";
+import { BOTON_ENLACE } from "../boton";
 import { LineaTrm } from "../linea-trm";
 import { rutaNueva } from "./rutas";
 

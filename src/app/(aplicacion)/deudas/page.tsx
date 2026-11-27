@@ -9,7 +9,8 @@ import { ListaPrestamos } from "@/components/deudas/lista-prestamos";
 import { PanelAbono } from "@/components/deudas/panel-abono";
 import { PanelEdicionPrestamo } from "@/components/deudas/panel-edicion-prestamo";
 import { PanelPrestamo } from "@/components/deudas/panel-prestamo";
-import { BOTON_ENLACE, RUTA_DEUDAS, rutaNuevo, rutaPrestamo } from "@/components/deudas/rutas";
+import { BOTON_ENLACE } from "@/components/boton";
+import { RUTA_DEUDAS, rutaNuevo, rutaPrestamo } from "@/components/deudas/rutas";
 import { EnlaceTexto } from "@/components/enlace-texto";
 import { cargarFormulario, obtenerPrestamo, obtenerPrestamos, type DatosFormularioPrestamo, type TipoPrestamo } from "@/services/prestamos";
 import {

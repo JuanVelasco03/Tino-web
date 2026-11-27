@@ -12,7 +12,8 @@ import {
 } from "@/domain/prestamo/presentacion";
 import type { MovimientoPrestamo, PrestamoDetalle } from "@/domain/prestamo/tipos";
 import { EnlaceTexto } from "../enlace-texto";
-import { BOTON_ENLACE, RUTA_DEUDAS, rutaPrestamo } from "./rutas";
+import { BOTON_ENLACE } from "../boton";
+import { RUTA_DEUDAS, rutaPrestamo } from "./rutas";
 
 type Props = {
   detalle: PrestamoDetalle;

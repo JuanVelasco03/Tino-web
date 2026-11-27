@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Plus } from "lucide-react";
-import { BOTON_ENLACE } from "@/components/deudas/rutas";
+import { BOTON_ENLACE } from "@/components/boton";
 import { EnlaceTexto } from "@/components/enlace-texto";
 import { BloquePrecio, type AccionesPrecio } from "@/components/inversiones/bloque-precio";
 import { CabeceraInversion } from "@/components/inversiones/cabecera-inversion";
