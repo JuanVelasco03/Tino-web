@@ -33,7 +33,12 @@ function Precio({ p, moneda }: { p: Posicion; moneda: Moneda }) {
   return p.cotizacion === "manual" ? <span className="border-b border-dashed border-marca">{cifra}</span> : <>{cifra}</>;
 }
 
-/** Nota de la cotización: pulsable (abre el bloque) salvo en una archivada. */
+/**
+ * Nota de la cotización: pulsable (abre el bloque) salvo en una archivada. En
+ * una manual, «Actualizar precio» ya dice que el precio es manual (y el
+ * subrayado discontinuo del precio lo marca): la etiqueta «manual» solo queda
+ * en una archivada, donde no hay acción que lo diga.
+ */
 function Cotizacion({ p, detalle, zona, soloLectura }: { p: Posicion; detalle: InversionDetalle; zona: string; soloLectura: boolean }) {
   const nota = notaCotizacion(p, detalle.fechaHoy, zona);
   const tono = p.precioVencido ? "text-marca-texto" : "text-secundario";
@@ -43,16 +48,20 @@ function Cotizacion({ p, detalle, zona, soloLectura }: { p: Posicion; detalle: I
     <div className="flex min-w-0 flex-col items-start gap-1">
       <span className="flex flex-wrap items-baseline gap-x-2">
         {!manual && !soloLectura ? (
-          <Link href={ruta} scroll={false} className={`text-left text-etiqueta font-normal hover:text-texto ${tono}`}>
+          <Link href={ruta} scroll={false} className={`text-left text-etiqueta font-normal hover:text-texto pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center ${tono}`}>
             {nota}
           </Link>
         ) : (
           <span className={`text-etiqueta font-normal ${tono}`}>{nota}</span>
         )}
-        {manual && <span className="font-mono text-cifra-xs text-marca-texto">manual</span>}
+        {manual && soloLectura && <span className="font-mono text-cifra-xs text-marca-texto">manual</span>}
       </span>
       {manual && !soloLectura && (
-        <Link href={ruta} scroll={false} className="text-etiqueta font-semibold text-marca-texto">
+        <Link
+          href={ruta}
+          scroll={false}
+          aria-label={`Actualizar precio manual de ${p.simbolo}`}
+          className="text-etiqueta font-semibold text-marca-texto pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center">
           Actualizar precio
         </Link>
       )}
@@ -105,7 +114,7 @@ export function TablaPosiciones({ detalle, zona, abierto = null, bloque }: Props
             <div key={p.activoId}>
               <div
                 role="row"
-                className={`grid ${COLUMNAS} items-baseline gap-x-3 border-b border-linea py-3 ${p.activoId === abierto ? "bg-hundido" : ""}`}
+                className={`grid ${COLUMNAS} items-baseline gap-x-3 border-b border-linea py-3 transition-colors duration-150 ease-llegada ${p.activoId === abierto ? "bg-hundido" : ""}`}
               >
                 <span role="cell" className="flex min-w-0 flex-col">
                   <span className="font-mono text-cifra-s font-semibold">{p.simbolo}</span>
@@ -193,7 +202,11 @@ export function TablaPosiciones({ detalle, zona, abierto = null, bloque }: Props
                     </span>
                     <span className="truncate text-etiqueta font-normal text-secundario">{p.nombre}</span>
                     <span className="font-mono text-cifra-xs tabular-nums text-secundario">
-                      {formatearCantidadCorta(p.cantidad)} × <Precio p={p} moneda={moneda} /> · costo {cifraColumna(p.costoPromedio, moneda)}
+                      {/* Cada tramo entero: la línea solo se parte en el «·», nunca dentro de una cifra. */}
+                      <span className="whitespace-nowrap">
+                        {formatearCantidadCorta(p.cantidad)} × <Precio p={p} moneda={moneda} />
+                      </span>{" "}
+                      · <span className="whitespace-nowrap">costo {cifraColumna(p.costoPromedio, moneda)}</span>
                     </span>
                     <span className={`text-etiqueta font-normal ${p.precioVencido ? "text-marca-texto" : "text-secundario"}`}>
                       {notaCotizacion(p, detalle.fechaHoy, zona)}

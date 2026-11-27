@@ -30,13 +30,16 @@ function Ganancia({ o, moneda }: { o: Operacion; moneda: Moneda }) {
   return <span className={colorSigno(o.gananciaRealizada)}>{cifraColumna(o.gananciaRealizada, moneda, true)}</span>;
 }
 
-function Fila({ href, className, children }: { href?: string; className: string; children: ReactNode }) {
+/** `rol="row"` en la tabla de escritorio: sin él, las celdas quedan huérfanas para el lector de pantalla. */
+function Fila({ href, className, children, rol }: { href?: string; className: string; children: ReactNode; rol?: "row" }) {
   return href ? (
-    <Link href={href} scroll={false} className={`${className} hover:bg-hundido`}>
+    <Link href={href} scroll={false} role={rol} className={`${className} hover:bg-hundido`}>
       {children}
     </Link>
   ) : (
-    <div className={className}>{children}</div>
+    <div role={rol} className={className}>
+      {children}
+    </div>
   );
 }
 
@@ -65,7 +68,7 @@ export function ListaOperaciones({ operaciones, moneda, enlace }: Props) {
               <span role="columnheader" className="text-right">Ganancia realizada</span>
             </div>
             {operaciones.map((o) => (
-              <Fila key={o.id} href={enlace?.(o)} className={`grid ${COLUMNAS} items-baseline gap-x-3 border-b border-linea py-3`}>
+              <Fila key={o.id} rol="row" href={enlace?.(o)} className={`grid ${COLUMNAS} items-baseline gap-x-3 border-b border-linea py-3`}>
                 <span role="cell" className="font-mono text-cifra-xs text-secundario">{formatearFechaSinAnio(o.fecha)}</span>
                 <span role="cell" className="flex min-w-0 flex-col">
                   <span className="truncate text-cuerpo">
@@ -97,7 +100,10 @@ export function ListaOperaciones({ operaciones, moneda, enlace }: Props) {
                       {ROTULO_CLASE[o.clase]} · {o.activo.simbolo}
                     </span>
                     <span className="font-mono text-cifra-xs tabular-nums text-secundario">
-                      {formatearFechaSinAnio(o.fecha)} · {formatearCantidadCorta(o.cantidad)} × {cifraColumna(o.precioUnitario, moneda)}
+                      <span className="whitespace-nowrap">{formatearFechaSinAnio(o.fecha)}</span> ·{" "}
+                      <span className="whitespace-nowrap">
+                        {formatearCantidadCorta(o.cantidad)} × {cifraColumna(o.precioUnitario, moneda)}
+                      </span>
                     </span>
                   </span>
                   <span className="flex flex-col items-end font-mono tabular-nums">

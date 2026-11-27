@@ -40,6 +40,8 @@ import { MensajeError } from "../mensaje-error";
 import { OpcionUnica } from "../opcion-unica";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
 import { ROTULO_CLASE } from "./lista-operaciones";
+import { llamarAccion } from "@/lib/sin-conexion";
+import { useFocoDeRegreso } from "./foco-de-regreso";
 import { rutaInversion } from "./rutas";
 import { CampoFecha } from "../campo-fecha";
 
@@ -74,6 +76,12 @@ const OPCIONES_CLASE = [
   { valor: "venta", rotulo: "Venta · entra al efectivo" },
   { valor: "inicial", rotulo: "Ya lo tenía · no mueve efectivo" },
 ] as const satisfies readonly { valor: ClaseOperacion; rotulo: string }[];
+
+/** Ejemplos de los campos según la moneda de la cuenta: un activo local en COP, uno de EE. UU. en USD. */
+const EJEMPLO: Record<Moneda, { simbolo: string; nombre: string }> = {
+  COP: { simbolo: "ECOPETROL", nombre: "Ecopetrol S.A." },
+  USD: { simbolo: "VOO", nombre: "Vanguard S&P 500 ETF" },
+};
 
 const ROTULO_TOTAL: Record<ClaseOperacion, string> = { compra: "Total pagado", venta: "Total recibido", inicial: "Costo total" };
 const VERBO: Record<ClaseOperacion, string> = { compra: "Registrar compra", venta: "Registrar venta", inicial: "Registrar posición" };
@@ -119,6 +127,7 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
   const [errorBorrado, setErrorBorrado] = useState<string | null>(null);
   const [accion, setAccion] = useState<"guardar" | "eliminar" | null>(null);
   const [pendiente, iniciar] = useTransition();
+  const devolverFoco = useFocoDeRegreso();
 
   /** Búsquedas hechas, por símbolo normalizado: cada una gasta un crédito del proveedor. */
   const [busquedas, setBusquedas] = useState<Record<string, BusquedaActivo | "buscando" | "error">>({});
@@ -137,6 +146,7 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
 
   async function cerrar() {
     await panel.current?.cerrar();
+    devolverFoco();
     if (alCerrar) alCerrar();
     else router.replace(rutaInversion(detalle.id), { scroll: false });
   }
@@ -182,7 +192,7 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
     if (activoEnCuenta(buscado, detalle.posiciones, operaciones)) return;
 
     setBusquedas((actual) => ({ ...actual, [buscado]: "buscando" }));
-    const resultado = await acciones.buscar(detalle.id, buscado);
+    const resultado = await llamarAccion(() => acciones.buscar(detalle.id, buscado));
     setBusquedas((actual) => ({ ...actual, [buscado]: resultado.ok ? resultado.busqueda : "error" }));
     if (resultado.ok && resultado.busqueda.cubierto && resultado.busqueda.nombre) {
       const nombre = resultado.busqueda.nombre;
@@ -224,7 +234,7 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
       setErrores({});
       setAccion("guardar");
       iniciar(async () => {
-        const resultado = await acciones.editar(detalle.id, operacionId, cambio);
+        const resultado = await llamarAccion(() => acciones.editar(detalle.id, operacionId, cambio));
         if (resultado.ok) await cerrar();
         else mostrarFallo(resultado);
         setAccion(null);
@@ -241,7 +251,7 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
     setErrores({});
     setAccion("guardar");
     iniciar(async () => {
-      const resultado = await acciones.registrar(detalle.id, cuerpo);
+      const resultado = await llamarAccion(() => acciones.registrar(detalle.id, cuerpo));
       if (resultado.ok) await cerrar();
       else mostrarFallo(resultado);
       setAccion(null);
@@ -253,7 +263,7 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
     setErrorBorrado(null);
     setAccion("eliminar");
     iniciar(async () => {
-      const resultado = await acciones.eliminar(detalle.id, operacion.id);
+      const resultado = await llamarAccion(() => acciones.eliminar(detalle.id, operacion.id));
       if (resultado.ok) await cerrar();
       else setErrorBorrado(resultado.mensaje);
       setAccion(null);
@@ -344,7 +354,9 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
 
             <div className="flex flex-col gap-2">
               {alta.clase === "venta" ? (
-                <span className="text-etiqueta font-normal text-secundario">Símbolo</span>
+                <span id="rotulo-simbolo-venta" className="text-etiqueta font-normal text-secundario">
+                  Símbolo
+                </span>
               ) : (
                 <CampoSubrayado
                   etiqueta="Símbolo"
@@ -358,18 +370,21 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
                   onBlur={() => void alSalirDelSimbolo()}
                   error={errores.simbolo}
                   className="font-mono uppercase"
-                  placeholder="VOO"
+                  placeholder={EJEMPLO[moneda].simbolo}
                 />
               )}
               {abiertas.length > 0 && (
-                <div role="group" aria-label="Posiciones abiertas" className="flex flex-wrap gap-2">
+                <div
+                  role="group"
+                  {...(alta.clase === "venta" ? { "aria-labelledby": "rotulo-simbolo-venta" } : { "aria-label": "Posiciones abiertas" })}
+                  className="flex flex-wrap gap-2">
                   {abiertas.map((p) => (
                     <ChipCategoria key={p.activoId} etiqueta={p.simbolo} seleccionada={p.simbolo === simbolo} onClick={() => elegirChip(p.simbolo)} />
                   ))}
                 </div>
               )}
               {alta.clase === "venta" && abiertas.length === 0 && (
-                <p className="text-etiqueta font-normal text-secundario">No hay posiciones abiertas para vender.</p>
+                <p className="text-etiqueta font-normal text-secundario">No tienes posiciones abiertas para vender.</p>
               )}
               {alta.clase === "venta" && errores.simbolo && <MensajeError mensaje={errores.simbolo} />}
               {notaSimbolo && <p className="text-etiqueta font-normal text-secundario">{notaSimbolo}</p>}
@@ -384,7 +399,7 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
                 value={alta.nombre}
                 onChange={(e) => cambiarAlta("nombre", e.target.value)}
                 error={errores.nombre}
-                placeholder="Microsoft Corporation"
+                placeholder={EJEMPLO[moneda].nombre}
               />
             )}
           </>
@@ -419,6 +434,11 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
           }}
         />
 
+        {!esEdicion && alta.clase === "compra" && (
+          <p className="-mt-3 text-etiqueta font-normal text-secundario">
+            Efectivo disponible <span className="font-mono tabular-nums">{enMoneda(detalle.efectivo, moneda)}</span>
+          </p>
+        )}
         <CampoFecha
           etiqueta="Fecha"
           hoy={detalle.fechaHoy}
@@ -431,11 +451,6 @@ export function PanelOperacion({ detalle, operaciones, operacion, acciones, alCe
           error={errores.fecha}
         />
 
-        {!esEdicion && alta.clase === "compra" && (
-          <p className="text-etiqueta font-normal text-secundario">
-            Efectivo disponible <span className="font-mono tabular-nums">{enMoneda(detalle.efectivo, moneda)}</span>
-          </p>
-        )}
       </form>
     </PanelLateral>
   );

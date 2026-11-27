@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useSyncExternalStore, useTransition, type ChangeEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, useTransition, type ChangeEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { desdeMenores, formatearEntrada } from "@/domain/dinero/entrada";
@@ -11,6 +11,8 @@ import type { Cotizacion, InversionDetalle, Posicion, PrecioCuerpo } from "@/dom
 import { Boton } from "../boton";
 import { MensajeError } from "../mensaje-error";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
+import { llamarAccion } from "@/lib/sin-conexion";
+import { useFocoDeRegreso } from "./foco-de-regreso";
 import { rutaInversion } from "./rutas";
 
 type Resultado = { ok: true } | { ok: false; codigo: string; mensaje: string };
@@ -39,12 +41,16 @@ function suscribir(avisar: () => void) {
   return () => consulta.removeEventListener("change", avisar);
 }
 
-/** ¿Cabe la tabla de posiciones? Es el mismo corte (`xl`) que la tabla en línea. */
-function useAncho(): boolean {
+/**
+ * ¿Cabe la tabla de posiciones? Es el mismo corte (`xl`) que la tabla en línea.
+ * `null` en el servidor y al hidratar: aún no se sabe, y adivinar pintaría un
+ * formato y saltaría al otro (la hoja, además, necesita `document`).
+ */
+function useAncho(): boolean | null {
   return useSyncExternalStore(
     suscribir,
     () => window.matchMedia(ANCHO).matches,
-    () => true,
+    () => null,
   );
 }
 
@@ -60,7 +66,15 @@ export function BloquePrecio({ detalle, posicion: p, acciones, formato, alCerrar
   const router = useRouter();
   const panel = useRef<ControlPanel>(null);
   const ancho = useAncho();
-  const enLinea = (formato ?? (ancho ? "linea" : "hoja")) === "linea";
+  const formatoEfectivo = formato ?? (ancho === null ? null : ancho ? "linea" : "hoja");
+  const enLinea = formatoEfectivo === "linea";
+  const devolverFoco = useFocoDeRegreso();
+  const entrada = useRef<HTMLInputElement>(null);
+
+  // En línea no hay diálogo que mueva el foco: va al campo del precio, que es la tarea.
+  useEffect(() => {
+    if (enLinea) entrada.current?.focus({ preventScroll: true });
+  }, [enLinea]);
   const { moneda } = detalle;
   const manual = p.cotizacion === "manual";
 
@@ -74,6 +88,7 @@ export function BloquePrecio({ detalle, posicion: p, acciones, formato, alCerrar
 
   async function cerrar() {
     if (!enLinea) await panel.current?.cerrar();
+    devolverFoco();
     if (alCerrar) alCerrar();
     else router.replace(rutaInversion(detalle.id), { scroll: false });
   }
@@ -83,7 +98,7 @@ export function BloquePrecio({ detalle, posicion: p, acciones, formato, alCerrar
     setError(null);
     setAccion(tipo);
     iniciar(async () => {
-      const resultado = await llamada();
+      const resultado = await llamarAccion(llamada);
       if (resultado.ok) await cerrar();
       else setError(resultado.mensaje);
       setAccion(null);
@@ -115,7 +130,7 @@ export function BloquePrecio({ detalle, posicion: p, acciones, formato, alCerrar
         <dd className="font-mono text-cifra-xs tabular-nums">{enMoneda(p.precio, moneda)}</dd>
       </div>
       {p.precioAnterior && (
-        <div className="flex items-baseline justify-between gap-3 text-etiqueta font-normal text-terciario">
+        <div className="flex items-baseline justify-between gap-3 text-etiqueta font-normal text-secundario">
           <dt>Antes · {formatearFechaSinAnio(p.precioAnterior.fecha)}</dt>
           <dd className="font-mono text-cifra-xs tabular-nums">{enMoneda(p.precioAnterior.precio, moneda)}</dd>
         </div>
@@ -131,6 +146,7 @@ export function BloquePrecio({ detalle, posicion: p, acciones, formato, alCerrar
       <div className="flex items-baseline gap-2 border-b border-raya pb-2 has-[:focus]:border-marca">
         {moneda === "USD" && <span className="text-etiqueta text-secundario">US$</span>}
         <input
+          ref={entrada}
           id={`precio-${p.activoId}`}
           value={texto}
           onChange={alEscribir}
@@ -139,11 +155,13 @@ export function BloquePrecio({ detalle, posicion: p, acciones, formato, alCerrar
           placeholder="0"
           disabled={pendiente}
           aria-invalid={error ? true : undefined}
+          aria-describedby={`precio-${p.activoId}-vista${error ? ` precio-${p.activoId}-error` : ""}`}
           className="min-w-0 flex-1 border-0 bg-transparent p-0 font-mono text-cifra-l tabular-nums text-texto caret-marca outline-none! placeholder:text-terciario"
         />
         {moneda === "COP" && <span className="text-etiqueta text-secundario">COP</span>}
       </div>
-      <p className="min-h-5 text-etiqueta font-normal text-secundario">
+      <p id={`precio-${p.activoId}-vista`} className="min-h-5 text-etiqueta font-normal text-secundario">
+        {!vista && "Escribe un precio mayor que cero."}
         {vista && (
           <>
             Valor de la posición: <span className="font-mono tabular-nums">{enMoneda(vista.valor, moneda)}</span>
@@ -162,12 +180,22 @@ export function BloquePrecio({ detalle, posicion: p, acciones, formato, alCerrar
     </Boton>
   );
 
-  const errorBloque = error && <MensajeError mensaje={error} />;
+  const errorBloque = error && <MensajeError id={`precio-${p.activoId}-error`} mensaje={error} />;
+  const fechaCotizacion = `Fecha de la cotización: hoy, ${formatearFechaSinAnio(detalle.fechaHoy)}`;
+
+  if (formatoEfectivo === null) return null;
 
   /* ── En línea (escritorio ancho) ─────────────────────────────────── */
   if (enLinea) {
     return (
-      <div role="region" aria-label={`Precio de ${p.simbolo}`} className="border-b border-raya bg-superficie px-4 py-6">
+      <div
+        role="region"
+        aria-label={`Precio de ${p.simbolo}`}
+        // Como los paneles: Escape cierra (sin guardar), salvo mientras se guarda.
+        onKeyDown={(evento) => {
+          if (evento.key === "Escape" && !pendiente) void cerrar();
+        }}
+        className="asentar border-b border-raya bg-superficie px-4 py-6">
         {manual ? (
           <div className="grid grid-cols-[minmax(0,1fr)_260px_260px] gap-8">
             <div className="flex flex-col gap-4">
@@ -179,7 +207,7 @@ export function BloquePrecio({ detalle, posicion: p, acciones, formato, alCerrar
             </div>
             {campo}
             <div className="flex flex-col gap-3">
-              <p className="text-etiqueta font-normal text-secundario">Fecha de la cotización: hoy, {formatearFechaSinAnio(detalle.fechaHoy)}</p>
+              <p className="text-etiqueta font-normal text-secundario">{fechaCotizacion}</p>
               <div className="flex flex-wrap gap-3">
                 <Boton onClick={guardar} disabled={!cuerpo || pendiente}>
                   {accion === "guardar" ? "Guardando…" : "Guardar precio"}
@@ -224,6 +252,7 @@ export function BloquePrecio({ detalle, posicion: p, acciones, formato, alCerrar
         {historial}
         {campo}
         <div className="flex flex-col gap-2">
+          <p className="text-etiqueta font-normal text-secundario">{fechaCotizacion}</p>
           <Boton onClick={guardar} disabled={!cuerpo || pendiente} className="w-full justify-center">
             {accion === "guardar" ? "Guardando…" : "Guardar precio"}
           </Boton>

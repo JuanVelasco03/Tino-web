@@ -8,6 +8,7 @@ import { FilaCuenta } from "@/components/cuentas/fila-cuenta";
 import { BloquePrecio, type AccionesPrecio } from "@/components/inversiones/bloque-precio";
 import { CifrasInversion } from "@/components/inversiones/cifras-inversion";
 import { DiaUnoInversiones } from "@/components/inversiones/dia-uno-inversiones";
+import { EsqueletoInversiones } from "@/components/inversiones/esqueleto-inversiones";
 import { ListaOperaciones } from "@/components/inversiones/lista-operaciones";
 import { PanelInversion } from "@/components/inversiones/panel-inversion";
 import { PanelOperacion, type AccionesOperacion } from "@/components/inversiones/panel-operacion";
@@ -231,6 +232,13 @@ export function MuestraInversiones({ sufijo }: { sufijo: string }) {
 
   return (
     <div className="flex flex-col gap-12">
+      <div>
+        <Etiqueta>Esqueleto · cabecera, selector, cifras, posiciones, acciones y operaciones (forma real, bloques `linea`, sin cifras)</Etiqueta>
+        <div data-muestra={`esqueleto-inversiones-${sufijo}`}>
+          <EsqueletoInversiones />
+        </div>
+      </div>
+
       <div className="flex flex-col gap-4">
         <Etiqueta>LineaTrm · aplicada, desactualizada, sin TRM y de hoy (día uno)</Etiqueta>
         <LineaTrm trm={TRM} desactualizada={false} />

@@ -19,6 +19,8 @@ import { ConfirmarDescarte } from "../captura/panel-captura";
 import { MensajeError } from "../mensaje-error";
 import { OpcionUnica } from "../opcion-unica";
 import { PanelLateral, type ControlPanel } from "../panel-lateral";
+import { llamarAccion } from "@/lib/sin-conexion";
+import { useFocoDeRegreso } from "./foco-de-regreso";
 import { rutaInversion } from "./rutas";
 
 type Fallo = { ok: false; codigo: string; mensaje: string; campo?: CampoInversion };
@@ -55,6 +57,7 @@ export function PanelInversion({ crear, rutaCierre, alCerrar }: Props) {
   const [errorGeneral, setErrorGeneral] = useState<string | null>(null);
   const [confirmandoDescarte, setConfirmandoDescarte] = useState(false);
   const [pendiente, iniciar] = useTransition();
+  const devolverFoco = useFocoDeRegreso();
 
   const conCambios =
     valores.nombre !== VALORES_INVERSION.nombre ||
@@ -63,6 +66,7 @@ export function PanelInversion({ crear, rutaCierre, alCerrar }: Props) {
 
   async function cerrar(destino = rutaCierre) {
     await panel.current?.cerrar();
+    devolverFoco();
     if (alCerrar) alCerrar(destino);
     else router.replace(destino, { scroll: false });
   }
@@ -99,7 +103,7 @@ export function PanelInversion({ crear, rutaCierre, alCerrar }: Props) {
     setErrores({});
     setConfirmandoDescarte(false);
     iniciar(async () => {
-      const resultado = await crear(cuerpo);
+      const resultado = await llamarAccion(() => crear(cuerpo));
       if (resultado.ok) {
         await cerrar(rutaInversion(resultado.id));
         return;

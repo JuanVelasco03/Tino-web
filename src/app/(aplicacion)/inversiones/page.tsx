@@ -85,7 +85,7 @@ export default async function PaginaInversiones({ searchParams }: PageProps<"/in
   // Día uno: ninguna inversión y ninguna pedida por URL.
   if (!detalle || !operaciones) {
     return (
-      <div className="flex flex-col gap-8">
+      <div className="asentar flex flex-col gap-8">
         <h1 className="text-titulo-1">Inversiones</h1>
         <DiaUnoInversiones trm={lista.trm} trmDesactualizada={lista.trmDesactualizada} />
         {panelNueva}
@@ -125,14 +125,14 @@ export default async function PaginaInversiones({ searchParams }: PageProps<"/in
   const nota = notaPrecios(detalle, zona);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="asentar flex flex-col gap-8">
       <CabeceraInversion detalle={detalle} />
 
       <SelectorInversiones inversiones={lista.inversiones} elegida={detalle.id} />
 
       <div className="flex flex-col gap-4">
         <CifrasInversion detalle={detalle} />
-        {detalle.moneda === "USD" && <LineaTrm trm={detalle.trm} desactualizada={detalle.trmDesactualizada} className="md:hidden" />}
+        {detalle.moneda === "USD" && <LineaTrm trm={detalle.trm} desactualizada={detalle.trmDesactualizada} className="lg:hidden" />}
       </div>
 
       <TablaPosiciones key={detalle.id} detalle={detalle} zona={zona} abierto={posicionAbierta?.activoId ?? null} bloque={bloque} />
