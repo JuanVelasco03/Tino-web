@@ -58,7 +58,9 @@ function Cifra({ children }: { children: ReactNode }) {
  * Bandeja «Por confirmar»: ocurrencias que aún no tocan los saldos (RN-10).
  * Confirmar, ajustar el importe en la fila u omitir, con un aviso de 5 s y
  * «Deshacer». Una fila se ajusta a la vez. Fila de escritorio
- * (`96px | flexible | 150px | auto`) cuando el contenedor lo permite; si no,
+ * (`96px | flexible | 150px`, acciones en un segundo renglón a la derecha) desde
+ * un contenedor de 576 px (`@xl`) y con las acciones en la misma línea desde 896 px
+ * (`@4xl`); si no,
  * la de móvil, con las acciones debajo.
  */
 export function BandejaRecurrentes({ fechaHoy, ventanaDias, bandeja, recurrentes, acciones }: Props) {
@@ -71,6 +73,18 @@ export function BandejaRecurrentes({ fechaHoy, ventanaDias, bandeja, recurrentes
   const [pendiente, iniciar] = useTransition();
   const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
   const contador = useRef(0);
+  const refAviso = useRef<HTMLDivElement>(null);
+  const idAviso = aviso?.id;
+
+  /** Si el aviso nace fuera de la vista (se confirmó una fila de abajo), se trae: «Deshacer» dura 5 s. */
+  useEffect(() => {
+    const nodo = refAviso.current;
+    if (idAviso === undefined || !nodo) return;
+    const { top, bottom } = nodo.getBoundingClientRect();
+    if (top >= 0 && bottom <= window.innerHeight) return;
+    const suave = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    nodo.scrollIntoView({ block: "nearest", behavior: suave ? "smooth" : "auto" });
+  }, [idAviso]);
 
   function limpiarTemporizador() {
     if (temporizador.current) clearTimeout(temporizador.current);
@@ -195,14 +209,18 @@ export function BandejaRecurrentes({ fechaHoy, ventanaDias, bandeja, recurrentes
   return (
     <section aria-label="Por confirmar" className="@container">
       <div className="flex items-baseline justify-between gap-3 border-b border-raya pb-2">
-        <RotuloContador titulo="Por confirmar" cantidad={bandeja.length} ancho="@2xl" />
+        <RotuloContador titulo="Por confirmar" cantidad={bandeja.length} ancho="@xl" />
         <span className="text-etiqueta font-normal text-secundario">
-          <span className="@2xl:hidden">No tocan los saldos</span>
-          <span className="hidden @2xl:inline">Aún no tocan los saldos</span>
+          <span className="@xl:hidden">No tocan los saldos</span>
+          <span className="hidden @xl:inline">Aún no tocan los saldos</span>
         </span>
       </div>
 
-      {aviso && <AvisoBandeja texto={aviso.texto} alDeshacer={deshacer} deshaciendo={deshaciendo} error={aviso.error} />}
+      {aviso && (
+        <div key={aviso.id} ref={refAviso} className="asentar scroll-mt-4">
+          <AvisoBandeja texto={aviso.texto} alDeshacer={deshacer} deshaciendo={deshaciendo} error={aviso.error} />
+        </div>
+      )}
 
       {bandeja.length === 0 ? (
         <div className="flex flex-col gap-1 border-b border-linea py-6">
@@ -319,7 +337,8 @@ export function FilaBandeja({
   const idCampo = `ajuste-${r.id}-${o.vencimiento}`;
   const idError = `${idCampo}-error`;
   const signo = r.tipo === "gasto" ? "−" : r.tipo === "ingreso" ? "+" : null;
-  const colorSigno = r.tipo === "gasto" ? "text-salida @2xl:text-salida-texto" : "text-entrada @2xl:text-entrada-texto";
+  const montoAjustado = ajuste && ajuste.valor !== "" ? `${signo ?? ""}${ajuste.valor}` : undefined;
+  const colorSigno = r.tipo === "gasto" ? "text-salida @xl:text-salida-texto" : "text-entrada @xl:text-entrada-texto";
 
   function alTeclear(evento: KeyboardEvent<HTMLInputElement>) {
     if (evento.key === "Enter") {
@@ -333,12 +352,12 @@ export function FilaBandeja({
 
   return (
     <li
-      className={`grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 py-3 punteada @2xl:min-h-16 @2xl:grid-cols-[96px_minmax(0,1fr)_150px_auto] @2xl:items-center @2xl:gap-x-4 ${
+      className={`grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 py-3 punteada transition-colors duration-150 ease-llegada @xl:min-h-16 @xl:grid-cols-[96px_minmax(0,1fr)_150px] @xl:items-center @xl:gap-x-4 @4xl:grid-cols-[96px_minmax(0,1fr)_150px_auto] ${
         ajustando ? "bg-hundido" : ""
       }`}
     >
       {/* Escritorio: fecha y texto relativo. */}
-      <div className="hidden flex-col @2xl:flex">
+      <div className="hidden flex-col @xl:flex">
         <span className="font-mono text-cifra-xs tabular-nums">{fecha}</span>
         <span className={`text-etiqueta font-normal ${vencida ? "text-salida-texto" : "text-secundario"}`}>{relativo}</span>
       </div>
@@ -346,24 +365,24 @@ export function FilaBandeja({
       <div className="min-w-0">
         <div className="truncate text-cuerpo font-semibold">{r.concepto}</div>
         <div className="text-etiqueta font-normal text-secundario">
-          <span className="@2xl:hidden">
+          <span className="@xl:hidden">
             <span className="font-mono tabular-nums">{fecha}</span> ·{" "}
             <span className={vencida ? "text-salida-texto" : ""}>{relativo}</span> · {cuentaTexto(r)}
           </span>
-          <span className="hidden truncate @2xl:block">
+          <span className="hidden truncate @xl:block">
             {r.tipo === "transferencia" ? `Transferencia · ${cuentaTexto(r)}` : `${categoriaTexto(r)} · ${cuentaTexto(r)}`}
           </span>
         </div>
       </div>
 
       {ajuste ? (
-        <div className="col-span-2 flex flex-col gap-1 @2xl:col-span-1 @2xl:items-end">
+        <div className="col-span-2 flex flex-col gap-1 @xl:col-span-1 @xl:items-end">
           <label htmlFor={idCampo} className="sr-only">
             Importe de {r.concepto}
           </label>
-          <div className="flex w-full items-baseline gap-2 border-b border-raya pb-1 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-marca @2xl:gap-1">
+          <div className="flex w-full items-baseline gap-2 border-b border-raya pb-1 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-marca @xl:gap-1">
             {signo && (
-              <span aria-hidden className={`font-mono text-cifra-l @2xl:text-cifra-s ${colorSigno}`}>
+              <span aria-hidden className={`font-mono text-cifra-l @xl:text-cifra-s ${colorSigno}`}>
                 {signo}
               </span>
             )}
@@ -378,9 +397,9 @@ export function FilaBandeja({
               placeholder="0"
               aria-invalid={ajuste.error ? true : undefined}
               aria-describedby={ajuste.error ? idError : undefined}
-              className="min-w-0 flex-1 border-0 bg-transparent p-0 font-mono text-cifra-l tabular-nums text-texto caret-marca outline-none! placeholder:text-terciario @2xl:text-right @2xl:text-cifra-s"
+              className="min-w-0 flex-1 border-0 bg-transparent p-0 font-mono text-cifra-l tabular-nums text-texto caret-marca outline-none! placeholder:text-terciario @xl:text-right @xl:text-cifra-s"
             />
-            <span className="text-etiqueta text-secundario @2xl:hidden">COP</span>
+            <span className="text-etiqueta text-secundario @xl:hidden">COP</span>
           </div>
           {r.ultimoConfirmado && (
             <span className="font-mono text-cifra-xs tabular-nums text-secundario">
@@ -400,23 +419,36 @@ export function FilaBandeja({
       )}
 
       {ajuste ? (
-        <div className="col-span-2 grid grid-cols-[1fr_auto] gap-2 @2xl:col-span-1 @2xl:flex @2xl:justify-end">
-          <Boton onClick={alEnviarAjuste} disabled={ocupado} monto={ajuste.valor === "" ? undefined : ajuste.valor} className="justify-center">
+        <div className="col-span-2 grid grid-cols-[1fr_auto] gap-2 @xl:col-span-2 @xl:col-start-2 @xl:flex @xl:justify-end @4xl:col-span-1 @4xl:col-start-auto">
+          <Boton
+            onClick={alEnviarAjuste}
+            disabled={ocupado}
+            monto={montoAjustado}
+            aria-label={montoAjustado ? `Confirmar ${montoAjustado} de ${r.concepto}` : `Confirmar ${r.concepto}`}
+            className="justify-center"
+          >
             Confirmar
           </Boton>
-          <Boton variante="secundario" onClick={alCancelarAjuste} disabled={ocupado}>
+          <Boton variante="secundario" onClick={alCancelarAjuste} disabled={ocupado} aria-label={`Cancelar el ajuste de ${r.concepto}`}>
             Cancelar
           </Boton>
         </div>
       ) : (
-        <div className="col-span-2 grid grid-cols-[1fr_1fr_auto] gap-2 @2xl:col-span-1 @2xl:flex @2xl:justify-end">
-          <Boton onClick={alConfirmar} disabled={ocupado} className="justify-center">
+        <div
+          className={`col-span-2 grid gap-2 @xl:col-span-2 @xl:col-start-2 @xl:flex @xl:justify-end @4xl:col-span-1 @4xl:col-start-auto ${
+            o.estimado ? "grid-cols-[1fr_1fr_auto]" : "grid-cols-[1fr_auto]"
+          }`}
+        >
+          <Boton onClick={alConfirmar} disabled={ocupado} aria-label={`Confirmar ${r.concepto}`} className="justify-center">
             Confirmar
           </Boton>
-          <Boton variante="secundario" onClick={alAjustar} disabled={ocupado} className="justify-center">
-            Ajustar
-          </Boton>
-          <button type="button" onClick={alOmitir} disabled={ocupado} className={OMITIR}>
+          {/* Solo un estimado se ajusta en la fila: un importe fijo se confirma tal cual o se corrige en la plantilla. */}
+          {o.estimado && (
+            <Boton variante="secundario" onClick={alAjustar} disabled={ocupado} aria-label={`Ajustar ${r.concepto}`} className="justify-center">
+              Ajustar
+            </Boton>
+          )}
+          <button type="button" onClick={alOmitir} disabled={ocupado} aria-label={`Omitir ${r.concepto}`} className={OMITIR}>
             Omitir
           </button>
         </div>

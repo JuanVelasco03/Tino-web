@@ -3,8 +3,10 @@ import {
   cambiaCalendario,
   cuerpoDesdeValores,
   hayCambios,
+  MENSAJES_PLANTILLA,
   permiteUltimoDia,
   VALORES_ALTA,
+  validarPlantilla,
   valoresDesdePlantilla,
   type ValoresPlantilla,
 } from "./formulario";
@@ -148,5 +150,39 @@ describe("hayCambios", () => {
   it("compara campo por campo", () => {
     expect(hayCambios(COMPLETOS, { ...COMPLETOS })).toBe(false);
     expect(hayCambios(COMPLETOS, { ...COMPLETOS, variable: true })).toBe(true);
+  });
+});
+
+describe("validarPlantilla", () => {
+  it("completos → sin errores", () => {
+    expect(validarPlantilla(COMPLETOS)).toEqual({});
+  });
+
+  it("alta vacía: concepto, monto y cuenta a la vez", () => {
+    expect(validarPlantilla(VALORES_ALTA("2026-11-26"))).toEqual({
+      concepto: MENSAJES_PLANTILLA.concepto,
+      monto: MENSAJES_PLANTILLA.monto,
+      cuentaOrigen: MENSAJES_PLANTILLA.cuenta,
+    });
+  });
+
+  it("concepto de solo espacios cuenta como vacío", () => {
+    expect(validarPlantilla({ ...COMPLETOS, concepto: "   " })).toEqual({ concepto: MENSAJES_PLANTILLA.concepto });
+  });
+
+  it("ingreso sin cuenta de destino", () => {
+    expect(validarPlantilla({ ...COMPLETOS, tipo: "ingreso", cuentaDestinoId: null })).toEqual({ cuentaDestino: MENSAJES_PLANTILLA.cuenta });
+  });
+
+  it("transferencia: ambas cuentas y distintas", () => {
+    const base = { ...COMPLETOS, tipo: "transferencia" as const };
+    expect(validarPlantilla({ ...base, cuentaOrigenId: null, cuentaDestinoId: null })).toEqual({
+      cuentaOrigen: MENSAJES_PLANTILLA.cuentaOrigen,
+      cuentaDestino: MENSAJES_PLANTILLA.cuentaDestino,
+    });
+    expect(validarPlantilla({ ...base, cuentaOrigenId: "banco", cuentaDestinoId: "banco" })).toEqual({
+      cuentaDestino: MENSAJES_PLANTILLA.cuentasIguales,
+    });
+    expect(validarPlantilla({ ...base, cuentaOrigenId: "banco", cuentaDestinoId: "nu" })).toEqual({});
   });
 });

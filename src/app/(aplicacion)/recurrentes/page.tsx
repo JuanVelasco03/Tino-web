@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { Plus } from "lucide-react";
+import { BOTON_ENLACE } from "@/components/boton";
 import { EstadoVacio } from "@/components/estado-vacio";
 import { BandejaRecurrentes } from "@/components/recurrentes/bandeja-recurrentes";
 import { ComprometidoMes } from "@/components/recurrentes/comprometido-mes";
 import { ListaPlantillas, RUTA_NUEVA_PLANTILLA } from "@/components/recurrentes/lista-plantillas";
+import { MarcaAbriendo } from "@/components/recurrentes/marca-abriendo";
 import { PanelPlantilla, type DatosFormulario } from "@/components/recurrentes/panel-plantilla";
 import { cargar } from "@/services/captura";
 import { obtenerRecurrentes } from "@/services/recurrentes";
@@ -62,18 +64,17 @@ export default async function PaginaRecurrentes({ searchParams }: PageProps<"/re
   const sinPlantillas = datos.recurrentes.length === 0;
 
   return (
-    <div className="flex flex-col gap-8 md:gap-12">
+    <div className="asentar flex flex-col gap-8 md:gap-12">
       <header className="flex items-end justify-between gap-6">
         <h1 className="text-titulo-1">Recurrentes</h1>
         {!sinPlantillas && (
-          <Link
-            href={RUTA_NUEVA_PLANTILLA}
-            scroll={false}
-            className="hidden h-12 items-center gap-3 rounded-campo border border-linea bg-superficie px-6 text-cuerpo font-medium md:inline-flex"
-          >
-            <Plus size={18} strokeWidth={1.5} aria-hidden />
-            Nueva plantilla
-          </Link>
+          <div className="hidden md:block">
+            <Link href={RUTA_NUEVA_PLANTILLA} scroll={false} className={`${BOTON_ENLACE.secundario} has-[[data-abriendo]]:bg-hundido`}>
+              <Plus size={18} strokeWidth={1.5} aria-hidden />
+              Nueva plantilla
+              <MarcaAbriendo />
+            </Link>
+          </div>
         )}
       </header>
 
@@ -87,7 +88,7 @@ export default async function PaginaRecurrentes({ searchParams }: PageProps<"/re
       ) : (
         <>
           <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,1fr)_400px] xl:items-start xl:gap-12">
-            <div className="order-2 xl:order-1">
+            <div>
               <BandejaRecurrentes
                 fechaHoy={datos.fechaHoy}
                 ventanaDias={datos.ventanaDias}
@@ -96,7 +97,7 @@ export default async function PaginaRecurrentes({ searchParams }: PageProps<"/re
                 acciones={ACCIONES_BANDEJA}
               />
             </div>
-            <div className="order-1 xl:order-2">
+            <div className="xl:sticky xl:top-8">
               <ComprometidoMes
                 mes={datos.mes}
                 comprometido={datos.comprometido}

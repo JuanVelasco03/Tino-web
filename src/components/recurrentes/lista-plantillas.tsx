@@ -5,6 +5,7 @@ import type { Recurrente } from "@/domain/recurrente/tipos";
 import { formatearCada, formatearVence, ocurrenciaDelMes } from "@/domain/recurrente/vencimiento";
 import { EnlaceTexto } from "../enlace-texto";
 import { categoriaTexto, cuentaTexto, Importe, RotuloContador } from "./comun";
+import { MarcaAbriendo } from "./marca-abriendo";
 
 type Props = {
   recurrentes: Recurrente[];
@@ -43,9 +44,9 @@ function EstadoMes({ r }: { r: Recurrente }) {
         </span>
       );
     case "por_confirmar":
-      return <span className={`text-marca-texto ${SUBRAYADO_PUNTEADO}`}>Por confirmar · {fecha}</span>;
+      return <span className={`whitespace-nowrap text-marca-texto ${SUBRAYADO_PUNTEADO}`}>Por confirmar · {fecha}</span>;
     case "vencida":
-      return <span className={`text-salida-texto ${SUBRAYADO_PUNTEADO}`}>Vencido · {fecha}</span>;
+      return <span className={`whitespace-nowrap text-salida-texto ${SUBRAYADO_PUNTEADO}`}>Vencido · {fecha}</span>;
     case "programada":
       return (
         <span className="inline-flex items-center gap-1 text-secundario">
@@ -54,7 +55,7 @@ function EstadoMes({ r }: { r: Recurrente }) {
         </span>
       );
     case "omitida":
-      return <span className="text-terciario line-through">Omitido</span>;
+      return <span className="text-secundario line-through">Omitido</span>;
   }
 }
 
@@ -66,7 +67,7 @@ function FilaPlantilla({ r }: { r: Recurrente }) {
       <Link
         href={`/recurrentes?plantilla=${encodeURIComponent(r.id)}`}
         scroll={false}
-        className={`grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 border-b border-linea py-3 hover:bg-hundido focus-visible:-outline-offset-2 ${REJILLA}`}
+        className={`grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 border-b border-linea py-3 hover:bg-hundido focus-visible:-outline-offset-2 has-[[data-abriendo]]:bg-hundido ${REJILLA}`}
       >
         <span className="min-w-0">
           <span className={`block truncate text-cuerpo ${r.pausada ? "text-terciario" : ""}`}>{r.concepto}</span>
@@ -83,6 +84,7 @@ function FilaPlantilla({ r }: { r: Recurrente }) {
         <span className="hidden text-etiqueta font-normal @5xl:block">
           <EstadoMes r={r} />
         </span>
+        <MarcaAbriendo />
       </Link>
     </li>
   );

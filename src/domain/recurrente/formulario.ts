@@ -107,6 +107,35 @@ export function cuerpoDesdeValores(v: ValoresPlantilla): RecurrenteCuerpo | null
   return cuerpo;
 }
 
+/** Mensajes de la validación previa al envío; la API valida igual (REGLAS §5). */
+export const MENSAJES_PLANTILLA = {
+  concepto: "Escribe un concepto.",
+  monto: "Escribe un valor en pesos, sin decimales.",
+  cuenta: "Elige la cuenta.",
+  cuentaOrigen: "Elige la cuenta de origen.",
+  cuentaDestino: "Elige la cuenta de destino.",
+  cuentasIguales: "Elige dos cuentas distintas.",
+} as const;
+
+/**
+ * Lo que falta antes de enviar, por campo, para marcarlo todo de una vez y no
+ * esperar a la API campo por campo. Vacío: se puede enviar. Solo presenta: la
+ * API sigue siendo quien decide (RN-03 incluida).
+ */
+export function validarPlantilla(v: ValoresPlantilla): Partial<Record<CampoPlantilla, string>> {
+  const errores: Partial<Record<CampoPlantilla, string>> = {};
+  if (v.concepto.trim() === "") errores.concepto = MENSAJES_PLANTILLA.concepto;
+  if (montoValido(v.monto) === null) errores.monto = MENSAJES_PLANTILLA.monto;
+  if (v.tipo === "gasto" && v.cuentaOrigenId === null) errores.cuentaOrigen = MENSAJES_PLANTILLA.cuenta;
+  if (v.tipo === "ingreso" && v.cuentaDestinoId === null) errores.cuentaDestino = MENSAJES_PLANTILLA.cuenta;
+  if (v.tipo === "transferencia") {
+    if (v.cuentaOrigenId === null) errores.cuentaOrigen = MENSAJES_PLANTILLA.cuentaOrigen;
+    if (v.cuentaDestinoId === null) errores.cuentaDestino = MENSAJES_PLANTILLA.cuentaDestino;
+    else if (v.cuentaDestinoId === v.cuentaOrigenId) errores.cuentaDestino = MENSAJES_PLANTILLA.cuentasIguales;
+  }
+  return errores;
+}
+
 /** El «último día» efectivo: en semanal y quincenal no cuenta. */
 function ultimoDiaEfectivo(v: ValoresPlantilla): boolean {
   return permiteUltimoDia(v.periodicidad) && v.ultimoDia;

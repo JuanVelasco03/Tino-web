@@ -61,8 +61,8 @@ export function categoriaTexto(r: Pick<Recurrente, "tipo" | "categoria">): strin
 }
 
 /** Rótulo de sección con contador: «POR CONFIRMAR 2»; en un contenedor angosto, «POR CONFIRMAR · 2». */
-export function RotuloContador({ titulo, cantidad, ancho }: { titulo: string; cantidad: number; ancho: "@2xl" | "@5xl" }) {
-  const separador = ancho === "@2xl" ? "@2xl:hidden" : "@5xl:hidden";
+export function RotuloContador({ titulo, cantidad, ancho }: { titulo: string; cantidad: number; ancho: "@xl" | "@5xl" }) {
+  const separador = ancho === "@xl" ? "@xl:hidden" : "@5xl:hidden";
   return (
     <h2 className="flex items-baseline gap-2 text-rotulo uppercase">
       <span>

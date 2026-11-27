@@ -46,8 +46,9 @@ export function ComprometidoMes({ mes, comprometido, ingresosEsperados, recurren
     <section aria-label={`Comprometido en ${formatearNombreMes(mes)}`}>
       <EncabezadoSeccion titulo={`Comprometido en ${formatearNombreMes(mes)}`} />
       <div className="flex flex-col gap-3 pt-4 pb-3">
-        <span className={`font-mono text-cifra-l tabular-nums ${total > 0n ? "text-salida" : "text-texto"}`}>
-          {total > 0n ? pesos(-total) : "0"}
+        {/* Caja comprometida, no patrimonio: incluye transferencias (pago de tarjeta, RN-07). En tinta y sin signo. */}
+        <span className="font-mono text-cifra-l tabular-nums text-texto">
+          {pesos(total)}
         </span>
         <div aria-hidden className="flex h-2 gap-0.5">
           {anchos.pagado > 0 && <div className="rounded-l-muestra bg-texto" style={{ width: `${anchos.pagado}%` }} />}

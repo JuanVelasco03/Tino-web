@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition, type FormEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { admiteGastoIngreso } from "@/domain/cuenta/naturaleza";
 import { formatearFechaSinAnio } from "@/domain/fecha/formato";
@@ -9,6 +9,7 @@ import {
   cuerpoDesdeValores,
   hayCambios,
   permiteUltimoDia,
+  validarPlantilla,
   VALORES_ALTA,
   valoresDesdePlantilla,
   type CampoPlantilla,
@@ -57,17 +58,16 @@ type Props = {
 
 type Errores = Partial<Record<CampoPlantilla, string>>;
 
-const MENSAJE_MONTO = "Escribe un valor en pesos, sin decimales.";
 const AVISO_CALENDARIO =
-  "Cambiar la periodicidad o el primer vencimiento reinicia el calendario: lo que esté por confirmar antes de esa fecha desaparece.";
-const DETALLE_ELIMINAR = "Se borra la plantilla y lo que tenía por confirmar. Los movimientos ya confirmados se quedan.";
+  "Cambiar «Cada» o el primer vencimiento reinicia el calendario: lo que esté por confirmar antes de esa fecha se quita.";
+const DETALLE_ELIMINAR = "Se borra la plantilla y lo que tenía por confirmar. Los movimientos ya confirmados se quedan. No se puede deshacer.";
 const ID_FORMULARIO = "formulario-plantilla";
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
 const OPCIONES_CADA = PERIODICIDADES.map((p) => ({ valor: p, rotulo: formatearCada(p) }));
 const OPCIONES_IMPORTE = [
-  { valor: "fijo", rotulo: "Fijo" },
-  { valor: "variable", rotulo: "Variable · se estima con el último confirmado" },
+  { valor: "fijo", rotulo: "Fijo", detalle: "Siempre el mismo valor." },
+  { valor: "variable", rotulo: "Variable", detalle: "Se estima con el último confirmado y se ajusta al confirmar." },
 ] as const;
 
 const RUTA = "/recurrentes";
@@ -96,6 +96,19 @@ export function PanelPlantilla({ recurrente, fechaHoy, formulario, acciones, alC
   const [errorBorrado, setErrorBorrado] = useState<string | null>(null);
   const [accion, setAccion] = useState<"guardar" | "pausar" | "eliminar" | null>(null);
   const [pendiente, iniciar] = useTransition();
+  const formularioRef = useRef<HTMLFormElement>(null);
+  /** Sube con cada envío con errores: el efecto lleva el foco al primero. */
+  const [intentoFallido, setIntentoFallido] = useState(0);
+
+  useEffect(() => {
+    if (intentoFallido === 0) return;
+    const alerta = formularioRef.current?.querySelector<HTMLElement>('[role="alert"]');
+    const bloque = alerta?.parentElement;
+    const control = bloque?.querySelector<HTMLElement>('input:not([type="radio"]), input[type="radio"]:checked, button');
+    (control ?? alerta)?.focus({ preventScroll: true });
+    const suave = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    (control ?? alerta)?.scrollIntoView({ block: "center", behavior: suave ? "smooth" : "auto" });
+  }, [intentoFallido]);
 
   const conCambios = hayCambios(iniciales, valores);
   const esTransferencia = valores.tipo === "transferencia";
@@ -143,9 +156,11 @@ export function PanelPlantilla({ recurrente, fechaHoy, formulario, acciones, alC
     if (pendiente) return;
     setErrorGeneral(null);
 
+    const faltan = validarPlantilla(valores);
     const cuerpo = cuerpoDesdeValores(valores);
-    if (cuerpo === null) {
-      setErrores({ monto: MENSAJE_MONTO });
+    if (cuerpo === null || Object.keys(faltan).length > 0) {
+      setErrores(faltan);
+      setIntentoFallido((n) => n + 1);
       return;
     }
     if (recurrente && !conCambios) {
@@ -162,6 +177,7 @@ export function PanelPlantilla({ recurrente, fechaHoy, formulario, acciones, alC
         await cerrar();
       } else if (resultado.campo) {
         setErrores({ [resultado.campo]: resultado.mensaje });
+        setIntentoFallido((n) => n + 1);
       } else {
         setErrorGeneral(resultado.mensaje);
       }
@@ -197,6 +213,47 @@ export function PanelPlantilla({ recurrente, fechaHoy, formulario, acciones, alC
   const etiquetaGuardar = esAlta ? (guardando ? "Creando…" : "Crear plantilla") : guardando ? "Guardando…" : "Guardar cambios";
   const avisoCalendario = !esAlta && cambiaCalendario(iniciales, valores);
 
+  /**
+   * Pausar y eliminar: en escritorio, al pie fijo; en móvil, al final del
+   * contenido desplazable, para que el pie no se coma la hoja (90 dvh).
+   */
+  const accionesPlantilla = recurrente ? (
+    <div className="mt-1 border-t border-linea pt-3">
+      {confirmandoBorrado ? (
+        <BloqueEliminar
+          nombre="plantilla"
+          detalle={DETALLE_ELIMINAR}
+          alConfirmar={eliminar}
+          alCancelar={() => {
+            setConfirmandoBorrado(false);
+            setErrorBorrado(null);
+          }}
+          pendiente={pendiente && accion === "eliminar"}
+          error={errorBorrado}
+        />
+      ) : (
+        <div className="flex flex-wrap items-center gap-x-1">
+          <Boton compacto variante="texto" onClick={alternarPausa} disabled={pendiente}>
+            {pendiente && accion === "pausar"
+              ? pausa.pausada
+                ? "Reanudando…"
+                : "Pausando…"
+              : pausa.pausada
+                ? "Reanudar plantilla"
+                : "Pausar plantilla"}
+          </Boton>
+          <span aria-hidden className="text-terciario">
+            ·
+          </span>
+          <PedirEliminar onClick={() => setConfirmandoBorrado(true)} disabled={pendiente}>
+            Eliminar plantilla…
+          </PedirEliminar>
+        </div>
+      )}
+      {errorPausa && <MensajeError mensaje={errorPausa} />}
+    </div>
+  ) : null;
+
   const pie = (
     <div className="flex flex-col gap-3">
       {avisoCalendario && !confirmandoDescarte && <p className="text-etiqueta font-normal text-secundario">{AVISO_CALENDARIO}</p>}
@@ -217,42 +274,7 @@ export function PanelPlantilla({ recurrente, fechaHoy, formulario, acciones, alC
       )}
       {errorGeneral && <MensajeError mensaje={errorGeneral} />}
 
-      {recurrente && (
-        <div className="mt-1 border-t border-linea pt-3">
-          {confirmandoBorrado ? (
-            <BloqueEliminar
-              nombre="plantilla"
-              detalle={DETALLE_ELIMINAR}
-              alConfirmar={eliminar}
-              alCancelar={() => {
-                setConfirmandoBorrado(false);
-                setErrorBorrado(null);
-              }}
-              pendiente={pendiente && accion === "eliminar"}
-              error={errorBorrado}
-            />
-          ) : (
-            <div className="flex flex-wrap items-center gap-x-1">
-              <Boton compacto variante="texto" onClick={alternarPausa} disabled={pendiente}>
-                {pendiente && accion === "pausar"
-                  ? pausa.pausada
-                    ? "Reanudando…"
-                    : "Pausando…"
-                  : pausa.pausada
-                    ? "Reanudar plantilla"
-                    : "Pausar plantilla"}
-              </Boton>
-              <span aria-hidden className="text-terciario">
-                ·
-              </span>
-              <PedirEliminar onClick={() => setConfirmandoBorrado(true)} disabled={pendiente}>
-                Eliminar plantilla…
-              </PedirEliminar>
-            </div>
-          )}
-          {errorPausa && <MensajeError mensaje={errorPausa} />}
-        </div>
-      )}
+      {accionesPlantilla && <div className="hidden md:block">{accionesPlantilla}</div>}
     </div>
   );
 
@@ -265,20 +287,20 @@ export function PanelPlantilla({ recurrente, fechaHoy, formulario, acciones, alC
       pie={pie}
     >
       {pausa.pausada && (
-        <p className="mb-6 border-b border-linea pb-4 text-cuerpo text-secundario">
-          Pausada desde {pausa.desde ? formatearFechaSinAnio(pausa.desde) : "—"}. No genera ocurrencias nuevas.
+        <p className="mb-6 border-b border-linea pb-4 text-etiqueta font-normal text-secundario">
+          Pausada desde {pausa.desde ? formatearFechaSinAnio(pausa.desde) : "—"}. No aparecen pagos nuevos por confirmar.
         </p>
       )}
 
       {formulario === null ? (
         <div role="alert" className="flex flex-col items-start gap-4">
-          <p className="text-cuerpo font-semibold">No pudimos cargar el formulario.</p>
+          <p className="text-cuerpo font-semibold">No pudimos cargar tus cuentas y categorías.</p>
           <Boton variante="secundario" onClick={() => router.refresh()}>
             Reintentar
           </Boton>
         </div>
       ) : (
-        <form id={ID_FORMULARIO} onSubmit={guardar} noValidate className="flex flex-col gap-6">
+        <form ref={formularioRef} id={ID_FORMULARIO} onSubmit={guardar} noValidate className="flex flex-col gap-6">
           <div className="flex flex-col gap-1">
             <div className="hidden md:block">
               <SelectorTipo valor={valores.tipo} alCambiar={cambiarTipo} />
@@ -310,7 +332,7 @@ export function PanelPlantilla({ recurrente, fechaHoy, formulario, acciones, alC
 
           <OpcionUnica
             nombre="plantilla-variable"
-            etiqueta="Importe"
+            etiqueta="Tipo de importe"
             opciones={OPCIONES_IMPORTE}
             valor={valores.variable ? "variable" : "fijo"}
             alCambiar={(v) => cambiar("variable", v === "variable")}
@@ -419,6 +441,7 @@ export function PanelPlantilla({ recurrente, fechaHoy, formulario, acciones, alC
           )}
         </form>
       )}
+      {accionesPlantilla && <div className="mt-8 md:hidden">{accionesPlantilla}</div>}
     </PanelLateral>
   );
 }

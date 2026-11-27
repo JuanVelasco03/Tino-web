@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-26T04:09:02+00:00",
+  "generatedAt": "2026-11-27T00:50:06Z",
   "title": "Design System: Tino",
   "extensions": {
     "colorMeta": {
@@ -505,7 +505,7 @@
       {
         "name": "asentar",
         "value": "animation: asentar 220ms var(--llegada) both",
-        "purpose": "Fundido sin desplazamiento cuando el contenido reemplaza a un esqueleto o a otro estado: resumen al cambiar de mes, libro de movimientos, la lista de un filtro al abrir, /deudas al llegar, el detalle de otra persona y el bloque de condonar. Utilidad asentar."
+        "purpose": "Fundido sin desplazamiento cuando el contenido reemplaza a un esqueleto o a otro estado: resumen al cambiar de mes, libro de movimientos, la lista de un filtro al abrir, /deudas y /recurrentes al llegar, el aviso de la bandeja de recurrentes, el detalle de otra persona y el bloque de condonar. Utilidad asentar."
       },
       {
         "name": "trazo",
